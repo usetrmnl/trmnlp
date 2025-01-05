@@ -3,7 +3,7 @@ require 'liquid'
 require 'open-uri'
 require 'sinatra'
 require 'sinatra/base'
-require 'toml'
+require 'toml-rb'
 
 require_relative '../trmnl_preview'
 require_relative 'liquid_filters'
@@ -30,7 +30,7 @@ class TRMNLPreview::App < Sinatra::Base
 
   FileUtils.mkdir_p(TEMP_DIR)
 
-  config = TOML.load_file(CONFIG_PATH)
+  config = TomlRB.load_file(CONFIG_PATH)
   strategy = config['strategy']
 
   unless ['polling', 'webhook'].include?(strategy)
