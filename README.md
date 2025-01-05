@@ -12,19 +12,29 @@ The plain HTML preview is generated using the [TRMNL Design System](https://uset
 
 - Ruby 3.x
 
-## Getting Started
+## Starter Plugin
 
-Clone a fork of https://github.com/schrockwell/trmnl-hello.
+The [trmnl-hello](https://github.com/schrockwell/trmnl-hello) repository is provided as a jumping-off point for creating new plugins. Simply fork the repo, clone it, and start hacking.
 
-Run `bundle` to install dependencies.
+## Creating a Plugin
 
-Modify `config.toml` (see below for reference) for your use-case.
+Your plugin repository should have the following structure:
 
-Modify the four view templates in `views/*.liquid`
+```
+views/
+    full.liquid
+    half_horizontal.liquid
+    half_vertical.liquid
+    quadrant.liquid
+Gemfile
+config.toml
+```
 
-Run `trmnlp` to start the local web server.
+To create the `Gemfile`, simply `bundle add trmnl_preview`.
 
-Browse it locally at http://127.0.0.1:4567/
+See [config.example.toml](config.example.toml) for an example config.
+
+Then run `trmnlp` from the repository root, and visit http://127.0.0.1:4567
 
 ## Usage Notes
 

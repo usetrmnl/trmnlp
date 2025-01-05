@@ -1,0 +1,11 @@
+# strategy = "polling" ==> the data will be fetched once, at server start-up
+# strategy = "webhook" ==> POST new data to /webhook
+strategy = "polling"
+
+# Poll URL (required for polling strategy)
+url = "https://example.com/data.json"
+
+# Polling headers (optional, for polling strategy)
+[polling_headers]
+authorization = "bearer 123"
+content-type = "application/json"
