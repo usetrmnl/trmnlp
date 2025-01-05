@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://usetrmnl.com/css/latest/plugins.css" />
+    <script src="https://usetrmnl.com/js/latest/plugins.js"></script>
+
+    <!-- Begin Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <!-- End Inter font -->
+  </head>
+  <body class="environment trmnl">
+    <div class="screen">
+      <div class="view view--<%= @view %>">
+        <%= yield %>
+      </div>
+    </div>
+  </body>
+</html>

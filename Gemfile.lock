@@ -1,0 +1,65 @@
+PATH
+  remote: .
+  specs:
+    trmnl_preview (0.1.0)
+      liquid (~> 5.6)
+      puma (~> 6.5)
+      rackup (~> 2.2)
+      sinatra (~> 4.1)
+      toml-rb (~> 3.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    base64 (0.2.0)
+    bigdecimal (3.1.9)
+    citrus (3.0.2)
+    liquid (5.6.0)
+      bigdecimal
+      strscan
+    logger (1.6.4)
+    mustermann (3.0.3)
+      ruby2_keywords (~> 0.0.1)
+    nio4r (2.7.4)
+    puma (6.5.0)
+      nio4r (~> 2.0)
+    racc (1.8.1)
+    rack (3.1.8)
+    rack-protection (4.1.1)
+      base64 (>= 0.1.0)
+      logger (>= 1.6.0)
+      rack (>= 3.0.0, < 4)
+    rack-session (2.1.0)
+      base64 (>= 0.1.0)
+      rack (>= 3.0.0)
+    rackup (2.2.1)
+      rack (>= 3)
+    rake (13.2.1)
+    ruby2_keywords (0.0.5)
+    sinatra (4.1.1)
+      logger (>= 1.6.0)
+      mustermann (~> 3.0)
+      rack (>= 3.0.0, < 4)
+      rack-protection (= 4.1.1)
+      rack-session (>= 2.0.0, < 3)
+      tilt (~> 2.0)
+    strscan (3.1.2)
+    tilt (2.5.0)
+    toml-rb (3.0.1)
+      citrus (~> 3.0, > 3.0)
+      racc (~> 1.7)
+
+PLATFORMS
+  arm64-darwin-23
+
+DEPENDENCIES
+  liquid (~> 5.6)
+  puma (~> 6.5)
+  rackup (~> 2.2)
+  rake (~> 13.0)
+  sinatra (~> 4.1)
+  toml-rb (~> 3.0)
+  trmnl_preview!
+
+BUNDLED WITH
+   2.4.22
