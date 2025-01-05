@@ -1,6 +1,12 @@
 # trmnl_preview
 
-A little self-hosted web server to ease the development and sharing of [TRMNL](https://usetrmnl.com/) plugins.
+A little self-hosted web server executable, `trmlp`, to ease the development and sharing of [TRMNL](https://usetrmnl.com/) plugins.
+
+This gem enables local development of plugins using Liquid templates, so that you can quickly iterate on designs before finally pasting the markup into the private plugin in TRMNL's dashboard.
+
+The plain HTML preview is generated using the [TRMNL Design System](https://usetrmnl.com/framework). It does NOT generate a rendered BMP file. Hence, this is just a _preview_ of the final rendered dashboard.
+
+![Screenshot](docs/preview.png)
 
 ## Prerequisites
 
@@ -10,9 +16,9 @@ A little self-hosted web server to ease the development and sharing of [TRMNL](h
 
 Clone a fork of https://github.com/schrockwell/trmnl-hello.
 
-Run `bundle`.
+Run `bundle` to install dependencies.
 
-Modify `config.toml` (see below for reference).
+Modify `config.toml` (see below for reference) for your use-case.
 
 Modify the four view templates in `views/*.liquid`
 
@@ -24,9 +30,9 @@ Browse it locally at http://127.0.0.1:4567/
 
 Simply refresh the page to re-render.
 
-When the polling strategy is "polling", the specified URL will be fetched once when the server starts.
+When the strategy is "polling", the specified URL will be fetched once, when the server starts.
 
-When the polling strategy is "webhook", you can POST payloads to the `/webhook` endpoint. They are saved to `tmp/data.json` for future renders.
+When the strategy is "webhook", you can POST payloads to the `/webhook` endpoint. They are saved to `tmp/data.json` for future renders.
 
 ## `config.toml` Reference
 
