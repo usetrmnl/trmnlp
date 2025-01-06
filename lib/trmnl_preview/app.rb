@@ -4,47 +4,49 @@ require 'sinatra/base'
 
 require_relative 'context'
 
-class TRMNLPreview::App < Sinatra::Base
-  # Sinatra settings
-  set :views, File.join(File.dirname(__FILE__), '..', '..', 'views')
-  
-  def initialize(*args)
-    super
+module TRMNLPreview
+  class App < Sinatra::Base
+    # Sinatra settings
+    set :views, File.join(File.dirname(__FILE__), '..', '..', 'views')
+    
+    def initialize(*args)
+      super
 
-    begin
-      @context = TRMNLPreview::Context.new(settings.user_dir)
-    rescue StandardError => e
-      puts e.message
-      exit 1
+      begin
+        @context = Context.new(settings.user_dir)
+      rescue StandardError => e
+        puts e.message
+        exit 1
+      end
+
+      @context.poll_data if @context.strategy == 'polling'
     end
 
-    @context.poll_data if @context.strategy == 'polling'
-  end
-
-  post '/webhook' do
-    @context.set_data(request.body.read)
-    "OK"
-  end
-  
-  get '/' do
-    redirect '/full'
-  end
-
-  get '/poll' do
-    @context.poll_data
-    redirect back
-  end
-  
-  TRMNLPreview::VIEWS.each do |view|
-    get "/#{view}" do
-      @view = view
-      erb :index
+    post '/webhook' do
+      @context.set_data(request.body.read)
+      "OK"
+    end
+    
+    get '/' do
+      redirect '/full'
     end
 
-    get "/render/#{view}" do
-      @view = view
-      erb :render_view do
-        @context.render_user_template(view)
+    get '/poll' do
+      @context.poll_data
+      redirect back
+    end
+    
+    VIEWS.each do |view|
+      get "/#{view}" do
+        @view = view
+        erb :index
+      end
+
+      get "/render/#{view}" do
+        @view = view
+        erb :render_view do
+          @context.render_user_template(view)
+        end
       end
     end
   end
