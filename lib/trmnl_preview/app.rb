@@ -1,12 +1,8 @@
-require 'json'
-require 'liquid'
-require 'open-uri'
+
 require 'sinatra'
 require 'sinatra/base'
-require 'toml-rb'
 
 require_relative 'context'
-require_relative 'liquid_filters'
 
 class TRMNLPreview::App < Sinatra::Base
   # Sinatra settings
@@ -18,10 +14,6 @@ class TRMNLPreview::App < Sinatra::Base
     @context = TRMNLPreview::Context.new(settings.user_dir)
 
     @context.poll_data if @context.strategy == 'polling'
-  
-    @liquid_environment = Liquid::Environment.build do |env|
-      env.register_filter(TRMNLPreview::LiquidFilters)
-    end
   end
 
   post '/webhook' do
@@ -45,16 +37,9 @@ class TRMNLPreview::App < Sinatra::Base
     end
 
     get "/render/#{view}" do
-      path = @context.view_path(view)
-      unless File.exist?(path)
-        halt 404, "Plugin template not found: views/#{view}.liquid"
-      end
-
-      user_template = Liquid::Template.parse(File.read(path), environment: @liquid_environment)
-
       @view = view
       erb :render_view do
-        user_template.render(@context.user_data)
+        @context.render_user_template(view)
       end
     end
   end

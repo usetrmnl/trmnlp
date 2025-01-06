@@ -1,11 +1,24 @@
+require 'erb'
+require 'fileutils'
+require 'json'
+require 'liquid'
+require 'open-uri'
+require 'toml-rb'
+
+require_relative 'liquid_filters'
+
 class TRMNLPreview::Context
-  attr_reader :strategy
+  attr_reader :strategy, :temp_dir
   
   def initialize(root)
     config_path = File.join(root, 'config.toml')
     @user_views_dir = File.join(root, 'views')
     @temp_dir = File.join(root, 'tmp')
     @data_json_path = File.join(@temp_dir, 'data.json')
+  
+    @liquid_environment = Liquid::Environment.build do |env|
+      env.register_filter(TRMNLPreview::LiquidFilters)
+    end
 
     unless File.exist?(config_path)
       puts "No config.toml found in #{root}"
@@ -56,5 +69,28 @@ class TRMNLPreview::Context
 
   def view_path(view)
     File.join(@user_views_dir, "#{view}.liquid")
+  end
+
+  def render_html(view)
+    page_erb_template = File.read(File.join(__dir__, '..', '..', 'views', 'render_view.erb'))
+    
+    ERB.new(page_erb_template).result(ERBBinding.new(view).get_binding do
+      render_user_template(view)
+    end)
+  end
+
+  def render_user_template(view)
+    path = view_path(view)
+    unless File.exist?(path)
+      return "Missing plugin template: views/#{view}.liquid"
+    end
+
+    user_template = Liquid::Template.parse(File.read(path), environment: @liquid_environment)
+    user_template.render(user_data)
+  end
+
+  class ERBBinding
+    def initialize(view) = @view = view
+    def get_binding = binding
   end
 end
