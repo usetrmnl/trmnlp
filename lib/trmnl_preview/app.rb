@@ -42,24 +42,27 @@ class TRMNLPreview::App < Sinatra::Base
       exit 1
     end
   
-    url = @config['url']
-    polling_headers = @config['polling_headers'] || {}
   
-    if strategy == 'polling'
-      if url.nil?
-        puts "URL is required for polling strategy"
-        exit 1
-      end
-  
-      print "Fetching #{url}... "
-      payload = URI.open(url, polling_headers).read
-      File.write(@data_json_path, payload)
-      puts "got #{payload.size} bytes"
-    end
+    poll_data if strategy == 'polling'
   
     @liquid_environment = Liquid::Environment.build do |env|
       env.register_filter(TRMNLPreview::LiquidFilters)
     end
+  end
+
+  def poll_data
+    url = @config['url']
+    polling_headers = @config['polling_headers'] || {}
+
+    if url.nil?
+      puts "URL is required for polling strategy"
+      exit 1
+    end
+
+    print "Fetching #{url}... "
+    payload = URI.open(url, polling_headers).read
+    File.write(@data_json_path, payload)
+    puts "got #{payload.size} bytes"
   end
 
   post '/webhook' do
@@ -70,6 +73,11 @@ class TRMNLPreview::App < Sinatra::Base
   
   get '/' do
     redirect '/full'
+  end
+
+  get '/poll' do
+    poll_data
+    redirect back
   end
   
   VIEWS.each do |view|
