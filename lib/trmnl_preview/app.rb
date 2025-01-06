@@ -11,7 +11,12 @@ class TRMNLPreview::App < Sinatra::Base
   def initialize(*args)
     super
 
-    @context = TRMNLPreview::Context.new(settings.user_dir)
+    begin
+      @context = TRMNLPreview::Context.new(settings.user_dir)
+    rescue StandardError => e
+      puts e.message
+      exit 1
+    end
 
     @context.poll_data if @context.strategy == 'polling'
   end

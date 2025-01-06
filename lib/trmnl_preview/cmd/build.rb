@@ -7,13 +7,19 @@ OptionParser.new do |opts|
 end.parse!
 
 root = ARGV[1] || Dir.pwd
-context = TRMNLPreview::Context.new(root)
+begin
+  context = TRMNLPreview::Context.new(root)
+rescue StandardError => e
+  puts e.message
+  exit 1
+end
+
 context.poll_data
 
 TRMNLPreview::VIEWS.each do |view|
   output_path = File.join(context.temp_dir, "#{view}.html")
   puts "Creating #{output_path}..."
-  File.write(output_path, context.render_html(view))
+  File.write(output_path, context.render_full_page(view))
 end
 
 puts "Done!"

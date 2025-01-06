@@ -21,13 +21,11 @@ class TRMNLPreview::Context
     end
 
     unless File.exist?(config_path)
-      puts "No config.toml found in #{root}"
-      exit 1
+      raise "No config.toml found in #{root}"
     end
   
     unless Dir.exist?(@user_views_dir)
-      puts "No views found at #{@user_views_dir}"
-      exit 1
+      raise "No views found at #{@user_views_dir}"
     end
 
     config = TomlRB.load_file(config_path)
@@ -36,8 +34,7 @@ class TRMNLPreview::Context
     @polling_headers = config['polling_headers'] || {}
 
     unless ['polling', 'webhook'].include?(@strategy)
-      puts "Invalid strategy: #{strategy} (must be 'polling' or 'webhook')"
-      exit 1
+      raise "Invalid strategy: #{strategy} (must be 'polling' or 'webhook')"
     end
 
     FileUtils.mkdir_p(@temp_dir)
@@ -51,8 +48,7 @@ class TRMNLPreview::Context
 
   def poll_data
     if @url.nil?
-      puts "URL is required for polling strategy"
-      exit 1
+      raise "URL is required for polling strategy"
     end
 
     print "Fetching #{@url}... "
@@ -62,7 +58,7 @@ class TRMNLPreview::Context
     else
       payload = File.read(@url)
     end
-    
+
     File.write(@data_json_path, payload)
     puts "got #{payload.size} bytes"
 
@@ -77,15 +73,7 @@ class TRMNLPreview::Context
     File.join(@user_views_dir, "#{view}.liquid")
   end
 
-  def render_html(view)
-    page_erb_template = File.read(File.join(__dir__, '..', '..', 'views', 'render_view.erb'))
-    
-    ERB.new(page_erb_template).result(ERBBinding.new(view).get_binding do
-      render_user_template(view)
-    end)
-  end
-
-  def render_user_template(view)
+  def render_template(view)
     path = view_path(view)
     unless File.exist?(path)
       return "Missing plugin template: views/#{view}.liquid"
@@ -95,6 +83,16 @@ class TRMNLPreview::Context
     user_template.render(user_data)
   end
 
+  def render_full_page(view)
+    page_erb_template = File.read(File.join(__dir__, '..', '..', 'views', 'render_view.erb'))
+    
+    ERB.new(page_erb_template).result(ERBBinding.new(view).get_binding do
+      render_template(view)
+    end)
+  end
+
+  private 
+  
   class ERBBinding
     def initialize(view) = @view = view
     def get_binding = binding
