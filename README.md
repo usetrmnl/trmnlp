@@ -8,7 +8,7 @@ A basic self-hosted web server to ease the development and sharing of [TRMNL](ht
 
 ## Creating a Plugin
 
-This is the structure of a plugin repository. See [config.example.toml](config.example.toml) for an example config.
+This is the structure of a plugin repository.
 
 ```
 views/
@@ -19,11 +19,11 @@ views/
 config.toml
 ```
 
+See [config.example.toml](config.example.toml) for an example config.
+
 The [trmnl-hello](https://github.com/schrockwell/trmnl-hello) repository is provided as a jumping-off point for creating new plugins. Simply fork the repo, clone it, and start hacking.
 
 ## Running the Server (Docker)
-
-Port 4567 must be exposed, and the plugin directory must be mapped to `/plugin` in the container.
 
 ```sh
 docker run \
