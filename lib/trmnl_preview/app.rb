@@ -7,7 +7,8 @@ require_relative 'context'
 module TRMNLPreview
   class App < Sinatra::Base
     # Sinatra settings
-    set :views, File.join(File.dirname(__FILE__), '..', '..', 'views')
+    set :views, File.join(File.dirname(__FILE__), '..', '..', 'web', 'views')
+    set :public_folder, File.join(File.dirname(__FILE__), '..', '..', 'web', 'public')
     
     def initialize(*args)
       super
@@ -45,7 +46,7 @@ module TRMNLPreview
       get "/render/#{view}" do
         @view = view
         erb :render_view do
-          @context.render_user_template(view)
+          @context.render_template(view)
         end
       end
     end

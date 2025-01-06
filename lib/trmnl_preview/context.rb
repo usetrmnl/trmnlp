@@ -85,7 +85,7 @@ module TRMNLPreview
     end
 
     def render_full_page(view)
-      page_erb_template = File.read(File.join(__dir__, '..', '..', 'views', 'render_view.erb'))
+      page_erb_template = File.read(File.join(__dir__, '..', '..', 'web', 'views', 'render_view.erb'))
       
       ERB.new(page_erb_template).result(ERBBinding.new(view).get_binding do
         render_template(view)
