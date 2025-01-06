@@ -56,7 +56,13 @@ class TRMNLPreview::Context
     end
 
     print "Fetching #{@url}... "
-    payload = URI.open(@url, @polling_headers).read
+
+    if @url.match?(/^https?:\/\//)
+      payload = URI.open(@url, @polling_headers).read
+    else
+      payload = File.read(@url)
+    end
+    
     File.write(@data_json_path, payload)
     puts "got #{payload.size} bytes"
 
