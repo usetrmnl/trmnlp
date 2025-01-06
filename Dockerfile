@@ -1,6 +1,20 @@
-FROM ruby:3.4.1
+# ----- BUILD -----
+
+FROM ruby:3.4.1 AS builder
 
 WORKDIR /app
+
+COPY Gemfile Gemfile.lock ./
+
+RUN bundle install
+
+# ----- RUN -----
+
+FROM ruby:3.4.1 AS runner
+
+WORKDIR /app
+
+COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
 
 COPY Gemfile \
     Gemfile.lock \
