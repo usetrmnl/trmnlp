@@ -45,8 +45,6 @@ trmnlp serve                # Starts the server
 
 ## Usage Notes
 
-Simply refresh the page to re-render.
-
 When the strategy is "polling", the specified URL will be fetched once, when the server starts.
 
 When the strategy is "webhook", payloads can be POSTed to the `/webhook` endpoint. They are saved to `tmp/data.json` for future renders.
