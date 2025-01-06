@@ -5,93 +5,94 @@ require 'sinatra'
 require 'sinatra/base'
 require 'toml-rb'
 
-require_relative '../trmnl_preview'
 require_relative 'liquid_filters'
 
 class TRMNLPreview::App < Sinatra::Base
-  set :views, File.join(File.dirname(__FILE__), '..', '..', 'views')
-  
   # Constants
   VIEWS = %w{full half_horizontal half_vertical quadrant}
-  CONFIG_PATH = File.join(Dir.pwd, 'config.toml')
-  USER_VIEWS_DIR = File.join(Dir.pwd, 'views')
-  TEMP_DIR = File.join(Dir.pwd, 'tmp')
-  DATA_JSON_PATH = File.join(TEMP_DIR, 'data.json')
 
-  unless File.exist?(CONFIG_PATH)
-    puts "No config.toml found in #{Dir.pwd}"
-    exit 1
-  end
+  # Sinatra settings
+  set :views, File.join(File.dirname(__FILE__), '..', '..', 'views')
+  
+  def initialize(*args)
+    super
 
-  unless Dir.exist?(USER_VIEWS_DIR)
-    puts "No views found at #{USER_VIEWS_DIR}"
-    exit 1
-  end
+    @config_path = File.join(settings.user_dir, 'config.toml')
+    @user_views_dir = File.join(settings.user_dir, 'views')
+    @temp_dir = File.join(settings.user_dir, 'tmp')
+    @data_json_path = File.join(@temp_dir, 'data.json')
 
-  FileUtils.mkdir_p(TEMP_DIR)
-
-  config = TomlRB.load_file(CONFIG_PATH)
-  strategy = config['strategy']
-
-  unless ['polling', 'webhook'].include?(strategy)
-    puts "Invalid strategy: #{strategy} (must be 'polling' or 'webhook')"
-    exit 1
-  end
-
-  url = config['url']
-  polling_headers = config['polling_headers'] || {}
-
-  if strategy == 'polling'
-    if url.nil?
-      puts "URL is required for polling strategy"
+    unless File.exist?(@config_path)
+      puts "No config.toml found in #{settings.user_dir}"
+      exit 1
+    end
+  
+    unless Dir.exist?(@user_views_dir)
+      puts "No views found at #{@user_views_dir}"
       exit 1
     end
 
-    print "Fetching #{url}... "
-    payload = URI.open(url, polling_headers).read
-    File.write(DATA_JSON_PATH, payload)
-    puts "got #{payload.size} bytes"
+    FileUtils.mkdir_p(@temp_dir)
+
+    @config = TomlRB.load_file(@config_path)
+    strategy = @config['strategy']
+  
+    unless ['polling', 'webhook'].include?(strategy)
+      puts "Invalid strategy: #{strategy} (must be 'polling' or 'webhook')"
+      exit 1
+    end
+  
+    url = @config['url']
+    polling_headers = @config['polling_headers'] || {}
+  
+    if strategy == 'polling'
+      if url.nil?
+        puts "URL is required for polling strategy"
+        exit 1
+      end
+  
+      print "Fetching #{url}... "
+      payload = URI.open(url, polling_headers).read
+      File.write(@data_json_path, payload)
+      puts "got #{payload.size} bytes"
+    end
+  
+    @liquid_environment = Liquid::Environment.build do |env|
+      env.register_filter(TRMNLPreview::LiquidFilters)
+    end
   end
 
-  environment = Liquid::Environment.build do |env|
-    env.register_filter(TRMNLPreview::LiquidFilters)
+  post '/webhook' do
+    body = request.body.read
+    File.write(@data_json_path, body)
+    "OK"
   end
-
+  
   get '/' do
     redirect '/full'
   end
-
-  if config['strategy'] == 'webhook'
-    post '/webhook' do
-      body = request.body.read
-      File.write(DATA_JSON_PATH, body)
-      "OK"
+  
+  VIEWS.each do |view|
+    get "/#{view}" do
+      @view = view
+      erb :index
     end
 
-    puts "Listening for POSTs to /webhook"
-  end
-
-  VIEWS.each do |view|
     get "/render/#{view}" do
-      path = File.join(USER_VIEWS_DIR, "#{view}.liquid")
+      path = File.join(@user_views_dir, "#{view}.liquid")
       unless File.exist?(path)
         halt 404, "Plugin template not found: views/#{view}.liquid"
       end
 
-      user_template = Liquid::Template.parse(File.read(path), environment: environment)
+      user_template = Liquid::Template.parse(File.read(path), environment: @liquid_environment)
 
       @view = view
       erb :render_view do
-        data = JSON.parse(File.read(DATA_JSON_PATH))
+        data = JSON.parse(File.read(@data_json_path))
         data = { data: data } if data.is_a?(Array) # per TRMNL docs, bare array is wrapped in 'data' key
 
         user_template.render(data)
       end
-    end
-
-    get "/#{view}" do
-      @view = view
-      erb :index
     end
   end
 end

@@ -2,8 +2,7 @@
 
 module TRMNLPreview; end
 
-require_relative "trmnl_preview/app"
-require_relative "trmnl_preview/liquid_filters"
+# require_relative "trmnl_preview/app"
 require_relative "trmnl_preview/version"
 
 module TRMNLPreview

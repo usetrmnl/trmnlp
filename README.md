@@ -1,24 +1,14 @@
 # trmnl_preview
 
-A little self-hosted web server executable, `trmlp`, to ease the development and sharing of [TRMNL](https://usetrmnl.com/) plugins.
+A basic self-hosted web server to ease the development and sharing of [TRMNL](https://usetrmnl.com/) plugins.
 
-This gem enables local development of plugins using Liquid templates, so that you can quickly iterate on designs before finally pasting the markup into the private plugin in TRMNL's dashboard.
-
-The plain HTML preview is generated using the [TRMNL Design System](https://usetrmnl.com/framework). It does NOT generate a rendered BMP file. Hence, this is just a _preview_ of the final rendered dashboard.
+[Liquid](https://shopify.github.io/liquid/) templates are rendered locally as HTML, leveraging the [TRMNL Design System](https://usetrmnl.com/framework). This server does NOT generate a rendered BMP file. Hence, this is just a _preview_ of the final rendered dashboard.
 
 ![Screenshot](docs/preview.png)
 
-## Prerequisites
-
-- Ruby 3.x
-
-## Starter Plugin
-
-The [trmnl-hello](https://github.com/schrockwell/trmnl-hello) repository is provided as a jumping-off point for creating new plugins. Simply fork the repo, clone it, and start hacking.
-
 ## Creating a Plugin
 
-Your plugin repository should have the following structure:
+This is the structure of a plugin repository. See [config.example.toml](config.example.toml) for an example config.
 
 ```
 views/
@@ -26,15 +16,30 @@ views/
     half_horizontal.liquid
     half_vertical.liquid
     quadrant.liquid
-Gemfile
 config.toml
 ```
 
-To create the `Gemfile`, simply `bundle add trmnl_preview`.
+The [trmnl-hello](https://github.com/schrockwell/trmnl-hello) repository is provided as a jumping-off point for creating new plugins. Simply fork the repo, clone it, and start hacking.
 
-See [config.example.toml](config.example.toml) for an example config.
+## Running the Server (Docker)
 
-Then run `trmnlp` from the repository root, and visit http://127.0.0.1:4567
+Port 4567 must be exposed, and the plugin directory must be mapped to `/plugin` in the container.
+
+```sh
+docker run \
+    -p 4567:4567 \
+    -v /path/to/plugin/on/host:/plugin \
+    schrockwell/trmnlp
+```
+
+## Running the Server (Local Ruby)
+
+Ruby 3.x is required. In the plugin repository:
+
+```sh
+bundle add trmnl_preview    # Creates Gemfile and Gemfile.lock
+trmnlp serve                # Starts the server
+```
 
 ## Usage Notes
 
@@ -42,7 +47,7 @@ Simply refresh the page to re-render.
 
 When the strategy is "polling", the specified URL will be fetched once, when the server starts.
 
-When the strategy is "webhook", you can POST payloads to the `/webhook` endpoint. They are saved to `tmp/data.json` for future renders.
+When the strategy is "webhook", payloads can be POSTed to the `/webhook` endpoint. They are saved to `tmp/data.json` for future renders.
 
 ## `config.toml` Reference
 

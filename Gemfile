@@ -2,9 +2,6 @@
 
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in trmnl_preview.gemspec
-gemspec
-
 gem 'rake', '~> 13.0'
 gem 'sinatra', '~> 4.1'
 gem "rackup", "~> 2.2"

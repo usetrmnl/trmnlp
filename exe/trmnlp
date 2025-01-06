@@ -2,4 +2,9 @@
 
 require_relative '../lib/trmnl_preview'
 
-TRMNLPreview::App.run!
+case ARGV[0].to_s.downcase
+when 'serve'
+  require_relative '../lib/trmnl_preview/cmd/serve'
+else
+  require_relative '../lib/trmnl_preview/cmd/usage'
+end
