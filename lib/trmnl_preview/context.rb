@@ -6,20 +6,25 @@ require 'liquid'
 require 'open-uri'
 require 'toml-rb'
 
-require_relative 'liquid_filters'
+require_relative 'custom_filters'
 
 module TRMNLPreview
   class Context
     attr_reader :strategy, :temp_dir, :live_render
     
-    def initialize(root)
+    def initialize(root, opts = {})
       config_path = File.join(root, 'config.toml')
       @user_views_dir = File.join(root, 'views')
       @temp_dir = File.join(root, 'tmp')
       @data_json_path = File.join(@temp_dir, 'data.json')
-    
+
       @liquid_environment = Liquid::Environment.build do |env|
-        env.register_filter(LiquidFilters)
+        env.register_filter(CustomFilters)
+        
+        liquid_filters = opts[:filters] || []
+        liquid_filters.each do |filter|
+          env.register_filter(filter)
+        end
       end
 
       unless File.exist?(config_path)
