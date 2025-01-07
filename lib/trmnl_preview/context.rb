@@ -18,15 +18,6 @@ module TRMNLPreview
       @temp_dir = File.join(root, 'tmp')
       @data_json_path = File.join(@temp_dir, 'data.json')
 
-      @liquid_environment = Liquid::Environment.build do |env|
-        env.register_filter(CustomFilters)
-        
-        liquid_filters = opts[:filters] || []
-        liquid_filters.each do |filter|
-          env.register_filter(filter)
-        end
-      end
-
       unless File.exist?(config_path)
         raise "No config.toml found in #{root}"
       end
@@ -40,12 +31,22 @@ module TRMNLPreview
       @url = config['url']
       @polling_headers = config['polling_headers'] || {}
       @live_render = config['live_render'] != false
+      @user_filters = config['custom_filters'] || []
 
       unless ['polling', 'webhook'].include?(@strategy)
         raise "Invalid strategy: #{strategy} (must be 'polling' or 'webhook')"
       end
-
+      
       FileUtils.mkdir_p(@temp_dir)
+
+      @liquid_environment = Liquid::Environment.build do |env|
+        env.register_filter(CustomFilters)
+
+        @user_filters.each do |module_name, relative_path|
+          require File.join(root, relative_path)
+          env.register_filter(Object.const_get(module_name))
+        end
+      end
 
       start_filewatcher_thread if @live_render
     end

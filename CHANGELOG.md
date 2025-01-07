@@ -2,7 +2,8 @@
 
 ## Next version
 
-- Add [custom plugin filters](https://help.usetrmnl.com/en/articles/10347358-custom-plugin-filters)
+- Add TRMNL's [custom plugin filters](https://help.usetrmnl.com/en/articles/10347358-custom-plugin-filters)
+- Add support for user-supplied custom filters
 
 ## 0.3.1
 
