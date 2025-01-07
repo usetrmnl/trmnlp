@@ -1,5 +1,13 @@
 # Changelog
 
+## Next version
+
+- Add [custom plugin filters](https://help.usetrmnl.com/en/articles/10347358-custom-plugin-filters)
+
+## 0.3.1
+
+- Add live render
+
 ## 0.3.0
 
 - Add poll button
