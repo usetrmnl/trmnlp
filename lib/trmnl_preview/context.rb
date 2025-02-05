@@ -186,16 +186,19 @@ module TRMNLPreview
     end
 
     def replace_token(value, secrets)
-      return value unless value.match?(/^\{.*\}$/)
+      return value unless value.match?(/\{[^}]+\}/)
       
-      token = value[1..-2] # Remove the curly braces
-      secret_key = find_secret_key(token, secrets)
-      
-      if secret_key
-        secrets[secret_key]
-      else
-        env_path = File.join(@root, '.env')
-        raise "Token '#{token}' not found in #{env_path}"
+      # Replace all occurrences of {VARIABLE} in the string
+      value.gsub(/\{([^}]+)\}/) do |match|
+        token = $1  # Capture the variable name from inside the brackets
+        secret_key = find_secret_key(token, secrets)
+        
+        if secret_key
+          secrets[secret_key]
+        else
+          env_path = File.join(@root, '.env')
+          raise "Token '#{token}' not found in #{env_path}"
+        end
       end
     end
 
