@@ -13,12 +13,15 @@ module TRMNLPreview
     attr_reader :strategy, :temp_dir, :live_render
     
     def initialize(root, opts = {})
-      config_path = File.join(root, 'config.toml')
+      @root = root
+      @config = load_config
+      @secrets = load_secrets
+      replace_tokens! if @secrets
       @user_views_dir = File.join(root, 'views')
       @temp_dir = File.join(root, 'tmp')
       @data_json_path = File.join(@temp_dir, 'data.json')
 
-      unless File.exist?(config_path)
+      unless File.exist?(File.join(root, 'config.toml'))
         raise "No config.toml found in #{root}"
       end
     
@@ -26,15 +29,14 @@ module TRMNLPreview
         raise "No views found at #{@user_views_dir}"
       end
 
-      config = TomlRB.load_file(config_path)
-      @strategy = config['strategy']
-      @url = config['url']
-      @polling_headers = config['polling_headers'] || {}
-      @live_render = config['live_render'] != false
-      @user_filters = config['custom_filters'] || []
+      @strategy = @config['strategy']
+      @url = @config['url']
+      @polling_headers = @config['polling_headers'] || {}
+      @live_render = @config['live_render'] != false
+      @user_filters = @config['custom_filters'] || []
 
       unless ['polling', 'webhook'].include?(@strategy)
-        raise "Invalid strategy: #{strategy} (must be 'polling' or 'webhook')"
+        raise "Invalid strategy: #{@strategy} (must be 'polling' or 'webhook')"
       end
       
       FileUtils.mkdir_p(@temp_dir)
@@ -126,6 +128,62 @@ module TRMNLPreview
     end
 
     private 
+
+    def load_config
+      config_file = File.join(@root, 'config.toml')
+      raise "Configuration file not found: #{config_file}" unless File.exist?(config_file)
+      
+      TomlRB.load_file(config_file)
+    end
+
+    def load_secrets
+      secrets_file = File.join(@root, '.secrets.toml')
+      return nil unless File.exist?(secrets_file)
+      
+      TomlRB.load_file(secrets_file)
+    end
+
+    def replace_tokens!
+      replace_tokens_in_hash(@config, @secrets)
+    end
+
+    def replace_tokens_in_hash(hash, secrets)
+      hash.each do |key, value|
+        case value
+        when String
+          hash[key] = replace_token(value, secrets)
+        when Hash
+          replace_tokens_in_hash(value, secrets)
+        when Array
+          value.each_with_index do |item, index|
+            case item
+            when String
+              value[index] = replace_token(item, secrets)
+            when Hash
+              replace_tokens_in_hash(item, secrets)
+            end
+          end
+        end
+      end
+    end
+
+    def replace_token(value, secrets)
+      return value unless value.match?(/^\{.*\}$/)
+      
+      token = value[1..-2] # Remove the curly braces
+      secret_key = find_secret_key(token, secrets)
+      
+      if secret_key
+        secrets[secret_key]
+      else
+        raise "Token '#{token}' not found in .secrets.toml"
+      end
+    end
+
+    def find_secret_key(token, secrets)
+      # Case-insensitive search for the key
+      secrets.keys.find { |key| key.to_s.downcase == token.downcase }
+    end
 
     class ERBBinding
       def initialize(view) = @view = view

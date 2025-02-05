@@ -63,6 +63,18 @@ When the strategy is "webhook", payloads can be POSTed to the `/webhook` endpoin
 - `live_render` - Set to `false` to disable automatic rendering when Liquid templates change (default `true`)
 - `[polling_headers]` - A section of headers to append to the HTTP poll request (polling strategy only)
 
+## Optional `.secrets.toml`
+
+You can create a `.secrets.toml` file in your plugin directory to store sensitive information like API keys. This file should never be committed to version control.
+
+Example `.secrets.toml`:
+```toml
+X-API-Key = "your-secret-key"
+Authorization = "Bearer your-token"
+```
+
+These headers will be merged with any headers defined in `config.toml`, with `.secrets.toml` taking precedence. To use the secrets in your config, use the `{token}` syntax e.g. `{Authorization}`.
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/schrockwell/trmnl_preview.
