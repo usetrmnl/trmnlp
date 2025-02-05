@@ -19,6 +19,7 @@ views/
     half_vertical.liquid
     quadrant.liquid
 config.toml
+.env
 ```
 
 See [config.example.toml](config.example.toml) for an example config.
@@ -50,6 +51,12 @@ gem install trmnl_preview
 trmnlp serve                # Starts the server
 ```
 
+You can also run the server from another directory using a subshell:
+
+```sh
+(cd path/to/plugin && trmnlp serve)  # Returns to original directory when done
+```
+
 ## Usage Notes
 
 When the strategy is "polling", the specified URL will be fetched once, when the server starts.
@@ -63,17 +70,37 @@ When the strategy is "webhook", payloads can be POSTed to the `/webhook` endpoin
 - `live_render` - Set to `false` to disable automatic rendering when Liquid templates change (default `true`)
 - `[polling_headers]` - A section of headers to append to the HTTP poll request (polling strategy only)
 
-## Optional `.secrets.toml`
+## Optional `.env`
 
-You can create a `.secrets.toml` file in your plugin directory to store sensitive information like API keys. This file should never be committed to version control.
+You can create a `.env` file in your plugin directory to store sensitive information like API keys. This file should never be committed to version control.
 
-Example `.secrets.toml`:
-```toml
-X-API-Key = "your-secret-key"
-Authorization = "Bearer your-token"
+Example `.env`:
+```bash
+# Environment variable names:
+# - MUST use UPPER_CASE with underscores
+# - Must NOT contain hyphens (-)
+# - Must NOT use quotes around values
+
+# Good examples:
+API_KEY=your-secret-key
+AUTH_TOKEN=Bearer abc123
+TRMNL_SECRET=your-value
+
+# Bad examples:
+# Api-Key=value        # No hyphens allowed in names
+# AUTH_TOKEN="value"   # No quotes around values
+# auth_token=value     # Use UPPER_CASE
 ```
 
-These headers will be merged with any headers defined in `config.toml`, with `.secrets.toml` taking precedence. To use the secrets in your config, use the `{token}` syntax e.g. `{Authorization}`.
+These values can be referenced in your `config.toml` using the `{token}` syntax:
+
+```toml
+[polling_headers]
+x-api-key = "{API_KEY}"        # Hyphens are fine in header names
+authorization = "{AUTH_TOKEN}"  # Token names are case-insensitive
+```
+
+The values from `.env` will be used to replace the tokens in your config. The token matching is case-insensitive, so `{API_KEY}` and `{api_key}` will both work.
 
 ## Contributing
 

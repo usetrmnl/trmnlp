@@ -5,6 +5,7 @@ require 'json'
 require 'liquid'
 require 'open-uri'
 require 'toml-rb'
+require 'dotenv'
 
 require_relative 'custom_filters'
 
@@ -137,10 +138,27 @@ module TRMNLPreview
     end
 
     def load_secrets
-      secrets_file = File.join(@root, '.secrets.toml')
-      return nil unless File.exist?(secrets_file)
+      env_file = File.join(@root, '.env')
+      return nil unless File.exist?(env_file)
       
-      TomlRB.load_file(secrets_file)
+      # Load the raw contents to check for hyphens before parsing
+      env_contents = File.read(env_file)
+      env_contents.each_line do |line|
+        line = line.strip
+        next if line.empty? || line.start_with?('#')
+        
+        if line.match?(/^[A-Za-z0-9-]+\s*=/)
+          key = line.split('=', 2).first.strip
+          if key.include?('-')
+            raise "Invalid environment variable '#{key}' in #{env_file}\n" \
+                  "Environment variables should use underscores (_) instead of hyphens (-)\n" \
+                  "Example: Change '#{key}' to '#{key.gsub('-', '_')}'"
+          end
+        end
+      end
+      
+      Dotenv.load(env_file)
+      ENV.to_h
     end
 
     def replace_tokens!
@@ -176,7 +194,8 @@ module TRMNLPreview
       if secret_key
         secrets[secret_key]
       else
-        raise "Token '#{token}' not found in .secrets.toml"
+        env_path = File.join(@root, '.env')
+        raise "Token '#{token}' not found in #{env_path}"
       end
     end
 
