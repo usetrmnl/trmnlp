@@ -65,10 +65,14 @@ When the strategy is "webhook", payloads can be POSTed to the `/webhook` endpoin
 
 ## `config.toml` Reference
 
-- `strategy` - Either "polling" or "webhook"
+- `strategy` - Either "polling", "webhook", or "static"
 - `url` - The URL from which to fetch JSON data (polling strategy only)
 - `live_render` - Set to `false` to disable automatic rendering when Liquid templates change (default `true`)
 - `[polling_headers]` - A section of headers to append to the HTTP poll request (polling strategy only)
+
+### Static Strategy
+
+When using `strategy = "static"`, the server will read data from a file named `sample.json` in the plugin directory. This is useful for testing with predefined data.
 
 ## Optional `.env`
 

@@ -36,8 +36,8 @@ module TRMNLPreview
       @live_render = @config['live_render'] != false
       @user_filters = @config['custom_filters'] || []
 
-      unless ['polling', 'webhook'].include?(@strategy)
-        raise "Invalid strategy: #{@strategy} (must be 'polling' or 'webhook')"
+      unless ['polling', 'webhook', 'static'].include?(@strategy)
+        raise "Invalid strategy: #{@strategy} (must be 'polling', 'webhook', or 'static')"
       end
       
       FileUtils.mkdir_p(@temp_dir)
@@ -82,20 +82,14 @@ module TRMNLPreview
     end
 
     def poll_data
-      if @url.nil?
-        raise "URL is required for polling strategy"
-      end
-
-      print "Fetching #{@url}... "
-
-      if @url.match?(/^https?:\/\//)
-        payload = URI.open(@url, @polling_headers).read
+      case @strategy
+      when 'polling'
+        fetch_data_from_url
+      when 'static'
+        load_static_data
       else
-        payload = File.read(@url)
+        raise "Unsupported strategy: #{@strategy}"
       end
-
-      File.write(@data_json_path, payload)
-      puts "got #{payload.size} bytes"
 
       user_data
     end
@@ -205,6 +199,34 @@ module TRMNLPreview
     def find_secret_key(token, secrets)
       # Case-insensitive search for the key
       secrets.keys.find { |key| key.to_s.downcase == token.downcase }
+    end
+
+    def fetch_data_from_url
+      if @url.nil?
+        raise "URL is required for polling strategy"
+      end
+
+      print "Fetching #{@url}... "
+
+      if @url.match?(/^https?:\/\//)
+        payload = URI.open(@url, @polling_headers).read
+      else
+        payload = File.read(@url)
+      end
+
+      File.write(@data_json_path, payload)
+      puts "got #{payload.size} bytes"
+    end
+
+    def load_static_data
+      static_file = File.join(@root, 'sample.json')
+      unless File.exist?(static_file)
+        raise "Static data file not found: #{static_file}"
+      end
+
+      payload = File.read(static_file)
+      File.write(@data_json_path, payload)
+      puts "Loaded static data from #{static_file}"
     end
 
     class ERBBinding
