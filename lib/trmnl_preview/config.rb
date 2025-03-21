@@ -43,7 +43,11 @@ module TRMNLPreview
       end
     end
 
+    def polling_verb = @toml['polling_verb'] || 'GET'
+
     def polling_headers = @toml['polling_headers'] || {}
+
+    def polling_body = @toml['polling_body'] || ''
 
     def user_filters = @toml['custom_filters'] || []
 

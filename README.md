@@ -65,22 +65,29 @@ When the strategy is "webhook", payloads can be POSTed to the `/webhook` endpoin
 # "static"  => reads from static.json
 strategy = "polling"
 
-# Polling strategy: URLs to poll
+# (polling strategy) URLs to poll
 polling_urls = ["https://example.com/data.json"]
 
-# Static strategy: the local file to read (default: "static.json")
+# (polling strategy) HTTP verb to poll the URL (default: "GET")
+polling_verb = "GET"
+
+# (polling strategy) body payload, useful for GraphQL (default: "")
+polling_body = "{ stats { mean median mode } }"
+
+# (static strategy) The local file to read (default: "static.json")
 static_path = "static.json"
 
-# Automatically re-render the view when Liquid templates change (default: true)
+# automatically re-render the view when Liquid templates change (default: true)
 live_render = true
 
-# Specify additional file globs to watch for changes (default: [])
+# additional file globs to watch for changes (default: [])
 watch_paths = ["src/**/*"]
 
-# Polling strategy: HTTP headers
+# (polling strategy) HTTP headers
 [polling_headers]
-authorization = "bearer 123"
-content-type = "application/json"
+Authorization = "bearer 123"
+Content-Type = "application/json"
+Accept = "applcation/json"
 ```
 
 ## Contributing

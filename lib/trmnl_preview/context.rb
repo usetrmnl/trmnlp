@@ -1,4 +1,5 @@
 require 'erb'
+require 'faraday'
 require 'fileutils'
 require 'filewatcher'
 require 'json'
@@ -70,17 +71,28 @@ module TRMNLPreview
       end
 
       @config.polling_urls.each.with_index do |url, i|
-        print "Fetching #{url}... "
+        verb = @config.polling_verb.upcase
 
-        if url.match?(/^https?:\/\//)
-          payload = URI.open(url, @config.polling_headers).read
-        else
-          payload = File.read(File.join(@config.root_dir, url))
+        print "#{verb} #{url}... "
+
+        conn = Faraday.new(url:, headers: @config.polling_headers)
+
+        case verb
+        when 'GET'
+          response = conn.get
+        when 'POST'
+          response = conn.post do |req|
+            req.body = @config.polling_body
+          end
         end
 
-        puts "got #{payload.size} bytes"
-
-        json = wrap_array(JSON.parse(payload))
+        puts "got #{response.body.length} bytes (#{response.status} status)"
+        if response.status == 200
+          json = wrap_array(JSON.parse(response.body))
+        else
+          json = {}
+          puts response.body
+        end
         
         if @config.polling_urls.count == 1
           # For a single polling URL, we just return the JSON directly
