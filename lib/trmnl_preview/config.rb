@@ -16,7 +16,16 @@ module TRMNLPreview
 
     def strategy = @toml['strategy']
 
-    def url = @toml['url']
+    def polling_urls
+      if @toml['url']
+        puts "'url' option is deprecated. Replace with: 'polling_urls = [#{@toml['url'].inspect}]'"
+        [@toml['url']]
+      elsif @toml['polling_urls']
+        @toml['polling_urls']
+      else
+        []
+      end
+    end
 
     def polling_headers = @toml['polling_headers'] || {}
 

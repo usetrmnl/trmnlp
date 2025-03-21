@@ -33,7 +33,7 @@ module TRMNLPreview
     end
 
     post '/webhook' do
-      @context.set_data(request.body.read)
+      @context.put_webhook(request.body.read)
       "OK"
     end
     

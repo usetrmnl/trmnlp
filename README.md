@@ -63,8 +63,8 @@ When the strategy is "webhook", payloads can be POSTed to the `/webhook` endpoin
 # strategy = "webhook" ==> POST new data to /webhook
 strategy = "polling"
 
-# Poll URL (required for polling strategy)
-url = "https://example.com/data.json"
+# URLs to poll
+polling_urls = ["https://example.com/data.json"]
 
 # Automatically re-render the view when Liquid templates change (default: true)
 live_render = true

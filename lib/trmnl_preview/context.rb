@@ -57,37 +57,52 @@ module TRMNLPreview
     end
 
     def user_data
-      data = JSON.parse(File.read(@paths.data_json))
-      data = { data: data } if data.is_a?(Array) # per TRMNL docs, bare array is wrapped in 'data' key
-      data
+      JSON.parse(File.read(@paths.data_json))
     end
 
     def poll_data
-      url = @config.url
+      data = {}
 
-      if url.nil?
-        raise "URL is required for polling strategy"
+      if @config.polling_urls.empty?
+        raise "config must specify polling_url or polling_urls"
       end
 
-      print "Fetching #{url}... "
+      @config.polling_urls.each.with_index do |url, i|
+        print "Fetching #{url}... "
 
-      if url.match?(/^https?:\/\//)
-        payload = URI.open(url, @config.polling_headers).read
-      else
-        payload = File.read(File.join(@paths.root, url))
+        if url.match?(/^https?:\/\//)
+          payload = URI.open(url, @config.polling_headers).read
+        else
+          payload = File.read(File.join(@paths.root, url))
+        end
+
+        puts "got #{payload.size} bytes"
+
+        json = wrap_array(JSON.parse(payload))
+        
+        if @config.polling_urls.count == 1
+          # For a single polling URL, we just return the JSON directly
+          data = json
+          break
+        else
+          # Multiple URLs are namespaced by index
+          data["IDX_#{i}"] = json
+        end
       end
 
-      File.write(@paths.data_json, payload)
-      puts "got #{payload.size} bytes"
-
-      user_data
+      File.write(@paths.data_json, JSON.generate(data))
+      data
     rescue StandardError => e
       puts "error: #{e.message}"
       {}
     end
 
-    def set_data(payload)
+    def put_webhook(payload)
+      data = wrap_array(JSON.parse(payload))
+      payload = JSON.generate(data)
       File.write(@paths.data_json, payload)
+    rescue
+      puts "webhook error: #{e.message}"
     end
 
     def view_path(view)
@@ -119,6 +134,10 @@ module TRMNLPreview
     class ERBBinding
       def initialize(view) = @view = view
       def get_binding = binding
+    end
+
+    def wrap_array(json)
+      json.is_a?(Array) ? { data: json } : json
     end
   end
 end
