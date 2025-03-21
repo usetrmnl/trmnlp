@@ -2,24 +2,39 @@ require 'toml-rb'
 
 module TRMNLPreview
   class Config
-    attr_reader :strategy, :url, :polling_headers, :user_filters
+    def initialize(paths)
+      raise("Missing config file #{paths.config}") unless File.exist?(paths.config)
 
-    def initialize(path)
-      raise("Missing config file #{path}") unless File.exist?(path)
+      @paths = paths
+      @toml = TomlRB.load_file(paths.config)
 
-      toml = TomlRB.load_file(path)
-      
-      @strategy = toml['strategy']
-      @url = toml['url']
-      @polling_headers = toml['polling_headers'] || {}
-      @live_render = toml['live_render'] != false
-      @user_filters = toml['custom_filters'] || []
-
-      unless ['polling', 'webhook'].include?(@strategy)
+      # Basic validation
+      unless ['polling', 'webhook'].include?(strategy)
         raise "Invalid strategy: #{strategy} (must be 'polling' or 'webhook')"
       end
     end
 
-    def live_render? = @live_render
+    def strategy = @toml['strategy']
+
+    def url = @toml['url']
+
+    def polling_headers = @toml['polling_headers'] || {}
+
+    def user_filters = @toml['custom_filters'] || []
+
+    def live_render? = @toml['live_render'] != false
+      
+    def watch_paths
+      paths = ['views']
+
+      paths.map do |path|
+        # if path is relative, prepend the root directory
+        if File.absolute_path(path) == path
+          path
+        else
+          File.join(@paths.root, path)
+        end
+      end
+    end
   end
 end

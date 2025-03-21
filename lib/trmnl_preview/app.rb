@@ -63,7 +63,7 @@ module TRMNLPreview
     VIEWS.each do |view|
       get "/#{view}" do
         @view = view
-        @live_reload = @context.live_render
+        @live_reload = @context.config.live_render?
         erb :index
       end
 

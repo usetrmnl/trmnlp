@@ -58,10 +58,25 @@ When the strategy is "webhook", payloads can be POSTed to the `/webhook` endpoin
 
 ## `config.toml` Reference
 
-- `strategy` - Either "polling" or "webhook"
-- `url` - The URL from which to fetch JSON data (polling strategy only)
-- `live_render` - Set to `false` to disable automatic rendering when Liquid templates change (default `true`)
-- `[polling_headers]` - A section of headers to append to the HTTP poll request (polling strategy only)
+```toml
+# strategy = "polling" ==> the data will be fetched once, at server start-up
+# strategy = "webhook" ==> POST new data to /webhook
+strategy = "polling"
+
+# Poll URL (required for polling strategy)
+url = "https://example.com/data.json"
+
+# Automatically re-render the view when Liquid templates change (default: true)
+live_render = true
+
+# Specify additional file globs to watch for changes
+watch_paths = ["src/**/*"]
+
+# Polling headers (optional, for polling strategy)
+[polling_headers]
+authorization = "bearer 123"
+content-type = "application/json"
+```
 
 ## Contributing
 

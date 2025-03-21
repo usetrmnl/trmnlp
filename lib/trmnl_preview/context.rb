@@ -7,23 +7,21 @@ require 'open-uri'
 
 require_relative 'config'
 require_relative 'custom_filters'
+require_relative 'paths'
 
 module TRMNLPreview
   class Context
-    attr_reader :config, :temp_dir, :live_render
+    attr_reader :config, :paths
     
     def initialize(root, opts = {})
-      @user_views_dir = File.join(root, 'views')
-      @temp_dir = File.join(root, 'tmp')
-      @data_json_path = File.join(@temp_dir, 'data.json')
-      
-      @config = Config.new(File.join(root, 'config.toml'))
+      @paths = Paths.new(root)
+      @config = Config.new(@paths)
 
-      unless Dir.exist?(@user_views_dir)
-        raise "No views found at #{@user_views_dir}"
+      unless Dir.exist?(@paths.views_dir)
+        raise "No views found at #{@paths.views_dir}"
       end
       
-      FileUtils.mkdir_p(@temp_dir)
+      FileUtils.mkdir_p(@paths.temp_dir)
 
       @liquid_environment = Liquid::Environment.build do |env|
         env.register_filter(CustomFilters)
@@ -41,7 +39,7 @@ module TRMNLPreview
       Thread.new do
         loop do
           begin
-            Filewatcher.new(@user_views_dir).watch do |changes|
+            Filewatcher.new(@config.watch_paths).watch do |changes|
               views = changes.map { |path, _change| File.basename(path, '.liquid') }
               views.each do |view|
                 @view_change_callback.call(view) if @view_change_callback
@@ -59,7 +57,7 @@ module TRMNLPreview
     end
 
     def user_data
-      data = JSON.parse(File.read(@data_json_path))
+      data = JSON.parse(File.read(@paths.data_json))
       data = { data: data } if data.is_a?(Array) # per TRMNL docs, bare array is wrapped in 'data' key
       data
     end
@@ -76,10 +74,10 @@ module TRMNLPreview
       if url.match?(/^https?:\/\//)
         payload = URI.open(url, @config.polling_headers).read
       else
-        payload = File.read(url)
+        payload = File.read(File.join(@paths.root, url))
       end
 
-      File.write(@data_json_path, payload)
+      File.write(@paths.data_json, payload)
       puts "got #{payload.size} bytes"
 
       user_data
@@ -89,11 +87,11 @@ module TRMNLPreview
     end
 
     def set_data(payload)
-      File.write(@data_json_path, payload)
+      File.write(@paths.data_json, payload)
     end
 
     def view_path(view)
-      File.join(@user_views_dir, "#{view}.liquid")
+      File.join(@paths.views_dir, "#{view}.liquid")
     end
 
     def render_template(view)
