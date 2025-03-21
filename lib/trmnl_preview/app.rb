@@ -41,6 +41,11 @@ module TRMNLPreview
       redirect '/full'
     end
 
+    get '/data' do
+      content_type :json
+      JSON.pretty_generate(@context.user_data)
+    end
+
     get '/live_reload' do
       ws = Faye::WebSocket.new(request.env)
 

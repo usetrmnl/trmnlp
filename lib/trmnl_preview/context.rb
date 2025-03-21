@@ -57,7 +57,11 @@ module TRMNLPreview
     end
 
     def user_data
-      JSON.parse(File.read(@paths.data_json))
+      if File.exist?(@paths.data_json)
+        JSON.parse(File.read(@paths.data_json))
+      else
+        {}
+      end
     end
 
     def poll_data
