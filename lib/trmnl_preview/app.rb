@@ -22,7 +22,7 @@ module TRMNLPreview
         exit 1
       end
 
-      @context.poll_data if @context.strategy == 'polling'
+      @context.poll_data if @context.config.strategy == 'polling'
 
       @live_reload_clients = []
       @context.on_view_change do |view|

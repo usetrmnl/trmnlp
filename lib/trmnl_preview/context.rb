@@ -4,37 +4,23 @@ require 'filewatcher'
 require 'json'
 require 'liquid'
 require 'open-uri'
-require 'toml-rb'
 
+require_relative 'config'
 require_relative 'custom_filters'
 
 module TRMNLPreview
   class Context
-    attr_reader :strategy, :temp_dir, :live_render
+    attr_reader :config, :temp_dir, :live_render
     
     def initialize(root, opts = {})
-      config_path = File.join(root, 'config.toml')
       @user_views_dir = File.join(root, 'views')
       @temp_dir = File.join(root, 'tmp')
       @data_json_path = File.join(@temp_dir, 'data.json')
+      
+      @config = Config.new(File.join(root, 'config.toml'))
 
-      unless File.exist?(config_path)
-        raise "No config.toml found in #{root}"
-      end
-    
       unless Dir.exist?(@user_views_dir)
         raise "No views found at #{@user_views_dir}"
-      end
-
-      config = TomlRB.load_file(config_path)
-      @strategy = config['strategy']
-      @url = config['url']
-      @polling_headers = config['polling_headers'] || {}
-      @live_render = config['live_render'] != false
-      @user_filters = config['custom_filters'] || []
-
-      unless ['polling', 'webhook'].include?(@strategy)
-        raise "Invalid strategy: #{strategy} (must be 'polling' or 'webhook')"
       end
       
       FileUtils.mkdir_p(@temp_dir)
@@ -42,13 +28,13 @@ module TRMNLPreview
       @liquid_environment = Liquid::Environment.build do |env|
         env.register_filter(CustomFilters)
 
-        @user_filters.each do |module_name, relative_path|
+        @config.user_filters.each do |module_name, relative_path|
           require File.join(root, relative_path)
           env.register_filter(Object.const_get(module_name))
         end
       end
 
-      start_filewatcher_thread if @live_render
+      start_filewatcher_thread if @config.live_render?
     end
 
     def start_filewatcher_thread
@@ -79,16 +65,18 @@ module TRMNLPreview
     end
 
     def poll_data
-      if @url.nil?
+      url = @config.url
+
+      if url.nil?
         raise "URL is required for polling strategy"
       end
 
-      print "Fetching #{@url}... "
+      print "Fetching #{url}... "
 
-      if @url.match?(/^https?:\/\//)
-        payload = URI.open(@url, @polling_headers).read
+      if url.match?(/^https?:\/\//)
+        payload = URI.open(url, @config.polling_headers).read
       else
-        payload = File.read(@url)
+        payload = File.read(url)
       end
 
       File.write(@data_json_path, payload)
