@@ -1,5 +1,13 @@
 # Changelog
 
+## vNext
+
+- Add static strategy
+- Add polling features: multiple URLs, new verbs, and request body
+- Add `watch_paths` config
+- Add `[custom_fields]` config
+- Fix crash when #poll_data fails
+
 ## 0.3.2
 
 - Add bitmap rendering
