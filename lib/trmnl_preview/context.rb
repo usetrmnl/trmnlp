@@ -95,6 +95,9 @@ module TRMNLPreview
       puts "got #{payload.size} bytes"
 
       user_data
+    rescue StandardError => e
+      puts "error: #{e.message}"
+      {}
     end
 
     def set_data(payload)
