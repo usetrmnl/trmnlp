@@ -12,16 +12,25 @@ module TRMNLPreview
     end
 
     def root_dir = @root_dir
+
+    def config_path = File.join(root_dir, 'config.toml')
     
     def temp_dir = File.join(root_dir, 'tmp')
 
     def views_dir = File.join(root_dir, 'views')
 
-    def data_path = File.join(temp_dir, 'data.json')
+    def data_path
+      static? ? static_path : File.join(temp_dir, 'data.json')
+    end
     
-    def config_path = File.join(root_dir, 'config.toml')
+    def static_path
+      expand_path(@toml['static_path'] || 'static.json')
+    end
           
     def strategy = @toml['strategy']
+    def polling? = strategy == 'polling'
+    def webhook? = strategy == 'webhook'
+    def static? = strategy == 'static'
 
     def polling_urls
       if @toml['url']
@@ -43,14 +52,9 @@ module TRMNLPreview
     def watch_paths
       paths = (@toml['watch_paths'] || []) + ['views']
 
-      paths.map do |path|
-        # if path is relative, prepend the root directory
-        if File.absolute_path(path) == path
-          path
-        else
-          File.join(root_dir, path)
-        end
-      end
+      paths << static_path if static?
+
+      paths.map { |path| expand_path(path) }.uniq
     end
 
     private
@@ -59,6 +63,11 @@ module TRMNLPreview
       unless ['polling', 'webhook', 'static'].include?(strategy)
         raise "Invalid strategy: #{strategy} (must be 'polling', 'webhook', or 'static')"
       end
+    end
+
+    # Always expand paths relative to the root_dir
+    def expand_path(path)
+      File.expand_path(path, root_dir)
     end
   end
 end

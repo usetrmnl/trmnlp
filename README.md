@@ -19,6 +19,7 @@ views/
     half_vertical.liquid
     quadrant.liquid
 config.toml
+static.json # optional; for static strategy
 ```
 
 See [config.example.toml](config.example.toml) for an example config.
@@ -59,20 +60,24 @@ When the strategy is "webhook", payloads can be POSTed to the `/webhook` endpoin
 ## `config.toml` Reference
 
 ```toml
-# strategy = "polling" ==> the data will be fetched once, at server start-up
-# strategy = "webhook" ==> POST new data to /webhook
+# "polling" => fetches remote data from polling_urls
+# "webhook" => listens for POST data at /webhook
+# "static"  => reads from static.json
 strategy = "polling"
 
-# URLs to poll
+# Polling strategy: URLs to poll
 polling_urls = ["https://example.com/data.json"]
+
+# Static strategy: the local file to read (default: "static.json")
+static_path = "static.json"
 
 # Automatically re-render the view when Liquid templates change (default: true)
 live_render = true
 
-# Specify additional file globs to watch for changes
+# Specify additional file globs to watch for changes (default: [])
 watch_paths = ["src/**/*"]
 
-# Polling headers (optional, for polling strategy)
+# Polling strategy: HTTP headers
 [polling_headers]
 authorization = "bearer 123"
 content-type = "application/json"
