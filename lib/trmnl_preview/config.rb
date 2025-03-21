@@ -25,7 +25,7 @@ module TRMNLPreview
     def live_render? = @toml['live_render'] != false
       
     def watch_paths
-      paths = ['views']
+      paths = (@toml['watch_paths'] || []) + ['views']
 
       paths.map do |path|
         # if path is relative, prepend the root directory
