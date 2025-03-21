@@ -56,11 +56,13 @@ module TRMNLPreview
     end
 
     def user_data
+      merged_data = trmnl_data
+
       if File.exist?(@config.data_path)
-        JSON.parse(File.read(@config.data_path))
-      else
-        {}
+        merged_data.merge!(JSON.parse(File.read(@config.data_path)))
       end
+
+      merged_data
     end
 
     def poll_data
@@ -152,6 +154,16 @@ module TRMNLPreview
 
     def wrap_array(json)
       json.is_a?(Array) ? { data: json } : json
+    end
+
+    def trmnl_data
+      {
+        'trmnl' => {
+          'plugin_settings' => {
+            'custom_fields_values' => @config.custom_fields
+          }
+        }
+      }
     end
   end
 end

@@ -88,6 +88,10 @@ watch_paths = ["src/**/*"]
 Authorization = "bearer 123"
 Content-Type = "application/json"
 Accept = "applcation/json"
+
+# values for any custom fields
+[custom_fields]
+api_key = "foobar123"
 ```
 
 ## Contributing

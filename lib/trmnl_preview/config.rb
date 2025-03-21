@@ -61,6 +61,10 @@ module TRMNLPreview
       paths.map { |path| expand_path(path) }.uniq
     end
 
+    def custom_fields
+      @toml['custom_fields'] || {}
+    end
+
     private
 
     def validate!
