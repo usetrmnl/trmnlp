@@ -7,21 +7,19 @@ require 'open-uri'
 
 require_relative 'config'
 require_relative 'custom_filters'
-require_relative 'paths'
 
 module TRMNLPreview
   class Context
-    attr_reader :config, :paths
+    attr_reader :config
     
     def initialize(root, opts = {})
-      @paths = Paths.new(root)
-      @config = Config.new(@paths)
+      @config = Config.new(root)
 
-      unless Dir.exist?(@paths.views_dir)
-        raise "No views found at #{@paths.views_dir}"
+      unless Dir.exist?(@config.views_dir)
+        raise "No views found at #{@config.views_dir}"
       end
       
-      FileUtils.mkdir_p(@paths.temp_dir)
+      FileUtils.mkdir_p(@config.temp_dir)
 
       @liquid_environment = Liquid::Environment.build do |env|
         env.register_filter(CustomFilters)
@@ -57,8 +55,8 @@ module TRMNLPreview
     end
 
     def user_data
-      if File.exist?(@paths.data_json)
-        JSON.parse(File.read(@paths.data_json))
+      if File.exist?(@config.data_path)
+        JSON.parse(File.read(@config.data_path))
       else
         {}
       end
@@ -77,7 +75,7 @@ module TRMNLPreview
         if url.match?(/^https?:\/\//)
           payload = URI.open(url, @config.polling_headers).read
         else
-          payload = File.read(File.join(@paths.root, url))
+          payload = File.read(File.join(@config.root_dir, url))
         end
 
         puts "got #{payload.size} bytes"
@@ -94,7 +92,7 @@ module TRMNLPreview
         end
       end
 
-      File.write(@paths.data_json, JSON.generate(data))
+      File.write(@config.data_path, JSON.generate(data))
       data
     rescue StandardError => e
       puts "error: #{e.message}"
@@ -104,13 +102,13 @@ module TRMNLPreview
     def put_webhook(payload)
       data = wrap_array(JSON.parse(payload))
       payload = JSON.generate(data)
-      File.write(@paths.data_json, payload)
+      File.write(@config.data_path, payload)
     rescue
       puts "webhook error: #{e.message}"
     end
 
     def view_path(view)
-      File.join(@paths.views_dir, "#{view}.liquid")
+      File.join(@config.views_dir, "#{view}.liquid")
     end
 
     def render_template(view)

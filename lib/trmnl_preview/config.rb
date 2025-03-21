@@ -2,18 +2,25 @@ require 'toml-rb'
 
 module TRMNLPreview
   class Config
-    def initialize(paths)
-      raise("Missing config file #{paths.config}") unless File.exist?(paths.config)
+    def initialize(root_dir)
+      @root_dir = root_dir
+      raise("Missing config file #{config_path}") unless File.exist?(config_path)
 
-      @paths = paths
-      @toml = TomlRB.load_file(paths.config)
+      @toml = TomlRB.load_file(config_path)
 
-      # Basic validation
-      unless ['polling', 'webhook'].include?(strategy)
-        raise "Invalid strategy: #{strategy} (must be 'polling' or 'webhook')"
-      end
+      validate!
     end
 
+    def root_dir = @root_dir
+    
+    def temp_dir = File.join(root_dir, 'tmp')
+
+    def views_dir = File.join(root_dir, 'views')
+
+    def data_path = File.join(temp_dir, 'data.json')
+    
+    def config_path = File.join(root_dir, 'config.toml')
+          
     def strategy = @toml['strategy']
 
     def polling_urls
@@ -41,8 +48,16 @@ module TRMNLPreview
         if File.absolute_path(path) == path
           path
         else
-          File.join(@paths.root, path)
+          File.join(root_dir, path)
         end
+      end
+    end
+
+    private
+
+    def validate!
+      unless ['polling', 'webhook', 'static'].include?(strategy)
+        raise "Invalid strategy: #{strategy} (must be 'polling', 'webhook', or 'static')"
       end
     end
   end
