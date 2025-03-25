@@ -6,8 +6,11 @@ module TRMNLPreview
       @root_dir = root_dir
       raise("Missing config file #{config_path}") unless File.exist?(config_path)
 
-      @toml = TomlRB.load_file(config_path)
+      reload!
+    end
 
+    def reload!
+      @toml = TomlRB.load_file(config_path)
       validate!
     end
 
@@ -56,7 +59,7 @@ module TRMNLPreview
     def live_render? = @toml['live_render'] != false
       
     def watch_paths
-      paths = (@toml['watch_paths'] || []) + ['views']
+      paths = (@toml['watch_paths'] || []) + ['views', 'config.toml']
 
       paths << static_path if static?
 
