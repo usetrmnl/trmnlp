@@ -83,8 +83,15 @@ module TRMNLPreview
       File.expand_path(path, root_dir)
     end
 
+    # for interpolating custom_fields into polling_* options
     def with_custom_fields(value)
-      Liquid::Template.parse(value).render(custom_fields)
+      custom_fields_with_env = custom_fields.transform_values { |v| with_env(v) }
+      Liquid::Template.parse(value).render(custom_fields_with_env)
+    end
+
+    # for interpolating ENV vars into custom_fields
+    def with_env(value)
+      Liquid::Template.parse(value).render({ 'env' => ENV.to_h })
     end
   end
 end

@@ -93,7 +93,8 @@ Accept = "applcation/json"
 
 # values for any custom fields - can be interpolated into polling_{urls,body,headers}
 [custom_fields]
-api_key = "foobar123"
+units = "metric"
+api_key="{{ env.API_KEY }}" # interpolated from local environment variable
 ```
 
 ## Contributing
