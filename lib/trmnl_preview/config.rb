@@ -76,6 +76,12 @@ module TRMNLPreview
       @toml['custom_fields'] || {}
     end
 
+    def user_data_overrides
+      {
+        'trmnl' => @toml['trmnl'] || {}
+      }
+    end
+
     private
 
     def validate!

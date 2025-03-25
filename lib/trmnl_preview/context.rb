@@ -64,7 +64,8 @@ module TRMNLPreview
         merged_data.merge!(JSON.parse(File.read(@config.data_path)))
       end
 
-      merged_data
+      # Praise be to ActiveSupport
+      merged_data.deep_merge!(@config.user_data_overrides)
     end
 
     def poll_data

@@ -96,6 +96,13 @@ Accept = "applcation/json"
 [custom_fields]
 units = "metric"
 api_key="{{ env.API_KEY }}" # interpolated from local environment variable
+
+# override default values in the {{ trmnl }} namespace
+[trmnl.user]
+name = "Peter Quill"
+
+[trmnl.plugin_settings]
+instance_name = "Kevin Bacon Facts"
 ```
 
 ## Contributing
