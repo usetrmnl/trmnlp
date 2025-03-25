@@ -33,7 +33,7 @@ module TRMNLPreview
     def static? = strategy == 'static'
 
     def polling_urls
-      if @toml['url']
+      urls = if @toml['url']
         puts "'url' option is deprecated. Replace with: 'polling_urls = [#{@toml['url'].inspect}]'"
         [@toml['url']]
       elsif @toml['polling_urls']
@@ -41,13 +41,15 @@ module TRMNLPreview
       else
         []
       end
+
+      urls.map { |url| with_custom_fields(url) }
     end
 
     def polling_verb = @toml['polling_verb'] || 'GET'
 
-    def polling_headers = @toml['polling_headers'] || {}
+    def polling_headers = (@toml['polling_headers'] || {}).transform_values { |v| with_custom_fields(v) }
 
-    def polling_body = @toml['polling_body'] || ''
+    def polling_body = with_custom_fields(@toml['polling_body'] || '')
 
     def user_filters = @toml['custom_filters'] || []
 
@@ -76,6 +78,10 @@ module TRMNLPreview
     # Always expand paths relative to the root_dir
     def expand_path(path)
       File.expand_path(path, root_dir)
+    end
+
+    def with_custom_fields(value)
+      Liquid::Template.parse(value).render(custom_fields)
     end
   end
 end

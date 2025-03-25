@@ -89,7 +89,7 @@ Authorization = "bearer 123"
 Content-Type = "application/json"
 Accept = "applcation/json"
 
-# values for any custom fields
+# values for any custom fields - can be interpolated into polling_{urls,body,headers}
 [custom_fields]
 api_key = "foobar123"
 ```
