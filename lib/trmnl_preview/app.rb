@@ -25,9 +25,15 @@ module TRMNLPreview
       @context.poll_data if @context.config.strategy == 'polling'
 
       @live_reload_clients = []
-      @context.on_view_change do |view|
+      @context.on_view_change do |view, user_data|
         @live_reload_clients.each do |ws|
-          ws.send('reload')
+          payload = {
+            'type' => 'reload',
+            'view' => view,
+            'user_data' => user_data
+          }
+
+          ws.send(payload.to_json)
         end
       end
     end
@@ -68,6 +74,7 @@ module TRMNLPreview
     VIEWS.each do |view|
       get "/#{view}" do
         @view = view
+        @user_data = JSON.pretty_generate(@context.user_data)
         @live_reload = @context.config.live_render?
         erb :index
       end

@@ -40,10 +40,11 @@ module TRMNLPreview
           begin
             Filewatcher.new(@config.watch_paths).watch do |changes|
               @config.reload! if changes.keys.any? { |path| File.basename(path) == 'config.toml' }
+              new_user_data = user_data
 
               views = changes.map { |path, _change| File.basename(path, '.liquid') }
               views.each do |view|
-                @view_change_callback.call(view) if @view_change_callback
+                @view_change_callback.call(view, new_user_data) if @view_change_callback
               end
             end
           rescue => e

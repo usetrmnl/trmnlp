@@ -8,8 +8,11 @@ trmnlp.connectLiveRender = function () {
   };
 
   ws.onmessage = function (msg) {
-    if (msg.data === "reload") {
+    const payload = JSON.parse(msg.data);
+
+    if (payload.type === "reload") {
       trmnlp.setIframeSrc(trmnlp.iframe.src);
+      trmnlp.userData.textContent = JSON.stringify(payload.user_data, null, 2);
     }
   };
 
@@ -42,6 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
   trmnlp.iframe = document.querySelector("iframe");
   trmnlp.caseSelect = document.querySelector(".select-case");
   trmnlp.formatSelect = document.querySelector(".select-format");
+  trmnlp.userData = document.getElementById("user-data");
   trmnlp.isLiveReloadEnabled =
     document.querySelector("meta[name='live-reload']").content === "true";
 
