@@ -22,8 +22,6 @@ config.toml
 static.json # optional; for static strategy
 ```
 
-See [config.example.toml](config.example.toml) for an example config.
-
 The [trmnl-hello](https://github.com/schrockwell/trmnl-hello) repository is provided as a jumping-off point for creating new plugins. Simply fork the repo, clone it, and start hacking.
 
 ## Running the Server (Docker)
@@ -75,6 +73,9 @@ polling_verb = "GET"
 
 # (polling strategy) body payload, useful for GraphQL (default: "")
 polling_body = "{ stats { mean median mode } }"
+
+# enable dark mode (string value "yes" or "no", default: "no")
+dark_mode = "no"
 
 # (static strategy) The local file to read (default: "static.json")
 static_path = "static.json"

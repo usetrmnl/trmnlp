@@ -57,6 +57,8 @@ module TRMNLPreview
     def user_filters = @toml['custom_filters'] || []
 
     def live_render? = @toml['live_render'] != false
+    
+    def dark_mode = @toml['dark_mode'] || 'no'
       
     def watch_paths
       paths = (@toml['watch_paths'] || []) + ['views', 'config.toml', 'static.json']
