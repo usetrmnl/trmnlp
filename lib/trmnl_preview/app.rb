@@ -76,11 +76,14 @@ module TRMNLPreview
         @view = view
         @user_data = JSON.pretty_generate(@context.user_data)
         @live_reload = @context.config.live_render?
+
         erb :index
       end
 
       get "/render/#{view}.html" do
         @view = view
+        @screen_classes = @context.screen_classes
+        
         erb :render_html do
           @context.render_template(view)
         end

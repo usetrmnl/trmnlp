@@ -77,6 +77,9 @@ polling_body = "{ stats { mean median mode } }"
 # enable dark mode (string value "yes" or "no", default: "no")
 dark_mode = "no"
 
+# remove padding (string values "yes" or "no", default: "no")
+no_screen_padding = "no"
+
 # (static strategy) The local file to read (default: "static.json")
 static_path = "static.json"
 

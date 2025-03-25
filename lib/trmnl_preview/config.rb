@@ -63,6 +63,8 @@ module TRMNLPreview
     def live_render? = @toml['live_render'] != false
     
     def dark_mode = @toml['dark_mode'] || 'no'
+
+    def no_screen_padding = @toml['no_screen_padding'] || 'no'
       
     def watch_paths
       paths = (@toml['watch_paths'] || []) + ['views', 'config.toml', 'static.json']

@@ -149,6 +149,13 @@ module TRMNLPreview
       end)
     end
 
+    def screen_classes
+      classes = 'screen'
+      classes << ' screen--no-bleed' if config.no_screen_padding == 'yes'
+      classes << ' dark-mode' if config.dark_mode == 'yes'
+      classes
+    end
+
     private 
 
     class ERBBinding
