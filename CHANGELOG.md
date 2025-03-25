@@ -2,11 +2,19 @@
 
 ## vNext
 
+- Fix crash when #poll_data fails (#12)
+- Fix git runtime error in Docker container (#12)
 - Add static strategy
 - Add polling features: multiple URLs, new verbs, and request body
 - Add `watch_paths` config
+- Add `dark_mode` config
 - Add `[custom_fields]` config
-- Fix crash when #poll_data fails
+- Add `{{ trmnl }}` variables
+- Add `[trmnl.*]` variable override config
+- Add interpolation of custom fields into polling\_\* options
+- Add interpolation of environment variables into custom field values via `env` namespace
+- Add auto-reload when `config.toml` or `static.json` changes
+- Add variable display
 
 ## 0.3.2
 
