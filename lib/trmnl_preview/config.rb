@@ -59,7 +59,7 @@ module TRMNLPreview
     def live_render? = @toml['live_render'] != false
       
     def watch_paths
-      paths = (@toml['watch_paths'] || []) + ['views', 'config.toml']
+      paths = (@toml['watch_paths'] || []) + ['views', 'config.toml', 'static.json']
 
       paths << static_path if static?
 

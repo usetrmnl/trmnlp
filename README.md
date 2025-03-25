@@ -57,6 +57,8 @@ When the strategy is "polling", the specified URL will be fetched once, when the
 
 When the strategy is "webhook", payloads can be POSTed to the `/webhook` endpoint. They are saved to `tmp/data.json` for future renders.
 
+When the strategy is "static", the data is read from `static.json`.
+
 ## `config.toml` Reference
 
 ```toml
