@@ -161,8 +161,32 @@ module TRMNLPreview
     def trmnl_data
       {
         'trmnl' => {
+          'user' => {
+            'name' => 'name',
+            'first_name' => 'first_name',
+            'last_name' => 'last_name',
+            'locale' => 'en',
+            'time_zone' => 'Eastern Time (US & Canada)',
+            'time_zone_iana' => 'America/New_York',
+            'utc_offset' => -14400
+          },
+          'device' => {
+            'friendly_id' => 'ABC123',
+            'percent_charged' => 85.0,
+            'wifi_strength' => 90,
+            'height' => 480,
+            'width' => 800
+          },
+          'system' => {
+            'timestamp_utc' => Time.now.utc.to_i,
+          },
           'plugin_settings' => {
-            'custom_fields_values' => @config.custom_fields
+            'instance_name' => 'instance_name',
+            'strategy' => config.strategy,
+            'dark_mode' => config.dark_mode,
+            'polling_headers' => config.polling_headers_encoded,
+            'polling_url' => config.polling_url_text,
+            'custom_fields_values' => config.custom_fields
           }
         }
       }

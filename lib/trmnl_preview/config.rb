@@ -48,9 +48,13 @@ module TRMNLPreview
       urls.map { |url| with_custom_fields(url) }
     end
 
+    def polling_url_text = polling_urls.join("\r\n") # for {{ trmnl }}
+
     def polling_verb = @toml['polling_verb'] || 'GET'
 
     def polling_headers = (@toml['polling_headers'] || {}).transform_values { |v| with_custom_fields(v) }
+
+    def polling_headers_encoded = polling_headers.map { |k, v| "#{k}=#{v}" }.join('&') # for {{ trmnl }}
 
     def polling_body = with_custom_fields(@toml['polling_body'] || '')
 
