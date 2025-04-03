@@ -32,7 +32,7 @@ COPY Gemfile \
 
 COPY lib/ /app/lib/
 COPY web/ /app/web/
-COPY exe/ /app/exe/
+COPY bin/ /app/bin/
 
 RUN bundle install
 
@@ -42,4 +42,4 @@ RUN apt-get update && apt-get install -y \
 
 EXPOSE 4567
 
-ENTRYPOINT [ "bundle", "exec", "/app/exe/trmnlp", "serve", "/plugin", "-b", "0.0.0.0" ]
+ENTRYPOINT [ "bundle", "exec", "/app/bin/trmnlp", "serve", "/plugin", "-b", "0.0.0.0" ]

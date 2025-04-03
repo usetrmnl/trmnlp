@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
 
   spec.files = Dir.chdir(__dir__) do
     [
-      'exe/**/*',
+      'bin/**/*',
       'lib/**/*',
       'web/**/*',
       'CHANGELOG.md',
@@ -30,7 +30,7 @@ Gem::Specification.new do |spec|
       'trmnl_preview.gemspec'
     ].flat_map { |glob| Dir[glob] }
   end
-  spec.bindir = "exe"
+  spec.bindir = "bin"
   spec.executables = ["trmnlp"]
   spec.require_paths = ["lib"]
 
