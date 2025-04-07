@@ -53,7 +53,9 @@ Gem::Specification.new do |spec|
   # Utilities
   spec.add_dependency "filewatcher", "~> 2.1"
   spec.add_dependency "faraday", "~> 2.1"
+  spec.add_dependency "faraday-multipart", "~> 1.1"
   spec.add_dependency "xdg", "~> 9.1"
+  spec.add_dependency "rubyzip", "~> 2.3.0"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

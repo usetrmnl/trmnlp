@@ -34,6 +34,8 @@ module TRMNLPreview
     def user_data = cache_dir.join('data.json')
 
     def render_template = Pathname.new(__dir__).join('..', '..', 'web', 'views', 'render_html.erb')
+    
+    def src_files = src_dir.glob('*').select(&:file?)
 
     # --- utilities ---
 

@@ -43,6 +43,8 @@ module TRMNLPreview
 
       def no_screen_padding = @config['no_screen_padding'] || 'no'
 
+      def id = @config['id']
+
       private
 
       attr_reader :paths, :preview_config
