@@ -3,12 +3,11 @@ require 'optionparser'
 require_relative '../context'
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: trmnlp build [directory]"
+  opts.banner = "Usage: trmnlp build"
 end.parse!
 
-root = ARGV[1] || Dir.pwd
 begin
-  context = TRMNLPreview::Context.new(root)
+  context = TRMNLPreview::Context.new(Dir.pwd)
 rescue StandardError => e
   puts e.message
   exit 1
