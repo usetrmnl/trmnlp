@@ -54,6 +54,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "toml-rb", "~> 3.0"
   spec.add_dependency "filewatcher", "~> 2.1"
   spec.add_dependency "faraday", "~> 2.1"
+  spec.add_dependency "xdg", "~> 9.1"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

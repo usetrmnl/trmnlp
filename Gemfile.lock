@@ -14,6 +14,7 @@ PATH
       rackup (~> 2.2)
       sinatra (~> 4.1)
       toml-rb (~> 3.0)
+      xdg (~> 9.1)
 
 GEM
   remote: https://rubygems.org/
@@ -118,6 +119,7 @@ GEM
       base64
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
+    xdg (9.1.0)
 
 PLATFORMS
   arm64-darwin-24
