@@ -1,4 +1,5 @@
-app_config = TRMNLPreview::AppConfig.new
+paths = TRMNLPreview::Paths.new(Dir.pwd)
+app_config = TRMNLPreview::Config::App.new(paths)
 
 puts "Please visit #{app_config.account_uri} to grab your API key, then paste it here."
 
@@ -11,4 +12,5 @@ end
 
 app_config.api_key = api_key
 app_config.save
-puts "Changes saved to #{app_config.path}"
+
+puts "Saved changes to #{paths.app_config}"

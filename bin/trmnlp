@@ -1,7 +1,5 @@
 #! /usr/bin/env ruby
 
-require 'pathname'
-
 require_relative '../lib/trmnl_preview'
 
 command_name = ARGV[0].to_s.downcase

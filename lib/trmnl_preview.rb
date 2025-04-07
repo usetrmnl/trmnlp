@@ -2,7 +2,7 @@
 
 module TRMNLPreview; end
 
-require_relative "trmnl_preview/app_config"
+require_relative "trmnl_preview/config"
 require_relative "trmnl_preview/context"
 require_relative "trmnl_preview/version"
 

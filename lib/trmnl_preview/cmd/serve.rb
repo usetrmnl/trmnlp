@@ -23,7 +23,7 @@ end.parse!
 require_relative '../app'
 
 # Now we can configure things
-TRMNLPreview::App.set(:user_dir, ARGV[1] || Dir.pwd)
+TRMNLPreview::App.set(:root_dir, ARGV[1] || Dir.pwd)
 TRMNLPreview::App.set(:bind, options[:bind])
 TRMNLPreview::App.set(:port, options[:port])
 

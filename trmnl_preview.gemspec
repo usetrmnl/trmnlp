@@ -10,14 +10,14 @@ Gem::Specification.new do |spec|
 
   spec.summary = "Local web server to preview TRMNL plugins"
   spec.description = "Automatically rebuild and preview TRNML plugins in multiple views"
-  spec.homepage = "https://github.com/schrockwell/trmnl_preview"
+  spec.homepage = "https://github.com/usetrmnl/trmnlp"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0.0"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/schrockwell/trmnl_preview"
+  spec.metadata["source_code_uri"] = "https://github.com/usetrmnl/trmnlp"
 
   spec.files = Dir.chdir(__dir__) do
     [
@@ -51,7 +51,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'mini_magick', '~> 4.12.0'
 
   # Utilities
-  spec.add_dependency "toml-rb", "~> 3.0"
   spec.add_dependency "filewatcher", "~> 2.1"
   spec.add_dependency "faraday", "~> 2.1"
   spec.add_dependency "xdg", "~> 9.1"

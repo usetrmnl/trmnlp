@@ -13,13 +13,13 @@ The server watches the filesystem for changes to the Liquid templates, seamlessl
 This is the structure of a plugin repository.
 
 ```
-views/
+src/
     full.liquid
     half_horizontal.liquid
     half_vertical.liquid
     quadrant.liquid
-config.toml
-static.json # optional; for static strategy
+    settings.yml
+preview.yml (optional)
 ```
 
 The [trmnl-hello](https://github.com/schrockwell/trmnl-hello) repository is provided as a jumping-off point for creating new plugins. Simply fork the repo, clone it, and start hacking.
@@ -49,68 +49,48 @@ gem install trmnl_preview
 trmnlp serve                # Starts the server
 ```
 
-## Usage Notes
+## `./preview.yml` Reference
 
-When the strategy is "polling", the specified URL will be fetched once, when the server starts.
+The `preview.yml` file lives in the root of the plugin repository, and is for configuring the local dev server.
 
-When the strategy is "webhook", payloads can be POSTed to the `/webhook` endpoint. They are saved to `tmp/data.json` for future renders.
+System environment variables are made available in the `{{ env }}` Liquid varible in this file only. This can be used to safely
+supply plugin secrets, like API keys.
 
-When the strategy is "static", the data is read from `static.json`.
+All fields are optional.
 
-## `config.toml` Reference
+```yaml
+# {{ env.VARIABLE }} interpolation is available here
+---
+# enable auto-refresh when files change
+live_render: true
 
-```toml
-# "polling" => fetches remote data from polling_urls
-# "webhook" => listens for POST data at /webhook
-# "static"  => reads from static.json
-strategy = "polling"
+# additional path globs to watch for changes
+watch_paths:
+  - src/**/*
 
-# (polling strategy) URLs to poll
-polling_urls = ["https://example.com/data.json"]
+# values of custom fields (the fields are defined in settings.yml)
+custom_fields:
+  station: "{{ env.ICAO }}"
 
-# (polling strategy) HTTP verb to poll the URL (default: "GET")
-polling_verb = "GET"
+# override any variable
+variables:
+  trmnl:
+    user:
+      name: Peter Quill
+    plugin_settings:
+      instance_name: Kevin Bacon Facts
 
-# (polling strategy) body payload, useful for GraphQL (default: "")
-polling_body = "{ stats { mean median mode } }"
-
-# enable dark mode (string value "yes" or "no", default: "no")
-dark_mode = "no"
-
-# remove padding (string values "yes" or "no", default: "no")
-no_screen_padding = "no"
-
-# (static strategy) The local file to read (default: "static.json")
-static_path = "static.json"
-
-# automatically re-render the view when Liquid templates change (default: true)
-live_render = true
-
-# additional file globs to watch for changes (default: [])
-watch_paths = ["src/**/*"]
-
-# (polling strategy) HTTP headers
-[polling_headers]
-Authorization = "bearer 123"
-Content-Type = "application/json"
-Accept = "applcation/json"
-
-# values for any custom fields - can be interpolated into polling_{urls,body,headers}
-[custom_fields]
-units = "metric"
-api_key="{{ env.API_KEY }}" # interpolated from local environment variable
-
-# override default values in the {{ trmnl }} namespace
-[trmnl.user]
-name = "Peter Quill"
-
-[trmnl.plugin_settings]
-instance_name = "Kevin Bacon Facts"
 ```
+
+## `./src/settings.yml` Reference
+
+The `settings.yml` file is part of the private plugin definition. 
+
+See [TRMNL documentation](https://help.usetrmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0) for details on the format of this file.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/schrockwell/trmnl_preview.
+Bug reports and pull requests are welcome on GitHub at https://github.com/usetrmnl/trmnlp.
 
 ## License
 

@@ -16,13 +16,13 @@ module TRMNLPreview
       super
 
       begin
-        @context = Context.new(settings.user_dir)
+        @context = Context.new(settings.root_dir)
       rescue StandardError => e
         puts e.message
         exit 1
       end
 
-      @context.poll_data if @context.config.strategy == 'polling'
+      @context.poll_data if @context.config.plugin.polling?
 
       @live_reload_clients = []
       @context.on_view_change do |view, user_data|
@@ -75,7 +75,7 @@ module TRMNLPreview
       get "/#{view}" do
         @view = view
         @user_data = JSON.pretty_generate(@context.user_data)
-        @live_reload = @context.config.live_render?
+        @live_reload = @context.config.preview.live_render?
 
         erb :index
       end
