@@ -1,14 +1,16 @@
 #! /usr/bin/env ruby
 
+require 'pathname'
+
 require_relative '../lib/trmnl_preview'
 
-case ARGV[0].to_s.downcase
-when 'serve'
-  require_relative '../lib/trmnl_preview/cmd/serve'
-when 'build'
-  require_relative '../lib/trmnl_preview/cmd/build'
-when 'version'
-  require_relative '../lib/trmnl_preview/cmd/version'
+command_name = ARGV[0].to_s.downcase
+cmd_dir = Pathname.new(__dir__).join('..', 'lib', 'trmnl_preview', 'cmd')
+command_path = cmd_dir.join("#{command_name}.rb")
+usage_path = cmd_dir.join("usage.rb")
+
+if command_path.exist?
+  require_relative command_path
 else
-  require_relative '../lib/trmnl_preview/cmd/usage'
+  require_relative usage_path
 end
