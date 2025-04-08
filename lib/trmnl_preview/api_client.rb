@@ -55,7 +55,7 @@ module TRMNLPreview
     def headers
       {
         'Authorization' => "Bearer #{config.app.api_key}",
-        'User-Agent' => "trmnlp/#{TRMNLPreview::VERSION}",
+        'User-Agent' => "trmnlp/#{VERSION}",
       }
     end
   end

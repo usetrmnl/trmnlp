@@ -1,14 +1,7 @@
 #! /usr/bin/env ruby
 
-require_relative '../lib/trmnl_preview'
+require "thor"
 
-command_name = ARGV[0].to_s.downcase
-cmd_dir = Pathname.new(__dir__).join('..', 'lib', 'trmnl_preview', 'cmd')
-command_path = cmd_dir.join("#{command_name}.rb")
-usage_path = cmd_dir.join("usage.rb")
+require_relative '../lib/trmnl_preview/cli'
 
-if command_path.exist?
-  require_relative command_path
-else
-  require_relative usage_path
-end
+TRMNLPreview::CLI.start
