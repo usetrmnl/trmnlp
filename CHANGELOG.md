@@ -2,6 +2,19 @@
 
 ## vNext
 
+### Plugin Migration Strategy
+
+The plugin directory structure has changed to better align with the [plugin archive format](https://help.usetrmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0). 
+
+Here is a migration strategy for existing plugin repositories:
+
+1. Create `.trmnlp.yml` and bring over preview settings from `config.toml` - [see README](README.md)
+2. Rename directory `views/` to `src/`
+3. Create `src/settings.yml` and bring over plugin settings from `config.toml` - [see TRMNL docs](https://help.usetrmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0)
+4. Delete `config.toml`
+
+### Changes
+
 - Change plugin directory structure (see README for details)
 - Add `login`, `push`, and `pull` commands
 - Bring up-to-date with latest private plugin features:
@@ -16,6 +29,7 @@
 - Add variable display
 - Fix crash when #poll_data fails (#12)
 - Fix git runtime error in Docker container (#12)
+
 
 
 ## 0.3.2
