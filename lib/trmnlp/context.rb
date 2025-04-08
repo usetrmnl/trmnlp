@@ -23,7 +23,7 @@ module TRMNLP
           begin
             Filewatcher.new(config.preview.watch_paths).watch do |changes|
               # TODO: don't hardcode these basenames... at least not here!
-              config.preview.reload! if changes.keys.any? { |path| File.basename(path) == 'preview.yml' }
+              config.preview.reload! if changes.keys.any? { |path| File.basename(path) == '.trmnlp.yml' }
               config.plugin.reload! if changes.keys.any? { |path| File.basename(path) == 'settings.yml' }
               new_user_data = user_data
 

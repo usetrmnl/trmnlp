@@ -19,7 +19,7 @@ src/
     half_vertical.liquid
     quadrant.liquid
     settings.yml
-preview.yml (optional)
+.trmnlp.yml (optional)
 ```
 
 The [trmnl-hello](https://github.com/schrockwell/trmnl-hello) repository is provided as a jumping-off point for creating new plugins. Simply fork the repo, clone it, and start hacking.
@@ -49,9 +49,9 @@ gem install trmnl_preview
 trmnlp serve                # Starts the server
 ```
 
-## `./preview.yml` Reference
+## `./.trmnlp.yml` Reference
 
-The `preview.yml` file lives in the root of the plugin repository, and is for configuring the local dev server.
+The `.trmnlp.yml` file lives in the root of the plugin repository, and is for configuring the local dev server.
 
 System environment variables are made available in the `{{ env }}` Liquid varible in this file only. This can be used to safely
 supply plugin secrets, like API keys.

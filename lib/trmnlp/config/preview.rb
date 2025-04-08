@@ -23,7 +23,7 @@ module TRMNLP
       def live_render? = @config['live_render'] != false
 
       def watch_paths
-        watch_paths = (@config['watch_paths'] || []) + ['src', 'preview.yml']
+        watch_paths = (@config['watch_paths'] || []) + ['src', '.trmnlp.yml']
         watch_paths.map { |watch_path| paths.expand(watch_path) }.uniq
       end
 

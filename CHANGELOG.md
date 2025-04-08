@@ -11,8 +11,8 @@
 - Add `[custom_fields]` config
 - Add `{{ trmnl }}` variables 
 - Add interpolation of custom fields in `polling\_\*` options
-- Add interpolation of environment variables in `preview.yml` via `{{ env }}`
-- Add auto-reload when `preview.yml` or `settings.yml` changes
+- Add interpolation of environment variables in `.trmnlp.yml` via `{{ env }}`
+- Add auto-reload when `.trmnlp.yml` or `settings.yml` changes
 - Add variable display
 - Add support for plugin import/export ZIP file format
 - Add `login`, `push`, and `pull` commands

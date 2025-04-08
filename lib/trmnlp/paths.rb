@@ -23,7 +23,7 @@ module TRMNLP
 
     # --- files ---
 
-    def preview_config = root_dir.join('preview.yml')
+    def preview_config = root_dir.join('.trmnlp.yml')
 
     def plugin_config = src_dir.join('settings.yml')
       
