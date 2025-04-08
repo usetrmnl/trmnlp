@@ -2,6 +2,6 @@
 
 require "thor"
 
-require_relative '../lib/trmnl_preview/cli'
+require_relative '../lib/trmnlp/cli'
 
-TRMNLPreview::CLI.start
+TRMNLP::CLI.start

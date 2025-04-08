@@ -1,6 +1,6 @@
 require 'xdg'
 
-module TRMNLPreview
+module TRMNLP
   class Paths
     attr_reader :root_dir
     

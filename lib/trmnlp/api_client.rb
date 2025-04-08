@@ -3,7 +3,7 @@ require 'faraday/multipart'
 
 require_relative 'config'
 
-module TRMNLPreview
+module TRMNLP
   class APIClient
     def initialize(config)
       @config = config

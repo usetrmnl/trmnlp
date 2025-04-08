@@ -4,7 +4,7 @@ require_relative 'base'
 require_relative '../api_client'
 require_relative '../context'
 
-module TRMNLPreview
+module TRMNLP
   module Commands
     class Pull < Base
       def call(plugin_settings_id)

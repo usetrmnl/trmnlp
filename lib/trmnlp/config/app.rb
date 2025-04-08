@@ -1,6 +1,6 @@
 require 'yaml'
 
-module TRMNLPreview
+module TRMNLP
   class Config
     # Stores trmnlp-wide configuration (irrespective of the current plugin)
     class App

@@ -1,6 +1,6 @@
 require 'yaml'
 
-module TRMNLPreview
+module TRMNLP
   class Config
     class Preview
       attr_reader :paths

@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "lib/trmnl_preview/version"
+require_relative "lib/trmnlp/version"
 
 Gem::Specification.new do |spec|
   spec.name = "trmnl_preview"
-  spec.version = TRMNLPreview::VERSION
+  spec.version = TRMNLP::VERSION
   spec.authors = ["Rockwell Schrock"]
   spec.email = ["rockwell@schrock.me"]
 

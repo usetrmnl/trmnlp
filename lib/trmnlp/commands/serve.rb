@@ -3,7 +3,7 @@ require 'zip'
 require_relative 'base'
 require_relative '../api_client'
 
-module TRMNLPreview
+module TRMNLP
   module Commands
     class Serve < Base
       def call

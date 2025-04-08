@@ -4,7 +4,7 @@ FROM ruby:3.4.1 AS builder
 
 WORKDIR /app
 
-RUN mkdir -p ./lib/trmnl_preview/
+RUN mkdir -p ./lib/trmnlp/
 
 COPY Gemfile \
     Gemfile.lock \

@@ -8,7 +8,7 @@ require_relative 'config'
 require_relative 'custom_filters'
 require_relative 'paths'
 
-module TRMNLPreview
+module TRMNLP
   class Context
     attr_reader :config, :paths
     

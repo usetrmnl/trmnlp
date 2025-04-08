@@ -6,7 +6,7 @@ require 'sinatra/base'
 require_relative 'context'
 require_relative 'screen_generator'
 
-module TRMNLPreview
+module TRMNLP
   class App < Sinatra::Base
     # Sinatra settings
     set :views, File.join(File.dirname(__FILE__), '..', '..', 'web', 'views')

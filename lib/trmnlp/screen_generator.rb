@@ -3,7 +3,7 @@ require 'mini_magick'
 require 'puppeteer-ruby'
 require 'base64'
 
-module TRMNLPreview
+module TRMNLP
   class ScreenGenerator
 
     def initialize(html, opts = {})

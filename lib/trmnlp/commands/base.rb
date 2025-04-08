@@ -1,4 +1,4 @@
-module TRMNLPreview
+module TRMNLP
   module Commands
     class Base
       def initialize(options)

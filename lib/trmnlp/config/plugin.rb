@@ -1,6 +1,6 @@
 require 'yaml'
 
-module TRMNLPreview
+module TRMNLP
   class Config
     class Plugin
       def initialize(paths, preview_config)

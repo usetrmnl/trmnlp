@@ -1,9 +1,9 @@
 require 'thor'
 
-require_relative '../trmnl_preview'
-require_relative '../trmnl_preview/commands'
+require_relative '../trmnlp'
+require_relative '../trmnlp/commands'
 
-module TRMNLPreview
+module TRMNLP
   class CLI < Thor
     package_name 'trmnlp'
 

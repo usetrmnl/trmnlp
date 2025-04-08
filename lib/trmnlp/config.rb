@@ -2,7 +2,7 @@ require_relative 'config/app'
 require_relative 'config/plugin'
 require_relative 'config/preview'
 
-module TRMNLPreview
+module TRMNLP
   class Config
     attr_reader :app, :preview, :plugin
 

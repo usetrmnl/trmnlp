@@ -1,6 +1,6 @@
 require 'active_support'
 
-module TRMNLPreview
+module TRMNLP
   module CustomFilters
     # TODO: sync up with core
     def number_with_delimiter(*args)

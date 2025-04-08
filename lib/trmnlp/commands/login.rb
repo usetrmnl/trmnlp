@@ -1,6 +1,6 @@
 require_relative 'base'
 
-module TRMNLPreview
+module TRMNLP
   module Commands
     class Login < Base
       def call
