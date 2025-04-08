@@ -20,11 +20,10 @@ module TRMNLP
 
       def user_filters = @config['custom_filters'] || []
 
-      def live_render? = @config['live_render'] != false
+      def live_render? = !watch_paths.empty?
 
       def watch_paths
-        watch_paths = (@config['watch_paths'] || []) + ['src', '.trmnlp.yml']
-        watch_paths.map { |watch_path| paths.expand(watch_path) }.uniq
+        (@config['watch'] || []).map { |watch_path| paths.expand(watch_path) }.uniq
       end
 
       def custom_fields = @config['custom_fields'] || {}

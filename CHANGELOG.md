@@ -23,7 +23,7 @@ Here is a migration strategy for existing plugin repositories:
   - Add settings `dark_mode`, `no_screen_padding`, `custom_fields`
   - Add interpolation of custom fields in `polling\_\*` options
   - Add `{{ trmnl }}` variables 
-- Add `watch_paths` config
+- Add `watch` config
 - Add interpolation of environment variables in `.trmnlp.yml` via `{{ env }}`
 - Add auto-reload when `.trmnlp.yml` or `settings.yml` changes
 - Add variable display

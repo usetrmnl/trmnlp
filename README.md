@@ -59,18 +59,16 @@ All fields are optional.
 ```yaml
 # {{ env.VARIABLE }} interpolation is available here
 ---
-# enable auto-refresh when files change
-live_render: true
+# auto-reload when files change (`watch: false` to disable)
+watch:
+  - src
+  - .trmnlp.yml
 
-# additional path globs to watch for changes
-watch_paths:
-  - src/**/*
-
-# values of custom fields (the fields are defined in settings.yml)
+# values of custom fields (defined in src/settings.yml)
 custom_fields:
   station: "{{ env.ICAO }}"
 
-# override any variable
+# override variables
 variables:
   trmnl:
     user:
