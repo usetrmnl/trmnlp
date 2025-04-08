@@ -22,15 +22,13 @@ src/
 .trmnlp.yml (optional)
 ```
 
-The [trmnl-hello](https://github.com/schrockwell/trmnl-hello) repository is provided as a jumping-off point for creating new plugins. Simply fork the repo, clone it, and start hacking.
-
 ## Running the Server (Docker)
 
 ```sh
 docker run \
     -p 4567:4567 \
     -v /path/to/plugin/on/host:/plugin \
-    schrockwell/trmnlp
+    trmnl/trmnlp
 ```
 
 ## Running the Server (Local Ruby)
