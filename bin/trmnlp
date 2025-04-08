@@ -9,4 +9,6 @@ begin
 rescue TRMNLP::Error => e
   puts "Error: #{e.message}"
   exit 1
+rescue Interrupt
+  exit 1
 end
