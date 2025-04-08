@@ -25,10 +25,9 @@ module TRMNLP
       @filewatcher_thread ||= Thread.new do
         loop do
           begin
-            Filewatcher.new(config.preview.watch_paths).watch do |changes|
-              # TODO: don't hardcode these basenames... at least not here!
-              config.preview.reload! if changes.keys.any? { |path| File.basename(path) == '.trmnlp.yml' }
-              config.plugin.reload! if changes.keys.any? { |path| File.basename(path) == 'settings.yml' }
+            Filewatcher.new(config.project.watch_paths).watch do |changes|
+              config.project.reload!
+              config.plugin.reload!
               new_user_data = user_data
 
               views = changes.map { |path, _change| File.basename(path, '.liquid') }
@@ -55,7 +54,7 @@ module TRMNLP
       end
 
       # Praise be to ActiveSupport
-      merged_data.deep_merge!(config.preview.user_data_overrides)
+      merged_data.deep_merge!(config.project.user_data_overrides)
     end
 
     def poll_data
@@ -183,7 +182,7 @@ module TRMNLP
             'dark_mode' => config.plugin.dark_mode,
             'polling_headers' => config.plugin.polling_headers_encoded,
             'polling_url' => config.plugin.polling_url_text,
-            'custom_fields_values' => config.preview.custom_fields
+            'custom_fields_values' => config.project.custom_fields
           }
         }
       }
@@ -193,7 +192,7 @@ module TRMNLP
       @liquid_environment ||= Liquid::Environment.build do |env|
         env.register_filter(CustomFilters)
 
-        config.preview.user_filters.each do |module_name, relative_path|
+        config.project.user_filters.each do |module_name, relative_path|
           require paths.root_dir.join(relative_path)
           env.register_filter(Object.const_get(module_name))
         end

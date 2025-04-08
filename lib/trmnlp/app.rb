@@ -19,7 +19,7 @@ module TRMNLP
 
       @context.poll_data if @context.config.plugin.polling?
 
-      @context.start_filewatcher if @context.config.preview.live_render?
+      @context.start_filewatcher if @context.config.project.live_render?
 
       @live_reload_clients = []
       @context.on_view_change do |view, user_data|
@@ -72,7 +72,7 @@ module TRMNLP
       get "/#{view}" do
         @view = view
         @user_data = JSON.pretty_generate(@context.user_data)
-        @live_reload = @context.config.preview.live_render?
+        @live_reload = @context.config.project.live_render?
 
         erb :index
       end

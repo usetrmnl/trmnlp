@@ -2,7 +2,7 @@ require 'yaml'
 
 module TRMNLP
   class Config
-    class Preview
+    class Project
       attr_reader :paths
 
       def initialize(paths)

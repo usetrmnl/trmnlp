@@ -47,9 +47,9 @@ gem install trmnl_preview
 trmnlp serve                # Starts the server
 ```
 
-## `./.trmnlp.yml` Reference
+## `./.trmnlp.yml` Reference (Project Config)
 
-The `.trmnlp.yml` file lives in the root of the plugin repository, and is for configuring the local dev server.
+The `.trmnlp.yml` file lives in the root of the plugin project, and is for configuring the local dev server.
 
 System environment variables are made available in the `{{ env }}` Liquid varible in this file only. This can be used to safely
 supply plugin secrets, like API keys.
@@ -78,11 +78,11 @@ variables:
 
 ```
 
-## `./src/settings.yml` Reference
+## `./src/settings.yml` Reference (Plugin Config)
 
-The `settings.yml` file is part of the private plugin definition. 
+The `settings.yml` file is part of the plugin definition. 
 
-See [TRMNL documentation](https://help.usetrmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0) for details on the format of this file.
+See [TRMNL documentation](https://help.usetrmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0) for details on this file's contents.
 
 ## Contributing
 
