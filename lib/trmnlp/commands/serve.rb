@@ -7,6 +7,8 @@ module TRMNLP
   module Commands
     class Serve < Base
       def call
+        context.validate!
+        
         # Must come AFTER parsing options
         require_relative '../app'
 

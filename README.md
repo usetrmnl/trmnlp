@@ -13,13 +13,13 @@ The server watches the filesystem for changes to the Liquid templates, seamlessl
 This is the structure of a plugin repository.
 
 ```
+.trmnlp.yml
 src/
     full.liquid
     half_horizontal.liquid
     half_vertical.liquid
     quadrant.liquid
     settings.yml
-.trmnlp.yml (optional)
 ```
 
 ## Running the Server (Docker)

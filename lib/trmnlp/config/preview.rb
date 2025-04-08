@@ -11,8 +11,8 @@ module TRMNLP
       end
 
       def reload!
-        if paths.preview_config.exist?
-          @config = YAML.load_file(paths.preview_config)
+        if paths.trmnlp_config.exist?
+          @config = YAML.load_file(paths.trmnlp_config)
         else
           @config = {}
         end

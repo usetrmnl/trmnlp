@@ -17,6 +17,10 @@ module TRMNLP
       @config = Config.new(paths)
     end
 
+    def validate!
+      raise Error, "not a plugin directory (did not find #{paths.trmnlp_config})" unless paths.valid?
+    end
+
     def start_filewatcher
       @filewatcher_thread ||= Thread.new do
         loop do

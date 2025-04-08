@@ -7,6 +7,8 @@ module TRMNLP
   module Commands
     class Push < Base
       def call(plugin_settings_id)
+        context.validate!
+        
         raise Error, "please run `trmnlp login`" unless config.app.logged_in?
 
         plugin_settings_id ||= config.plugin.id

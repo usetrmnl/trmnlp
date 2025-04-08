@@ -3,9 +3,9 @@ require 'yaml'
 module TRMNLP
   class Config
     class Plugin
-      def initialize(paths, preview_config)
+      def initialize(paths, trmnlp_config)
         @paths = paths
-        @preview_config = preview_config
+        @trmnlp_config = trmnlp_config
         reload!
       end
 
@@ -50,9 +50,9 @@ module TRMNLP
 
       private
 
-      attr_reader :paths, :preview_config
+      attr_reader :paths, :trmnlp_config
 
-      def with_custom_fields(value) = preview_config.with_custom_fields(value)
+      def with_custom_fields(value) = trmnlp_config.with_custom_fields(value)
 
       # copied from TRMNL core
       def string_to_hash(str, delimiter: '=')

@@ -21,9 +21,11 @@ module TRMNLP
     def cache_dir = xdg.cache_home.join('trmnl')
     def create_cache_dir = cache_dir.mkpath
 
+    def valid? = trmnlp_config.exist?
+
     # --- files ---
 
-    def preview_config = root_dir.join('.trmnlp.yml')
+    def trmnlp_config = root_dir.join('.trmnlp.yml')
 
     def plugin_config = src_dir.join('settings.yml')
       
