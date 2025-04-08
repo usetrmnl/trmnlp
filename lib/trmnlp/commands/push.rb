@@ -13,6 +13,15 @@ module TRMNLP
           exit 1
         end
 
+        unless options.force
+          print "Plugin settings on the server will be overwritten. Are you sure? (y/n) "
+          answer = $stdin.gets.chomp.downcase
+          unless answer == 'y' || answer == 'yes'
+            puts "Aborting"
+            exit 1
+          end
+        end
+
         api = APIClient.new(config)
         size = 0
 

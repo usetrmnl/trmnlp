@@ -9,8 +9,17 @@ module TRMNLP
       def call(plugin_settings_id)
         plugin_settings_id ||= config.plugin.id
         if plugin_settings_id.nil?
-          puts 'The plugin ID must be specified on the first pull.'
+          puts 'The plugin ID must be specified.'
           exit 1
+        end
+
+        unless options.force
+          print "Local plugin files will be overwritten. Are you sure? (y/n) "
+          answer = $stdin.gets.chomp.downcase
+          unless answer == 'y' || answer == 'yes'
+            puts "Aborting"
+            exit 1
+          end
         end
 
         api = APIClient.new(config)
