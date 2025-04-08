@@ -9,12 +9,14 @@
 - Add `watch_paths` config
 - Add `dark_mode` config
 - Add `[custom_fields]` config
-- Add `{{ trmnl }}` variables
-- Add `[trmnl.*]` variable override config
-- Add interpolation of custom fields into polling\_\* options
-- Add interpolation of environment variables into custom field values via `env` namespace
-- Add auto-reload when `config.toml` or `static.json` changes
+- Add `{{ trmnl }}` variables 
+- Add interpolation of custom fields in `polling\_\*` options
+- Add interpolation of environment variables in `preview.yml` via `{{ env }}`
+- Add auto-reload when `preview.yml` or `settings.yml` changes
 - Add variable display
+- Add support for plugin import/export ZIP file format
+- Add `login`, `push`, and `pull` commands
+- Change plugin directory structure (see README for latest)
 
 ## 0.3.2
 
