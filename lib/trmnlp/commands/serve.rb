@@ -11,7 +11,7 @@ module TRMNLP
         require_relative '../app'
 
         # Now we can configure things
-        App.set(:root_dir, options.dir)
+        App.set(:context, context)
         App.set(:bind, options.bind)
         App.set(:port, options.port)
 

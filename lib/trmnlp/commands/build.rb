@@ -6,6 +6,7 @@ module TRMNLP
       def call
         context = Context.new(options.dir)
         context.poll_data
+        context.paths.create_build_dir
 
         VIEWS.each do |view|
           output_path = context.paths.build_dir.join("#{view}.html")

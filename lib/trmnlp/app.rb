@@ -16,13 +16,15 @@ module TRMNLP
       super
 
       begin
-        @context = Context.new(settings.root_dir)
+        @context = settings.context
       rescue StandardError => e
         puts e.message
         exit 1
       end
 
       @context.poll_data if @context.config.plugin.polling?
+
+      @context.start_filewatcher if @context.config.preview.live_render?
 
       @live_reload_clients = []
       @context.on_view_change do |view, user_data|

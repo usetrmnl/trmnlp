@@ -15,19 +15,10 @@ module TRMNLP
     def initialize(root_dir)
       @paths = Paths.new(root_dir)
       @config = Config.new(paths)
-
-      unless paths.src_dir.exist?
-        raise "Missing source directory #{paths.src_dir}"
-      end
-      
-      paths.create_temp_dir
-      paths.create_cache_dir
-
-      start_filewatcher_thread if config.preview.live_render?
     end
 
-    def start_filewatcher_thread
-      Thread.new do
+    def start_filewatcher
+      @filewatcher_thread ||= Thread.new do
         loop do
           begin
             Filewatcher.new(config.preview.watch_paths).watch do |changes|
@@ -104,7 +95,7 @@ module TRMNLP
         end
       end
 
-      paths.user_data.write(JSON.generate(data))
+      write_user_data(data)
 
       data
     rescue StandardError => e
@@ -114,8 +105,7 @@ module TRMNLP
 
     def put_webhook(payload)
       data = wrap_array(JSON.parse(payload))
-      payload = JSON.generate(data)
-      paths.user_data.write(payload)
+      write_user_data(data)
     rescue
       puts "webhook error: #{e.message}"
     end
@@ -205,5 +195,10 @@ module TRMNLP
         end
       end
     end
+  end
+
+  def write_user_data(data)
+    paths.create_cache_dir
+    paths.user_data.write(JSON.generate(data))
   end
 end

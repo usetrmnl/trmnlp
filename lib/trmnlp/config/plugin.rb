@@ -6,12 +6,15 @@ module TRMNLP
       def initialize(paths, preview_config)
         @paths = paths
         @preview_config = preview_config
-        raise("Missing plugin settings file #{paths.plugin_config}") unless paths.plugin_config.exist?
         reload!
       end
 
       def reload!
-        @config = YAML.load_file(paths.plugin_config)
+        if paths.plugin_config.exist?
+          @config = YAML.load_file(paths.plugin_config)
+        else
+          @config = {}
+        end
       end
       
       def strategy = @config['strategy']

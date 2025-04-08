@@ -4,10 +4,7 @@ module TRMNLP
   module Commands
     class Login < Base
       def call
-        paths = Paths.new(options.dir)
-        app_config = Config::App.new(paths)
-
-        puts "Please visit #{app_config.account_uri} to grab your API key, then paste it here."
+        puts "Please visit #{config.app.account_uri} to grab your API key, then paste it here."
         
         print "API Key: "
         api_key = STDIN.gets.chomp
@@ -16,8 +13,8 @@ module TRMNLP
           exit 1
         end
         
-        app_config.api_key = api_key
-        app_config.save
+        config.app.api_key = api_key
+        config.app.save
         
         puts "Saved changes to #{paths.app_config}"
       end

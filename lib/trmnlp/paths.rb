@@ -14,7 +14,7 @@ module TRMNLP
     def src_dir = root_dir.join('src')
 
     def build_dir = root_dir.join('_build')
-    def create_temp_dir = build_dir.mkpath
+    def create_build_dir = build_dir.mkpath
 
     def app_config_dir = xdg.config_home.join('trmnlp')
 
