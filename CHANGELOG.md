@@ -2,21 +2,21 @@
 
 ## vNext
 
-- Fix crash when #poll_data fails (#12)
-- Fix git runtime error in Docker container (#12)
-- Add static strategy
-- Add polling features: multiple URLs, new verbs, and request body
+- Change plugin directory structure (see README for details)
+- Add `login`, `push`, and `pull` commands
+- Bring up-to-date with latest private plugin features:
+  - Add `static` strategy
+  - Add polling features: multiple URLs, new verbs, and request body
+  - Add settings `dark_mode`, `no_screen_padding`, `custom_fields`
+  - Add interpolation of custom fields in `polling\_\*` options
+  - Add `{{ trmnl }}` variables 
 - Add `watch_paths` config
-- Add `dark_mode` config
-- Add `[custom_fields]` config
-- Add `{{ trmnl }}` variables 
-- Add interpolation of custom fields in `polling\_\*` options
 - Add interpolation of environment variables in `.trmnlp.yml` via `{{ env }}`
 - Add auto-reload when `.trmnlp.yml` or `settings.yml` changes
 - Add variable display
-- Add support for plugin import/export ZIP file format
-- Add `login`, `push`, and `pull` commands
-- Change plugin directory structure (see README for latest)
+- Fix crash when #poll_data fails (#12)
+- Fix git runtime error in Docker container (#12)
+
 
 ## 0.3.2
 
