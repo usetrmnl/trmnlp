@@ -58,7 +58,7 @@ module TRMNLP
       data = {}
 
       if config.plugin.polling_urls.empty?
-        raise "config must specify polling_url or polling_urls"
+        raise Error, "config must specify polling_url or polling_urls"
       end
 
       config.plugin.polling_urls.each.with_index do |url, i|

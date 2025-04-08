@@ -15,12 +15,7 @@ module TRMNLP
     def initialize(*args)
       super
 
-      begin
-        @context = settings.context
-      rescue StandardError => e
-        puts e.message
-        exit 1
-      end
+      @context = settings.context
 
       @context.poll_data if @context.config.plugin.polling?
 

@@ -8,18 +8,12 @@ module TRMNLP
     class Push < Base
       def call(plugin_settings_id)
         plugin_settings_id ||= config.plugin.id
-        if plugin_settings_id.nil?
-          puts 'The plugin ID must be specified on the first pull.'
-          exit 1
-        end
+        raise Error, 'plugin ID must be specified.' if plugin_settings_id.nil?
 
         unless options.force
           print "Plugin settings on the server will be overwritten. Are you sure? (y/n) "
           answer = $stdin.gets.chomp.downcase
-          unless answer == 'y' || answer == 'yes'
-            puts "Aborting"
-            exit 1
-          end
+          raise Error, 'aborting' unless answer == 'y' || answer == 'yes'
         end
 
         api = APIClient.new(config)

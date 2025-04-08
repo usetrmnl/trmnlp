@@ -8,4 +8,6 @@ require_relative "trmnlp/version"
 
 module TRMNLP
   VIEWS = %w{full half_horizontal half_vertical quadrant}
+
+  class Error < StandardError; end
 end

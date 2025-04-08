@@ -4,4 +4,9 @@ require "thor"
 
 require_relative '../lib/trmnlp/cli'
 
-TRMNLP::CLI.start
+begin
+  TRMNLP::CLI.start
+rescue TRMNLP::Error => e
+  puts "Error: #{e.message}"
+  exit 1
+end

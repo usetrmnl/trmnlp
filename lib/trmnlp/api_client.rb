@@ -21,7 +21,7 @@ module TRMNLP
         # return the path to the temp file
         Pathname.new(temp_file.path)
       else
-        raise "Failed to download plugin settings archive: #{response.status} #{response.body}"
+        raise Error, "failed to download plugin settings archive: #{response.status} #{response.body}"
       end
     end
 
@@ -35,7 +35,7 @@ module TRMNLP
       if response.status == 200
         true
       else
-        raise "Failed to upload plugin settings archive: #{response.status} #{response.body}"
+        raise Error, "failed to upload plugin settings archive: #{response.status} #{response.body}"
       end
     end
 

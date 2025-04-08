@@ -8,10 +8,7 @@ module TRMNLP
         
         print "API Key: "
         api_key = STDIN.gets.chomp
-        if api_key.empty?
-          puts "API key cannot be empty."
-          exit 1
-        end
+        raise Error, "API key cannot be empty" if api_key.empty?
         
         config.app.api_key = api_key
         config.app.save
