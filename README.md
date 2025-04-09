@@ -10,7 +10,7 @@ The server watches the filesystem for changes to the Liquid templates, seamlessl
 
 ## Creating a Plugin
 
-This is the structure of a plugin repository.
+This is the structure of a plugin project.
 
 ```
 .trmnlp.yml
@@ -20,6 +20,14 @@ src/
     half_vertical.liquid
     quadrant.liquid
     settings.yml
+```
+
+## Syncing Plugin With TRMNL Server
+
+```sh
+trmnl login      # authenticate with TRMNL account
+trmnl pull [id]  # download (plugin ID required on first pull only)
+trmnl push       # upload
 ```
 
 ## Running the Server (Docker)
@@ -40,11 +48,11 @@ Prerequisites:
   - Firefox
   - ImageMagick
 
-In the plugin repository:
+In the plugin project:
 
 ```sh
 gem install trmnl_preview
-trmnlp serve                # Starts the server
+trmnlp serve
 ```
 
 ## `./.trmnlp.yml` Reference (Project Config)
