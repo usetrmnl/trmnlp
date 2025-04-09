@@ -8,9 +8,9 @@ The server watches the filesystem for changes to the Liquid templates, seamlessl
 
 ![Screenshot](docs/preview.png)
 
-## Creating a Plugin
+## Plugin Development
 
-This is the structure of a plugin project.
+This is the structure of a plugin project:
 
 ```
 .trmnlp.yml
@@ -22,7 +22,7 @@ src/
     settings.yml
 ```
 
-## Syncing Plugin With TRMNL Server
+### Syncing Plugin With TRMNL Server
 
 ```sh
 trmnl login      # authenticate with TRMNL account
@@ -30,7 +30,9 @@ trmnl pull [id]  # download (plugin ID required on first pull only)
 trmnl push       # upload
 ```
 
-## Running the Server (Docker)
+## Running trmnlp
+
+### Via Docker
 
 ```sh
 docker run \
@@ -39,7 +41,7 @@ docker run \
     trmnl/trmnlp
 ```
 
-## Running the Server (Local Ruby)
+### Via RubyGems
 
 Prerequisites:
 
@@ -48,14 +50,12 @@ Prerequisites:
   - Firefox
   - ImageMagick
 
-In the plugin project:
-
 ```sh
 gem install trmnl_preview
 trmnlp serve
 ```
 
-## `./.trmnlp.yml` Reference (Project Config)
+## `.trmnlp.yml` Reference - Project Config
 
 The `.trmnlp.yml` file lives in the root of the plugin project, and is for configuring the local dev server.
 
@@ -65,7 +65,6 @@ supply plugin secrets, like API keys.
 All fields are optional.
 
 ```yaml
-# {{ env.VARIABLE }} interpolation is available here
 ---
 # auto-reload when files change (`watch: false` to disable)
 watch:
@@ -74,7 +73,7 @@ watch:
 
 # values of custom fields (defined in src/settings.yml)
 custom_fields:
-  station: "{{ env.ICAO }}"
+  station: "{{ env.ICAO }}" # interpolate $IACO environment variable
 
 # override variables
 variables:
@@ -86,7 +85,7 @@ variables:
 
 ```
 
-## `./src/settings.yml` Reference (Plugin Config)
+## `src/settings.yml` Reference (Plugin Config)
 
 The `settings.yml` file is part of the plugin definition. 
 
