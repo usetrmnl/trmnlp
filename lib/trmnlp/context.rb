@@ -202,10 +202,10 @@ module TRMNLP
         end
       end
     end
-  end
 
-  def write_user_data(data)
-    paths.create_cache_dir
-    paths.user_data.write(JSON.generate(data))
+    def write_user_data(data)
+      paths.create_cache_dir
+      paths.user_data.write(JSON.generate(data))
+    end
   end
 end
