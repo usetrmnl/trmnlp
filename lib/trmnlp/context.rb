@@ -49,7 +49,9 @@ module TRMNLP
     def user_data
       merged_data = base_trmnl_data
 
-      if paths.user_data.exist?
+      if config.plugin.static?
+        merged_data.merge!(config.plugin.static_data)
+      elsif paths.user_data.exist?
         merged_data.merge!(JSON.parse(paths.user_data.read))
       end
 
@@ -58,6 +60,8 @@ module TRMNLP
     end
 
     def poll_data
+      return unless config.plugin.polling?
+
       data = {}
 
       if config.plugin.polling_urls.empty?

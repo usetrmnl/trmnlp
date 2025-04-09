@@ -17,7 +17,7 @@ module TRMNLP
 
       @context = settings.context
 
-      @context.poll_data if @context.config.plugin.polling?
+      @context.poll_data
 
       @context.start_filewatcher if @context.config.project.live_render?
 

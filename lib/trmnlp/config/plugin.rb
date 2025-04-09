@@ -48,6 +48,12 @@ module TRMNLP
 
       def id = @config['id']
 
+      def static_data
+        JSON.parse(@config['static_data'] || '{}')
+      rescue JSON::ParserError
+        raise Error, 'invalid JSON in static_data'
+      end
+
       private
 
       attr_reader :paths, :trmnlp_config
