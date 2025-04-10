@@ -44,7 +44,7 @@ Gem::Specification.new do |spec|
   # HTML rendering
   spec.add_dependency "liquid", "~> 5.6"
   spec.add_dependency "activesupport", "~> 8.0"
-  
+
   # BMP rendering
   spec.add_dependency "ferrum", "~> 0.16"
   spec.add_dependency 'puppeteer-ruby', '~> 0.45.6'
@@ -57,6 +57,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "xdg", "~> 9.1"
   spec.add_dependency "rubyzip", "~> 2.3.0"
   spec.add_dependency "thor", "~> 1.3"
+  spec.add_dependency "oj", "~> 3.16.9"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
