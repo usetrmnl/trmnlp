@@ -25,9 +25,9 @@ src/
 ### Syncing Plugin With TRMNL Server
 
 ```sh
-trmnl login      # authenticate with TRMNL account
-trmnl pull [id]  # download (plugin ID required on first pull only)
-trmnl push       # upload
+trmnlp login      # authenticate with TRMNL account
+trmnlp pull [id]  # download (plugin ID required on first pull only)
+trmnlp push       # upload
 ```
 
 ## Running trmnlp
