@@ -12,7 +12,11 @@ module TRMNLP
         raise NotImplementedError
       end
 
-      private
+      protected
+
+      def authenticate!
+        raise Error, "please run `trmnlp login`" unless config.app.logged_in?
+      end
 
       attr_accessor :options, :context
 

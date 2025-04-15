@@ -27,18 +27,25 @@ module TRMNLP
       Commands::Init.new(options).call(name)
     end
 
-    desc 'pull [ID]', 'Download plugin settings from TRMNL server'
-    method_option :force, type: :boolean, default: false, aliases: '-f',
-                  desc: 'Skip confirmation prompts'
-    def pull(plugin_settings_id = nil)
-      Commands::Pull.new(options).call(plugin_settings_id)
+    desc 'clone NAME ID', 'Copy a plugin project from TRMNL server'
+    def clone(name, id)
+      Commands::Clone.new(options).call(name, id)
     end
 
-    desc 'push [ID]', 'Upload plugin settings to TRMNL server'
+    desc 'pull', 'Download latest plugin settings from TRMNL server'
     method_option :force, type: :boolean, default: false, aliases: '-f',
                   desc: 'Skip confirmation prompts'
-    def push(plugin_settings_id = nil)
-      Commands::Push.new(options).call(plugin_settings_id)
+    method_option :id, type: :string, aliases: '-i', desc: 'Plugin settings ID'
+    def pull
+      Commands::Pull.new(options).call
+    end
+
+    desc 'push', 'Upload latest plugin settings to TRMNL server'
+    method_option :force, type: :boolean, default: false, aliases: '-f',
+                  desc: 'Skip confirmation prompts'
+    method_option :id, type: :string, aliases: '-i', desc: 'Plugin settings ID'
+    def push
+      Commands::Push.new(options).call
     end
 
     desc 'serve', 'Start a local dev server'

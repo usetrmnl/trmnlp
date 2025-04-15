@@ -29,6 +29,8 @@ module TRMNLP
 
       def account_uri = URI.join(base_uri, 'account')
 
+      def edit_plugin_settings_uri(id) = URI.join(base_uri, 'plugin_settings', id, 'edit')
+
       private
 
       attr_reader :paths

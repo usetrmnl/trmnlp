@@ -6,12 +6,11 @@ require_relative '../api_client'
 module TRMNLP
   module Commands
     class Pull < Base
-      def call(plugin_settings_id)
+      def call
         context.validate!
-        
-        raise Error, "please run `trmnlp login`" unless config.app.logged_in?
+        authenticate!
 
-        plugin_settings_id ||= config.plugin.id
+        plugin_settings_id = options.id || config.plugin.id
         raise Error, 'plugin ID must be specified' if plugin_settings_id.nil?
 
         unless options.force

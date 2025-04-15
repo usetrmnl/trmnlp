@@ -6,7 +6,7 @@ module TRMNLP
   module Commands
     class Init < Base
       def call(name)
-        destination_dir = Pathname.new(Dir.pwd).join(name)
+        destination_dir = Pathname.new(options.dir).join(name)
 
         unless destination_dir.exist?
           puts "Creating #{destination_dir}"
@@ -33,7 +33,18 @@ module TRMNLP
           FileUtils.cp(source_pathname, destination_pathname)
         end
 
-        # TODO: print out next steps: cd #{name}, trmnlp serve, trmnlp push, etc
+        puts <<~HEREDOC
+
+        To start the local server:
+
+            cd #{Pathname.new(destination_dir).relative_path_from(Dir.pwd)}
+            trmnlp serve
+
+        To publish the plugin:
+
+            trmnlp login
+            trmnlp push
+        HEREDOC
       end
 
       private
