@@ -8,7 +8,7 @@ The server watches the filesystem for changes to the Liquid templates, seamlessl
 
 ![Screenshot](docs/preview.png)
 
-## Plugin Development
+## Project Structure
 
 This is the structure of a plugin project:
 
@@ -22,12 +22,28 @@ src/
     settings.yml
 ```
 
-### Syncing Plugin With TRMNL Server
+## Creating a New Plugin
+
+You can start building a plugin locally, then `push` it to the TRMNL server for display on your device.
 
 ```sh
-trmnlp login      # authenticate with TRMNL account
-trmnlp pull [id]  # download (plugin ID required on first pull only)
-trmnlp push       # upload
+trmnlp init my_plugin  # generate
+cd my_plugin
+trmnlp serve           # develop locally
+trmnlp login           # authenticate
+trmnlp push            # upload
+```
+
+## Modifying an Existing Plugin
+
+If you have built a plugin with the web-based editor, you can `clone` it, work on it locally, and `push` changes back to the server.
+
+```sh
+trmnlp login                 # authenticate
+trmnlp clone my_plugin [id]  # first download
+cd my_plugin
+trmnlp serve                 # develop locally
+trmnlp push                  # upload
 ```
 
 ## Running trmnlp

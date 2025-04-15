@@ -1,5 +1,12 @@
 # Changelog
 
+## vNext
+
+- Added `trmlnp init` command
+- Added `trmnlp clone` command
+- Improved `trmnlp push` to create remote plugin on first publish
+- Added `oj` gem for JSON parsing (#32)
+
 ## 0.4.0
 
 ### Plugin Migration Strategy
