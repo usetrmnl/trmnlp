@@ -25,11 +25,13 @@ module TRMNLP
 
       def base_uri = URI.parse(@config['base_url'] || 'https://usetrmnl.com')
 
-      def api_uri = URI.join(base_uri, 'api')
+      def api_uri = URI.join(base_uri, '/api')
 
-      def account_uri = URI.join(base_uri, 'account')
+      def account_uri = URI.join(base_uri, '/account')
 
-      def edit_plugin_settings_uri(id) = URI.join(base_uri, 'plugin_settings', id, 'edit')
+      def edit_plugin_settings_uri(id) = URI.join(base_uri, "/plugin_settings/#{id.to_s}/edit")
+
+      def playlists_uri = URI.join(base_uri, '/playlists')
 
       private
 

@@ -33,9 +33,19 @@ module TRMNLP
       response = conn.post("plugin_settings/#{id}/archive", payload)
 
       if response.status == 200
-        true
+        JSON.parse(response.body)
       else
         raise Error, "failed to upload plugin settings archive: #{response.status} #{response.body}"
+      end
+    end
+
+    def post_plugin_setting(params)
+      response = conn.post("plugin_settings", params.to_json, content_type: 'application/json')
+
+      if response.status == 200
+        JSON.parse(response.body)
+      else
+        raise Error, "failed to create plugin setting: #{response.status} #{response.body}"
       end
     end
 
