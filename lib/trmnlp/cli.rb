@@ -22,14 +22,19 @@ module TRMNLP
       Commands::Login.new(options).call
     end
 
-    desc 'pull [id]', 'Download plugin settings from TRMNL server'
+    desc 'init NAME', 'Start a new plugin project'
+    def init(name)
+      Commands::Init.new(options).call(name)
+    end
+
+    desc 'pull [ID]', 'Download plugin settings from TRMNL server'
     method_option :force, type: :boolean, default: false, aliases: '-f',
                   desc: 'Skip confirmation prompts'
     def pull(plugin_settings_id = nil)
       Commands::Pull.new(options).call(plugin_settings_id)
     end
 
-    desc 'push [id]', 'Upload plugin settings to TRMNL server'
+    desc 'push [ID]', 'Upload plugin settings to TRMNL server'
     method_option :force, type: :boolean, default: false, aliases: '-f',
                   desc: 'Skip confirmation prompts'
     def push(plugin_settings_id = nil)

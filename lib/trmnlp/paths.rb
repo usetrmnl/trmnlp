@@ -8,6 +8,12 @@ module TRMNLP
       @root_dir = Pathname.new(root_dir)
       @xdg = XDG.new
     end
+    
+    # --- trmnlp library ---
+    
+    def gem_dir = Pathname.new(__dir__).join('..', '..').expand_path
+
+    def templates_dir = gem_dir.join('templates')
 
     # --- directories ---
     

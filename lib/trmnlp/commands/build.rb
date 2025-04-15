@@ -4,7 +4,6 @@ module TRMNLP
   module Commands
     class Build < Base
       def call
-        context = Context.new(options.dir)
         context.validate!
         context.poll_data
         context.paths.create_build_dir
