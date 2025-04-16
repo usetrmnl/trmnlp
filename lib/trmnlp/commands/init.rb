@@ -9,12 +9,13 @@ module TRMNLP
         destination_dir = Pathname.new(options.dir).join(name)
 
         unless destination_dir.exist?
-          puts "Creating #{destination_dir}"
+          output "Creating #{destination_dir}"
           destination_dir.mkpath
         end
 
         template_dir.glob('**/{*,.*}').each do |source_pathname|
           next if source_pathname.directory?
+          next if options.skip_liquid && source_pathname.extname == '.liquid'
 
           relative_pathname = source_pathname.relative_path_from(template_dir)
           destination_pathname = destination_dir.join(relative_pathname)
@@ -24,16 +25,16 @@ module TRMNLP
             print "#{destination_pathname} already exists. Overwrite? (y/n): "
             answer = $stdin.gets.chomp.downcase
             if answer != 'y'
-              puts "Skipping #{destination_pathname}"
+              output "Skipping #{destination_pathname}"
               next
             end
           end
 
-          puts "Creating #{destination_pathname}"
+          output "Creating #{destination_pathname}"
           FileUtils.cp(source_pathname, destination_pathname)
         end
 
-        puts <<~HEREDOC
+        output <<~HEREDOC
 
         To start the local server:
 

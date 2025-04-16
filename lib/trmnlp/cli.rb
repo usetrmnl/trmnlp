@@ -8,7 +8,7 @@ module TRMNLP
     package_name 'trmnlp'
 
     class_option :dir, type: :string, default: Dir.pwd, aliases: '-d',
-                  desc: 'Plugin directory'
+                  desc: 'Plugin project directory'
 
     def self.exit_on_failure? = true
 
@@ -23,6 +23,8 @@ module TRMNLP
     end
 
     desc 'init NAME', 'Start a new plugin project'
+    method_option :skip_liquid, type: :boolean, default: false, desc: 'Skip generating liquid templates'
+    method_option :quiet, type: :boolean, default: false, desc: 'Suppress output', aliases: '-q'
     def init(name)
       Commands::Init.new(options).call(name)
     end
