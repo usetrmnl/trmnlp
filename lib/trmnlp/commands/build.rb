@@ -10,11 +10,11 @@ module TRMNLP
 
         VIEWS.each do |view|
           output_path = context.paths.build_dir.join("#{view}.html")
-          puts "Writing #{output_path}..."
+          output "Writing #{output_path}..."
           output_path.write(context.render_full_page(view))
         end
   
-        puts "Done!"
+        output "Done!"
       end
     end
   end

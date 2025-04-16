@@ -10,6 +10,8 @@ module TRMNLP
     class_option :dir, type: :string, default: Dir.pwd, aliases: '-d',
                   desc: 'Plugin project directory'
 
+    class_option :quiet, type: :boolean, default: false, desc: 'Suppress output', aliases: '-q'
+
     def self.exit_on_failure? = true
 
     desc 'build', 'Generate static HTML files'
@@ -24,7 +26,6 @@ module TRMNLP
 
     desc 'init NAME', 'Start a new plugin project'
     method_option :skip_liquid, type: :boolean, default: false, desc: 'Skip generating liquid templates'
-    method_option :quiet, type: :boolean, default: false, desc: 'Suppress output', aliases: '-q'
     def init(name)
       Commands::Init.new(options).call(name)
     end

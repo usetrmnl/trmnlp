@@ -18,17 +18,22 @@ module TRMNLP
 
       protected
 
-      def authenticate!
-        raise Error, "please run `trmnlp login`" unless config.app.logged_in?
-      end
-
       attr_accessor :options, :context
 
       def config = context.config
       def paths = context.paths
 
+      def authenticate!
+        raise Error, "please run `trmnlp login`" unless config.app.logged_in?
+      end
+
       def output(message)
-        puts message unless options.quiet?
+        puts(message) unless options.quiet?
+      end
+
+      def prompt(message)
+        print message
+        $stdin.gets.chomp
       end
     end
   end

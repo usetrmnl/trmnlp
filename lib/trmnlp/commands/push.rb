@@ -16,15 +16,14 @@ module TRMNLP
 
         plugin_settings_id = options.id || config.plugin.id
         if plugin_settings_id.nil?
-          puts 'Creating a new plugin on the server...'
+          output 'Creating a new plugin on the server...'
           response = api.post_plugin_setting(name: 'New TRMNLP Plugin', plugin_id: 37) # hardcoded id for private_plugin
           plugin_settings_id = response.dig('data', 'id')
           is_new = true
         end
 
         unless is_new || options.force
-          print "Plugin settings on the server will be overwritten. Are you sure? (y/n) "
-          answer = $stdin.gets.chomp.downcase
+          answer = prompt("Plugin settings on the server will be overwritten. Are you sure? (y/n) ").downcase
           raise Error, 'aborting' unless answer == 'y' || answer == 'yes'
         end
 
@@ -43,13 +42,13 @@ module TRMNLP
           size = File.size(temp_file.path)
         end
         
-        puts <<~HEREDOC
+        output <<~HEREDOC
         Uploaded plugin (#{size} bytes)
         Dashboard: #{config.app.edit_plugin_settings_uri(plugin_settings_id)}
         HEREDOC
 
         if is_new
-          puts <<~HEREDOC
+          output <<~HEREDOC
 
           IMPORTANT! Don't forget to add it to your device playlist!
 

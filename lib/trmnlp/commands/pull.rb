@@ -14,8 +14,7 @@ module TRMNLP
         raise Error, 'plugin ID must be specified' if plugin_settings_id.nil?
 
         unless options.force
-          print "Local plugin files will be overwritten. Are you sure? (y/n) "
-          answer = $stdin.gets.chomp.downcase
+          answer = prompt("Local plugin files will be overwritten. Are you sure? (y/n) ").downcase
           raise Error, 'aborting' unless answer == 'y' || answer == 'yes'
         end
 

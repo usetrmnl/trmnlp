@@ -22,8 +22,7 @@ module TRMNLP
           destination_pathname.dirname.mkpath
           
           if destination_pathname.exist?
-            print "#{destination_pathname} already exists. Overwrite? (y/n): "
-            answer = $stdin.gets.chomp.downcase
+            answer = prompt("#{destination_pathname} already exists. Overwrite? (y/n): ").downcase
             if answer != 'y'
               output "Skipping #{destination_pathname}"
               next

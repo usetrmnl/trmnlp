@@ -14,7 +14,7 @@ module TRMNLP
 
         Pull.new(dir: destination_path.to_s, force: true, id: id).call
 
-        puts <<~HEREDOC
+        output <<~HEREDOC
 
         To start the local server:
 
