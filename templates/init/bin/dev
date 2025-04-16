@@ -1,0 +1,25 @@
+#! /bin/bash
+
+if command -v trmnlp &> /dev/null
+then
+    echo "Starting trmnlp..."
+    trmnlp serve
+    exit
+fi
+
+if command -v docker &> /dev/null
+then
+    echo "Running trmnl/trmnlp container..."
+    docker run -p 4567:4567 -v .:/plugin trmnl/trmnlp
+    exit
+fi
+
+echo "Install the trmnl_preview gem:
+
+  gem install trmnl_preview
+
+Or install Docker:
+
+    https://docs.docker.com/get-docker/"
+
+exit 1
