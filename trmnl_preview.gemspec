@@ -23,6 +23,7 @@ Gem::Specification.new do |spec|
     [
       'bin/**/*',
       'lib/**/*',
+      'templates/**/*',
       'web/**/*',
       'CHANGELOG.md',
       'LICENSE.txt',
