@@ -13,13 +13,16 @@ The server watches the filesystem for changes to the Liquid templates, seamlessl
 This is the structure of a plugin project:
 
 ```
-.trmnlp.yml
-src/
-    full.liquid
-    half_horizontal.liquid
-    half_vertical.liquid
-    quadrant.liquid
-    settings.yml
+.
+├── .trmnlp.yml
+├── bin
+│   └── dev
+└── src
+    ├── full.liquid
+    ├── half_horizontal.liquid
+    ├── half_vertical.liquid
+    ├── quadrant.liquid
+    └── settings.yml
 ```
 
 ## Creating a New Plugin
@@ -48,15 +51,6 @@ trmnlp push                  # upload
 
 ## Running trmnlp
 
-### Via Docker
-
-```sh
-docker run \
-    -p 4567:4567 \
-    -v /path/to/plugin/on/host:/plugin \
-    trmnl/trmnlp
-```
-
 ### Via RubyGems
 
 Prerequisites:
@@ -69,6 +63,15 @@ Prerequisites:
 ```sh
 gem install trmnl_preview
 trmnlp serve
+```
+
+### Via Docker (`trmnlp serve` only)
+
+```sh
+docker run \
+    -p 4567:4567 \
+    -v /path/to/plugin/on/host:/plugin \
+    trmnl/trmnlp
 ```
 
 ## `.trmnlp.yml` Reference - Project Config
