@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1
+
+- Fixed `trmnl init`
+
 ## 0.5.0
 
 - Added `trmlnp init` command
