@@ -1,8 +1,11 @@
 #! /usr/bin/env ruby
 
-require "thor"
+require 'thor'
 
 require_relative '../lib/trmnlp/cli'
+
+# Force UTC to match usetrmnl.com server time zone
+ENV['TZ'] = 'UTC'
 
 begin
   TRMNLP::CLI.start
