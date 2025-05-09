@@ -1,3 +1,4 @@
+require 'active_support/time'
 require 'erb'
 require 'faraday'
 require 'filewatcher'
@@ -159,6 +160,11 @@ module TRMNLP
     end
 
     def base_trmnl_data
+      tz = ActiveSupport::TimeZone.find_tzinfo(config.project.time_zone)
+      time_zone_iana = tz.name
+      time_zone_name = ActiveSupport::TimeZone::MAPPING.invert[time_zone_iana] || time_zone_iana
+      utc_offset = tz.utc_offset
+
       {
         'trmnl' => {
           'user' => {
@@ -166,9 +172,9 @@ module TRMNLP
             'first_name' => 'first_name',
             'last_name' => 'last_name',
             'locale' => 'en',
-            'time_zone' => 'Eastern Time (US & Canada)',
-            'time_zone_iana' => 'America/New_York',
-            'utc_offset' => -14400
+            'time_zone' => time_zone_name,
+            'time_zone_iana' => time_zone_iana,
+            'utc_offset' => utc_offset,
           },
           'device' => {
             'friendly_id' => 'ABC123',

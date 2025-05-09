@@ -36,6 +36,8 @@ module TRMNLP
         Liquid::Template.parse(value).render(custom_fields_with_env)
       end
 
+      def time_zone = @config['time_zone'] || 'UTC'
+
       private
 
       # for interpolating ENV vars into custom_fields

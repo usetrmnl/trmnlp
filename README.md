@@ -94,6 +94,9 @@ watch:
 custom_fields:
   station: "{{ env.ICAO }}" # interpolate $IACO environment variable
 
+# Time zone IANA identifier to inject into trmnl.user; see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+time_zone: America/New_York
+
 # override variables
 variables:
   trmnl:
