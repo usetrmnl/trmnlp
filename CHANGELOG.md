@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.2
+
+- Added `time_zone` project config option, which is injected into `trmnl.user` variables
+- Fixed time zone to always be UTC, matching usetrmnl.com servers (#38)
+
 ## 0.5.1
 
 - Fixed `trmnl init`
