@@ -22,6 +22,7 @@ This is the structure of a plugin project:
     ├── half_horizontal.liquid
     ├── half_vertical.liquid
     ├── quadrant.liquid
+    ├── shared.liquid
     └── settings.yml
 ```
 
