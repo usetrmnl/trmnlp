@@ -13,6 +13,7 @@ module TRMNLP
         
         api_key = prompt("API Key: ")
         raise Error, "API key cannot be empty" if api_key.empty?
+        raise Error, "Invalid API key; did you copy it from the right place?" unless api_key.start_with?("user_")
         
         config.app.api_key = api_key
         config.app.save
