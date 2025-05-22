@@ -36,6 +36,8 @@ module TRMNLP
     def plugin_config = src_dir.join('settings.yml')
       
     def template(view) = src_dir.join("#{view}.liquid")
+
+    def shared_template = template('shared')
       
     def app_config = app_config_dir.join('config.yml')
 

@@ -6,8 +6,8 @@ require 'json'
 require 'liquid'
 
 require_relative 'config'
-require_relative 'custom_filters'
 require_relative 'paths'
+require_relative '../markup/template'
 
 module TRMNLP
   class Context
@@ -122,7 +122,14 @@ module TRMNLP
       template_path = paths.template(view)
       return "Missing template: #{template_path}" unless template_path.exist?
 
-      user_template = Liquid::Template.parse(template_path.read, environment: liquid_environment)
+      shared_template_path = paths.shared_template
+      if shared_template_path.exist?
+        full_markup = shared_template_path.read + template_path.read
+      else
+        full_markup = template_path.read
+      end
+
+      user_template = Markup::Template.parse(full_markup, environment: liquid_environment)
       user_template.render(user_data)
     rescue StandardError => e
       e.message
@@ -200,7 +207,8 @@ module TRMNLP
 
     def liquid_environment
       @liquid_environment ||= Liquid::Environment.build do |env|
-        env.register_filter(CustomFilters)
+        env.register_filter(Markup::CustomLiquidFilters)
+        env.register_tag('template', Markup::TemplateTag)
 
         config.project.user_filters.each do |module_name, relative_path|
           require paths.root_dir.join(relative_path)

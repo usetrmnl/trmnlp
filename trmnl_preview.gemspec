@@ -45,6 +45,7 @@ Gem::Specification.new do |spec|
   # HTML rendering
   spec.add_dependency "liquid", "~> 5.6"
   spec.add_dependency "activesupport", "~> 8.0"
+  spec.add_dependency "actionview", "~> 8.0"
 
   # BMP rendering
   spec.add_dependency "ferrum", "~> 0.16"
