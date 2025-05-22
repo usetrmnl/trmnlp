@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.3
+
+- Added support for [reusable markup](https://docs.usetrmnl.com/go/reusing-markup) in `shared.liquid`
+- Replaced custom case images with [\<trmnl-frame\> component](https://github.com/usetrmnl/trmnl-component)
+- Updated custom Liquid filters
+- Added API key validation during `trmnlp login`
+
 ## 0.5.2
 
 - Added `time_zone` project config option, which is injected into `trmnl.user` variables
