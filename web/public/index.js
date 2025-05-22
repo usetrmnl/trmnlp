@@ -11,7 +11,7 @@ trmnlp.connectLiveRender = function () {
     const payload = JSON.parse(msg.data);
 
     if (payload.type === "reload") {
-      trmnlp.setIframeSrc(trmnlp.iframe.src);
+      trmnlp.setFrameSrc(trmnlp.frame._src);
       trmnlp.userData.textContent = JSON.stringify(payload.user_data, null, 2);
     }
   };
@@ -22,9 +22,9 @@ trmnlp.connectLiveRender = function () {
   };
 };
 
-trmnlp.setCaseImage = function () {
+trmnlp.setFrameColor = function () {
   const value = trmnlp.caseSelect.value;
-  document.querySelector(".case").className = `case case--${value}`;
+  document.querySelector("trmnl-frame").setAttribute("color", value);
   localStorage.setItem("trmnlp-case", value);
 };
 
@@ -32,17 +32,17 @@ trmnlp.setPreviewFormat = function () {
   const value = trmnlp.formatSelect.value;
   localStorage.setItem("trmnlp-format", value);
 
-  trmnlp.setIframeSrc(`/render/${trmnlp.view}.${value}`);
+  trmnlp.setFrameSrc(`/render/${trmnlp.view}.${value}`);
 };
 
-trmnlp.setIframeSrc = function (src) {
+trmnlp.setFrameSrc = function (src) {
   document.querySelector(".spinner").style.display = "inline-block";
-  trmnlp.iframe.src = src;
+  trmnlp.frame.setSrc(src);
 };
 
 document.addEventListener("DOMContentLoaded", function () {
   trmnlp.view = document.querySelector("meta[name='trmnl-view']").content;
-  trmnlp.iframe = document.querySelector("iframe");
+  trmnlp.frame = document.querySelector("trmnl-frame");
   trmnlp.caseSelect = document.querySelector(".select-case");
   trmnlp.formatSelect = document.querySelector(".select-format");
   trmnlp.userData = document.getElementById("user-data");
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   trmnlp.caseSelect.value = caseValue;
   trmnlp.caseSelect.addEventListener("change", () => {
-    trmnlp.setCaseImage();
+    trmnlp.setFrameColor();
   });
 
   trmnlp.formatSelect.value = formatValue;
@@ -66,10 +66,15 @@ document.addEventListener("DOMContentLoaded", function () {
     trmnlp.setPreviewFormat();
   });
 
-  trmnlp.iframe.addEventListener("load", () => {
+  trmnlp.frame._iframe.addEventListener("load", () => {
     document.querySelector(".spinner").style.display = "none";
+
+    // On page load, trmnl-frame loads "about:blank", so wait for that to load
+    // before updating the src to the preview.
+    if (trmnlp.frame._src === null) {
+      trmnlp.setPreviewFormat();
+    }
   });
 
-  trmnlp.setCaseImage();
-  trmnlp.setPreviewFormat();
+  trmnlp.setFrameColor();
 });

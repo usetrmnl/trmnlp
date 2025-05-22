@@ -9,6 +9,7 @@
     <title>TRMNL Preview</title>
     
     <link rel="stylesheet" href="/index.css">
+    <script src="/trmnl-component.js" defer></script>
     <script src="/index.js"></script>
 </head>
 <body>
@@ -20,27 +21,25 @@
                 <a class="<%= 'active' if @view == 'half_vertical' %>" href="/half_vertical">Half Vertical</a>
                 <a class="<%= 'active' if @view == 'quadrant' %>" href="/quadrant">Quadrant</a>
             </div>
-            <div style="display: flex; gap: 0.3em;">
+            <div style="display: flex; gap: 0.3em; align-items: center;">
                 <div class="spinner" style="display: none;"></div>
                 <select class="select-format">
                     <option value="bmp">BMP</option>
                     <option value="html" selected>HTML</option>
                 </select>
                 <select class="select-case">
-                    <option value="none">None</option>
                     <option value="white">White</option>
-                    <option value="black" selected>Black</option>
-                    <option value="clear">Clear</option>
+                    <option value="black">Black</option>
+                    <option value="mint">Mint</option>
+                    <option value="gray">Gray</option>
+                    <option value="wood">Wood</option>
                 </select>
 
                 <a href="/poll">Poll</a>
             </div>
         </menu>
 
-        <div class="case case--black">
-            <iframe width="800" height="480"></iframe>
-            <div class="case-overlay"></div>
-        </div>
+        <trmnl-frame>Rendering…</trmnl-frame>
 
         <pre id="user-data"><%= @user_data %></pre>
     </main>
