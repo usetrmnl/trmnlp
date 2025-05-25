@@ -114,6 +114,15 @@ The `settings.yml` file is part of the plugin definition.
 
 See [TRMNL documentation](https://help.usetrmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0) for details on this file's contents.
 
+
+## Tests
+
+To test, run:
+
+```sh
+bin/rake
+```
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/usetrmnl/trmnlp.

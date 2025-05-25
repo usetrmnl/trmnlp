@@ -26,7 +26,7 @@ module TRMNLP
         (@config['watch'] || []).map { |watch_path| paths.expand(watch_path) }.uniq
       end
 
-      def custom_fields = @config['custom_fields'] || {}
+      def custom_fields = @config.fetch('custom_fields', {}).transform_values(&:to_s)
 
       def user_data_overrides = @config['variables'] || {}
 
