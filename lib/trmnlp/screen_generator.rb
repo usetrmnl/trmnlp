@@ -1,4 +1,3 @@
-require 'ferrum'
 require 'mini_magick'
 require 'puppeteer-ruby'
 require 'base64'
