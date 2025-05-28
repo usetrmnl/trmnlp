@@ -171,9 +171,6 @@ module TRMNLP
         # Apply Floyd-Steinberg dithering for better quality
         m.dither << 'FloydSteinberg'
         
-        # Reduce to 2 colors (black and white)
-        m.colors << 2
-        
         # Remap to a 50% gray pattern for better dithering
         m.remap << 'pattern:gray50'
         
