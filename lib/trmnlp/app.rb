@@ -86,7 +86,7 @@ module TRMNLP
         end
       end
 
-      get "/render/#{view}.bmp" do
+      get "/render/#{view}.png" do
         @view = view
         html = @context.render_full_page(view)
         generator = ScreenGenerator.new(html, image: true)

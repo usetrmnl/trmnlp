@@ -47,7 +47,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activesupport", "~> 8.0"
   spec.add_dependency "actionview", "~> 8.0"
 
-  # BMP rendering
+  # PNG rendering
   spec.add_dependency 'puppeteer-ruby', '~> 0.45.6'
   spec.add_dependency 'mini_magick', '~> 4.12.0'
 

@@ -2,7 +2,7 @@
 
 A basic self-hosted web server to ease the development and sharing of [TRMNL](https://usetrmnl.com/) plugins.
 
-[Liquid](https://shopify.github.io/liquid/) templates are rendered leveraging the [TRMNL Design System](https://usetrmnl.com/framework). They may be generated as HTML (faster, and a good approximation of the final result) or as BMP images (slower, but more accurate).
+[Liquid](https://shopify.github.io/liquid/) templates are rendered leveraging the [TRMNL Design System](https://usetrmnl.com/framework). They may be generated as HTML (faster, and a good approximation of the final result) or as PNG images (slower, but more accurate).
 
 The server watches the filesystem for changes to the Liquid templates, seamlessly updating the preview without the need to refresh.
 
@@ -57,7 +57,7 @@ trmnlp push                  # upload
 Prerequisites:
 
 - Ruby 3.x
-- For BMP rendering (optional):
+- For PNG rendering (optional):
   - Firefox
   - ImageMagick
 

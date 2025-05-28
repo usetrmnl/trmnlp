@@ -159,7 +159,7 @@ module TRMNLP
         m.monochrome # Use built-in smart monochrome dithering (but it's not working as expected)
         m.depth(color_depth) # Should be set to 1 for 1-bit output
         m.strip # Remove any additional metadata
-        m << ('bmp3:' << img.path)
+        m << img.path
       end
     end
 
@@ -190,8 +190,7 @@ module TRMNLP
         # Remove any metadata to reduce file size
         m.strip
         
-        # Output as BMP3 format (Windows BMP v3)
-        m << ('bmp3:' << img.path)
+        m << img.path
       end
     end
 
