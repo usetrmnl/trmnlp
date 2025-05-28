@@ -110,11 +110,7 @@ module TRMNLP
     def process
       convert_to_image
       image ? mono_image(output) : mono(output)
-      output.path
-    ensure
-      # Ensure tempfile cleanup
-      output&.close rescue nil
-      output&.unlink rescue nil
+      output
     end
 
     private
