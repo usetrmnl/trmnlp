@@ -86,12 +86,16 @@ module TRMNLP
         end
       end
 
-      get "/render/#{view}.bmp" do
+      get "/render/#{view}.png" do
         @view = view
         html = @context.render_full_page(view)
         generator = ScreenGenerator.new(html, image: true)
-        img_path = generator.process
-        send_file img_path, type: 'image/png', disposition: 'inline'
+        temp_image = generator.process
+        
+        send_file temp_image.path, type: 'image/png', disposition: 'inline'
+
+        temp_image.close
+        temp_image.unlink
       end
     end
   end
