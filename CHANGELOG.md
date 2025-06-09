@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.4
+
+- Added `shared.liquid` file to template (@mariovisic)
+- Stringified custom field values to match production (@mariovisic)
+- Optimized image generation (@sd416)
+- Fixed preview from growing when JSON data becomes too wide (@stephenyeargin)
+
 ## 0.5.3
 
 - Added support for [reusable markup](https://docs.usetrmnl.com/go/reusing-markup) in `shared.liquid`
