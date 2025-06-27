@@ -1,6 +1,7 @@
 body {
   font-family: sans-serif;
   margin: 10px;
+  background-color: #eaebef;
 }
 
 main {
@@ -19,7 +20,7 @@ menu {
 
 menu a {
   padding: 0.5em 1em;
-  background: #ddd;
+  background: #c7cbd5;
   border-radius: 0.5em;
   display: inline-block;
   text-decoration: none;
@@ -61,7 +62,16 @@ pre > code {
 
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #1f1f1f;
+    background-color: #191b21;
     color: #ffffff;
+  }
+
+  menu a {
+    background-color: #262932;
+    color: #b1b6c4;
+  }
+
+  menu a:hover {
+    background-color: #2f333e;
   }
 }
