@@ -1,5 +1,10 @@
 # Changelog
 
+## vNext
+
+- Added dark mode (@stephenyeargin)
+- Added override for `polling_url` in project config (@heroheman)
+
 ## 0.5.4
 
 - Added `shared.liquid` file to template (@mariovisic)
