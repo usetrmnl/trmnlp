@@ -4,6 +4,7 @@
 
 - Added dark mode (@stephenyeargin)
 - Added override for `polling_url` in project config (@heroheman)
+- Reworked `bin/dev` into more generic `bin/trmnlp`
 
 ## 0.5.4
 

@@ -52,7 +52,11 @@ trmnlp push                  # upload
 
 ## Running trmnlp
 
-### Via RubyGems
+The `bin/trmnlp` script is provided as a convenience. It will use the local Ruby gem if available, falling back to the `trmnl/trmnlp` Docker image.
+
+You can modify the `bin/trmnlp` script to set up environment variables (plugin secrets, etc.) before running the server.
+
+### Installing via RubyGems
 
 Prerequisites:
 
@@ -66,13 +70,13 @@ gem install trmnl_preview
 trmnlp serve
 ```
 
-### Via Docker (`trmnlp serve` only)
+### Installing via Docker
 
 ```sh
 docker run \
-    -p 4567:4567 \
-    -v /path/to/plugin/on/host:/plugin \
-    trmnl/trmnlp
+    --publish 4567:4567 \
+    --volume ".:/plugin" \
+    trmnl/trmnlp serve
 ```
 
 ## `.trmnlp.yml` Reference - Project Config

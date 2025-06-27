@@ -14,6 +14,8 @@ module TRMNLP
 
     def self.exit_on_failure? = true
 
+    def self.default_bind = File.exist?('/.dockerenv') ? '0.0.0.0' : '127.0.0.1'
+
     desc 'build', 'Generate static HTML files'
     def build
       Commands::Build.new(options).call
@@ -52,7 +54,7 @@ module TRMNLP
     end
 
     desc 'serve', 'Start a local dev server'
-    method_option :bind, type: :string, default: '127.0.0.1', aliases: '-b', desc: 'Bind address'
+    method_option :bind, type: :string, default: default_bind, aliases: '-b', desc: 'Bind address'
     method_option :port, type: :numeric, default: 4567, aliases: '-p', desc: 'Port number'
     def serve
       Commands::Serve.new(options).call

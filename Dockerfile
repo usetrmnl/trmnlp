@@ -42,4 +42,5 @@ RUN apt-get update && apt-get install -y \
 
 EXPOSE 4567
 
-ENTRYPOINT [ "bundle", "exec", "/app/bin/trmnlp", "serve", "-d", "/plugin", "-b", "0.0.0.0" ]
+WORKDIR /plugin
+ENTRYPOINT [ "/app/bin/trmnlp" ]
