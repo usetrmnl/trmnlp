@@ -29,18 +29,18 @@ module TRMNLP
 
         size = 0
 
-        Tempfile.create(binmode: true) do |temp_file|
-          Zip::File.open(temp_file.path, Zip::File::CREATE) do |zip_file|
-            paths.src_files.each do |file|
-              zip_file.add(File.basename(file), file)
-            end
+        zip_path = 'upload.zip'
+        f = Zip::File.open(zip_path, Zip::File::CREATE) do |zip_file|
+          paths.src_files.each do |file|
+            zip_file.add(File.basename(file), file)
           end
-        
-          response = api.post_plugin_setting_archive(plugin_settings_id, temp_file.path)
-          paths.plugin_config.write(response.dig('data', 'settings_yaml'))
-
-          size = File.size(temp_file.path)
         end
+      
+        response = api.post_plugin_setting_archive(plugin_settings_id, zip_path)
+        paths.plugin_config.write(response.dig('data', 'settings_yaml'))
+
+        size = File.size(zip_path)
+        File.delete(zip_path)
         
         output <<~HEREDOC
         Uploaded plugin (#{size} bytes)

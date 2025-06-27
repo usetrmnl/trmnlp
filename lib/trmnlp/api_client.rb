@@ -26,11 +26,15 @@ module TRMNLP
     end
 
     def post_plugin_setting_archive(id, path)
+      filepart = Faraday::Multipart::FilePart.new(path, 'application/zip')
+
       payload = {
-        file: Faraday::Multipart::FilePart.new(path, 'application/zip')
+        file: filepart
       }
 
       response = conn.post("plugin_settings/#{id}/archive", payload)
+
+      filepart.close
 
       if response.status == 200
         JSON.parse(response.body)
