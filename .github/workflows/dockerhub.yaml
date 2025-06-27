@@ -2,7 +2,11 @@
 
 name: Build and push image to Docker Hub
 
-on: workflow_dispatch
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - "v*"
 
 jobs:
   build:
