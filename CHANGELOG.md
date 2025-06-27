@@ -1,10 +1,11 @@
 # Changelog
 
-## vNext
+## 0.5.5
 
 - Added dark mode (@stephenyeargin)
 - Added override for `polling_url` in project config (@heroheman)
 - Reworked `bin/dev` into more generic `bin/trmnlp`
+- Fixed pull, push, and clone commands on Windows (@eugenio)
 
 ## 0.5.4
 

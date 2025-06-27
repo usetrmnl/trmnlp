@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    trmnl_preview (0.5.4)
+    trmnl_preview (0.5.5)
       actionview (~> 8.0)
       activesupport (~> 8.0)
       faraday (~> 2.1)
