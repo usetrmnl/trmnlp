@@ -35,9 +35,10 @@ menu a.active {
   color: white;
 }
 
-pre {
+pre > code {
   max-width: 950px;
   overflow-x: scroll;
+  border-radius: 0.5em;
 }
 
 .spinner {

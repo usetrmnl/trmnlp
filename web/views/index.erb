@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="/index.css">
     <script src="/trmnl-component.js" defer></script>
     <script src="/index.js"></script>
+
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="/highlight/styles/atom-one-dark.min.css">
+    <script src="/highlight/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
     <main>
@@ -41,7 +46,7 @@
 
         <trmnl-frame>Rendering…</trmnl-frame>
 
-        <pre id="user-data"><%= @user_data %></pre>
+        <pre id="user-data"><code><%= @user_data %></code></pre>
     </main>
 </body>
 </html>
