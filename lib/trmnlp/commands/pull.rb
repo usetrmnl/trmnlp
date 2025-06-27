@@ -19,11 +19,11 @@ module TRMNLP
         end
 
         api = APIClient.new(config)
-        temp_path = api.get_plugin_setting_archive(plugin_settings_id)
+        tempfile = api.get_plugin_setting_archive(plugin_settings_id)
         size = 0
 
         begin
-          Zip::File.open(temp_path) do |zip_file|
+          Zip::File.open(tempfile.path) do |zip_file|
             zip_file.each do |entry|
               dest_path = paths.src_dir.join(entry.name)
               dest_path.dirname.mkpath
@@ -31,9 +31,9 @@ module TRMNLP
             end
           end
 
-          size = File.size(temp_path)
+          size = File.size(tempfile.path)
         ensure
-          temp_path.delete
+          tempfile.close
         end
 
         puts "Downloaded plugin (#{size} bytes)"

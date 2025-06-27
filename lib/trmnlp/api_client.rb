@@ -18,8 +18,8 @@ module TRMNLP
         temp_file.write(response.body)
         temp_file.rewind
 
-        # return the path to the temp file
-        Pathname.new(temp_file.path)
+        # return the temp file IO
+        temp_file
       else
         raise Error, "failed to download plugin settings archive: #{response.status} #{response.body}"
       end
