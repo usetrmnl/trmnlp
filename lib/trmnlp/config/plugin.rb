@@ -3,9 +3,9 @@ require 'yaml'
 module TRMNLP
   class Config
     class Plugin
-      def initialize(paths, trmnlp_config)
+      def initialize(paths, project_config)
         @paths = paths
-        @trmnlp_config = trmnlp_config
+        @project_config = project_config
         reload!
       end
 
@@ -23,11 +23,12 @@ module TRMNLP
       def static? = strategy == 'static'
 
       def polling_urls
-        return [] if @config['polling_url'].nil? || @config['polling_url'].empty?
+        # allow project-level config to override
+        urls = project_config.user_data_overrides.dig('trmnl', 'plugin_settings', 'polling_url') || @config['polling_url']
 
-        urls = @config['polling_url'].split("\n").map(&:strip)
+        return [] if urls.nil?
 
-        urls.map { |url| with_custom_fields(url) }
+        urls.strip.split("\n").map { |url| with_custom_fields(url.strip) }
       end
 
       def polling_url_text = polling_urls.join("\r\n") # for {{ trmnl }}
@@ -56,9 +57,9 @@ module TRMNLP
 
       private
 
-      attr_reader :paths, :trmnlp_config
+      attr_reader :paths, :project_config
 
-      def with_custom_fields(value) = trmnlp_config.with_custom_fields(value)
+      def with_custom_fields(value) = project_config.with_custom_fields(value)
 
       # copied from TRMNL core
       def string_to_hash(str, delimiter: '=')
