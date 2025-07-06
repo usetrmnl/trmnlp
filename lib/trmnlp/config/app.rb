@@ -17,7 +17,11 @@ module TRMNLP
       def logged_in? = api_key && !api_key.empty?
       def logged_out? = !logged_in?
 
-      def api_key = @config['api_key']
+      def api_key
+        env_api_key = ENV['TRMNL_API_KEY']
+        return env_api_key if env_api_key && !env_api_key.empty?
+        @config['api_key']
+      end
 
       def api_key=(key)
         @config['api_key'] = key
