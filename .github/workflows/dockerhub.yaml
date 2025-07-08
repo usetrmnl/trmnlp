@@ -26,9 +26,14 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Get Ruby Version
+        run: echo "RUBY_VERSION=$(cat .ruby-version)" >> $GITHUB_ENV
+
       - name: Build
         uses: docker/build-push-action@v6
         with:
+          build-args: |
+            RUBY_VERSION=${{ env.RUBY_VERSION }}
           platforms: |
             linux/amd64
             linux/arm64
