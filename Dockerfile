@@ -20,6 +20,10 @@ RUN bundle install
 
 FROM ruby:${RUBY_VERSION} AS runner
 
+RUN apt-get update && apt-get install -y \
+    imagemagick \
+    firefox-esr
+
 WORKDIR /app
 
 COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
@@ -36,10 +40,6 @@ COPY web/ /app/web/
 COPY bin/ /app/bin/
 
 RUN bundle install
-
-RUN apt-get update && apt-get install -y \
-    imagemagick \
-    firefox-esr
 
 EXPOSE 4567
 
