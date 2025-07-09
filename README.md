@@ -31,11 +31,11 @@ This is the structure of a plugin project:
 You can start building a plugin locally, then `push` it to the TRMNL server for display on your device.
 
 ```sh
-trmnlp init my_plugin  # generate
-cd my_plugin
-trmnlp serve           # develop locally
-trmnlp login           # authenticate
-trmnlp push            # upload
+trmnlp init [my_plugin]  # generate
+cd [my_plugin]
+trmnlp serve             # develop locally
+trmnlp login             # authenticate
+trmnlp push              # upload
 ```
 
 ## Modifying an Existing Plugin
@@ -43,12 +43,18 @@ trmnlp push            # upload
 If you have built a plugin with the web-based editor, you can `clone` it, work on it locally, and `push` changes back to the server.
 
 ```sh
-trmnlp login                 # authenticate
-trmnlp clone my_plugin [id]  # first download
-cd my_plugin
-trmnlp serve                 # develop locally
-trmnlp push                  # upload
+trmnlp login                   # authenticate
+trmnlp clone [my_plugin] [id]  # first download
+cd [my_plugin]
+trmnlp serve                   # develop locally
+trmnlp push                    # upload
 ```
+
+## Authentication
+
+The `trmnlp login` command saves your API key to `~/.config/trmnlp/config.yml`.
+
+If an environment variable is more convenient (for example in a CI/CD pipeline), you can set `$TRMNL_API_KEY` instead.
 
 ## Running trmnlp
 
