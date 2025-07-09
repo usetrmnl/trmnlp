@@ -33,6 +33,7 @@ COPY Gemfile \
 COPY lib/ /app/lib/
 COPY web/ /app/web/
 COPY bin/ /app/bin/
+COPY templates/ /app/templates/
 
 RUN bundle install
 
