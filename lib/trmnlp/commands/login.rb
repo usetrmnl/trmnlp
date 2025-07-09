@@ -6,7 +6,9 @@ module TRMNLP
       def call
         if config.app.logged_in?
           anonymous_key = config.app.api_key[0..10] + '*' * (config.app.api_key.length - 11)
-          output "Currently authenticated as: #{anonymous_key}" 
+          output "Currently authenticated as: #{anonymous_key}"
+          confirm = prompt("You are already authenticated. Do you want to re-authenticate? (y/N): ")
+          return unless confirm.strip.downcase == 'y'
         end
 
         output "Please visit #{config.app.account_uri} to grab your API key, then paste it here."
