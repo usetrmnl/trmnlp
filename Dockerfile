@@ -1,6 +1,7 @@
+ARG RUBY_VERSION=3.4.1
 # ----- BUILD -----
 
-FROM ruby:3.4.1 AS builder
+FROM ruby:${RUBY_VERSION} AS builder
 
 WORKDIR /app
 
@@ -17,7 +18,11 @@ RUN bundle install
 
 # ----- RUN -----
 
-FROM ruby:3.4.1 AS runner
+FROM ruby:${RUBY_VERSION} AS runner
+
+RUN apt-get update && apt-get install -y \
+    imagemagick \
+    firefox-esr
 
 WORKDIR /app
 
@@ -36,10 +41,6 @@ COPY bin/ /app/bin/
 COPY templates/ /app/templates/
 
 RUN bundle install
-
-RUN apt-get update && apt-get install -y \
-    imagemagick \
-    firefox-esr
 
 EXPOSE 4567
 
