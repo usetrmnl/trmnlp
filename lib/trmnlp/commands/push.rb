@@ -52,6 +52,13 @@ module TRMNLP
               #{config.app.playlists_uri}
           HEREDOC
         end
+      rescue
+        if is_new && plugin_settings_id
+          output 'Error during creation, cleaning up...'
+          api.delete_plugin_setting(plugin_settings_id)
+        end
+
+        raise
       ensure
         File.delete(zip_path) if File.exist?(zip_path)
       end

@@ -53,6 +53,16 @@ module TRMNLP
       end
     end
 
+    def delete_plugin_setting(id)
+      response = conn.delete("plugin_settings/#{id}")
+
+      if response.status == 204
+        true
+      else
+        raise Error, "failed to delete plugin setting: #{response.status} #{response.body}"
+      end
+    end
+
     private
   
     attr_reader :config
