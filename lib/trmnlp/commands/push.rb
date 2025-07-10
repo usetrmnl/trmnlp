@@ -11,6 +11,7 @@ module TRMNLP
         authenticate!
 
         is_new = false
+        zip_path = 'upload.zip'
 
         api = APIClient.new(config)
 
@@ -27,10 +28,7 @@ module TRMNLP
           raise Error, 'aborting' unless answer == 'y' || answer == 'yes'
         end
 
-        size = 0
-
-        zip_path = 'upload.zip'
-        f = Zip::File.open(zip_path, Zip::File::CREATE) do |zip_file|
+        Zip::File.open(zip_path, Zip::File::CREATE) do |zip_file|
           paths.src_files.each do |file|
             zip_file.add(File.basename(file), file)
           end
@@ -40,7 +38,6 @@ module TRMNLP
         paths.plugin_config.write(response.dig('data', 'settings_yaml'))
 
         size = File.size(zip_path)
-        File.delete(zip_path)
         
         output <<~HEREDOC
         Uploaded plugin (#{size} bytes)
@@ -55,6 +52,8 @@ module TRMNLP
               #{config.app.playlists_uri}
           HEREDOC
         end
+      ensure
+        File.delete(zip_path) if File.exist?(zip_path)
       end
     end
   end
