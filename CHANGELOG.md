@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.6
+
+- Fixed bug that left blank plugins on server after upload failed
+- Fixed bug creating upload.zip after previous upload had failed
+- Added support to read API key fromk `TRMNL_API_KEY` environment variable (@andi4000)
+- Fixed `init` command in Docker container (@jbarreiros)
+- Automatically remove ephemeral Docker container after exit (@andi4000)
+
 ## 0.5.5
 
 - Added dark mode (@stephenyeargin)
