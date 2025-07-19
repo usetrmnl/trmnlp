@@ -13,6 +13,7 @@ fi
 if command -v docker &> /dev/null
 then
     docker run \
+        -it \
         --rm \
         --publish 4567:4567 \
         --volume "$(pwd):/plugin" \
