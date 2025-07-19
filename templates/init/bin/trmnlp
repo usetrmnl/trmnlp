@@ -16,6 +16,7 @@ then
         --rm \
         --publish 4567:4567 \
         --volume "$(pwd):/plugin" \
+        --volume "/root/.config/trmnlp:/root/.config/trmnlp" \
         trmnl/trmnlp "$@"
     exit
 fi
