@@ -3,11 +3,10 @@ require 'erb'
 require 'faraday'
 require 'filewatcher'
 require 'json'
-require 'liquid'
+require 'trmnl/liquid'
 
 require_relative 'config'
 require_relative 'paths'
-require_relative '../markup/template'
 
 module TRMNLP
   class Context
@@ -129,7 +128,7 @@ module TRMNLP
         full_markup = template_path.read
       end
 
-      user_template = Markup::Template.parse(full_markup, environment: liquid_environment)
+      user_template = Liquid::Template.parse(full_markup, environment: liquid_environment)
       user_template.render(user_data)
     rescue StandardError => e
       e.message
@@ -206,10 +205,7 @@ module TRMNLP
     end
 
     def liquid_environment
-      @liquid_environment ||= Liquid::Environment.build do |env|
-        env.register_filter(Markup::CustomLiquidFilters)
-        env.register_tag('template', Markup::TemplateTag)
-
+      @liquid_environment ||= TRMNL::Liquid.build_environment do |env|
         config.project.user_filters.each do |module_name, relative_path|
           require paths.root_dir.join(relative_path)
           env.register_filter(Object.const_get(module_name))

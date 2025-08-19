@@ -43,9 +43,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "faye-websocket", "~> 0.11.3"
 
   # HTML rendering
-  spec.add_dependency "liquid", "~> 5.6"
   spec.add_dependency "activesupport", "~> 8.0"
-  spec.add_dependency "actionview", "~> 8.0"
+  spec.add_dependency "trmnl-liquid", "~> 0.2.0"
 
   # PNG rendering
   spec.add_dependency 'puppeteer-ruby', '~> 0.45.6'

@@ -1,3 +1,4 @@
+require 'trmnl/liquid'
 require 'yaml'
 
 module TRMNLP
@@ -33,7 +34,7 @@ module TRMNLP
       # for interpolating custom_fields into polling_* options
       def with_custom_fields(value)
         custom_fields_with_env = custom_fields.transform_values { |v| with_env(v) }
-        Liquid::Template.parse(value).render(custom_fields_with_env)
+        parse_liquid(value).render(custom_fields_with_env)
       end
 
       def time_zone = @config['time_zone'] || 'UTC'
@@ -42,7 +43,11 @@ module TRMNLP
 
       # for interpolating ENV vars into custom_fields
       def with_env(value)
-        Liquid::Template.parse(value).render({ 'env' => ENV.to_h })
+        parse_liquid(value).render({ 'env' => ENV.to_h })
+      end
+
+      def parse_liquid(contents)
+        Liquid::Template.parse(contents, environment: TRMNL::Liquid.build_environment)
       end
     end
   end
