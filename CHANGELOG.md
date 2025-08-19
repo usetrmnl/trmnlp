@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.7
+
+- Use the `trmnl-liquid` gem so tags and filters stay up-to-date with the core offering
+
 ## 0.5.6
 
 - Fixed bug that left blank plugins on server after upload failed
