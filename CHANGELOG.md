@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.8
+
+- Improve Docker commands in `bin/trmnlp` (@jrand0m, @jbarreiros)
+
 ## 0.5.7
 
 - Use the `trmnl-liquid` gem so tags and filters stay up-to-date with the core offering
