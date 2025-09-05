@@ -71,9 +71,12 @@ module TRMNLP
       config.plugin.polling_urls.each.with_index do |url, i|
         verb = config.plugin.polling_verb.upcase
 
-        print "#{verb} #{url}... "
+        # Convert semicolons to ampersands in query parameters for compatibility
+        normalized_url = url.gsub(/;/, '&')
 
-        conn = Faraday.new(url:, headers: config.plugin.polling_headers)
+        print "#{verb} #{normalized_url}... "
+
+        conn = Faraday.new(normalized_url:, headers: config.plugin.polling_headers)
 
         case verb
         when 'GET'
