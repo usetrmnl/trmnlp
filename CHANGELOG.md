@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.9
+
+- Add `pathname` dependency
+
 ## 0.5.8
 
 - Improve Docker commands in `bin/trmnlp` (@jrand0m, @jbarreiros)
