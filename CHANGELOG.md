@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.10
+
+- Fix interpolation of multi-line polling URLs with custom fields
+
 ## 0.5.9
 
 - Add `pathname` dependency

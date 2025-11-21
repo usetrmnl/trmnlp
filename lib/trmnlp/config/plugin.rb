@@ -28,7 +28,7 @@ module TRMNLP
 
         return [] if urls.nil?
 
-        urls.strip.split("\n").map { |url| with_custom_fields(url.strip) }
+        with_custom_fields(urls).strip.split("\n")
       end
 
       def polling_url_text = polling_urls.join("\r\n") # for {{ trmnl }}
