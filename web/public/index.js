@@ -24,7 +24,7 @@ trmnlp.connectLiveRender = function () {
 
 trmnlp.setFrameColor = function () {
   const value = trmnlp.caseSelect.value;
-  document.querySelector("trmnl-frame").setAttribute("color", value);
+  trmnlp.frame.setAttribute("color", value);
   localStorage.setItem("trmnlp-case", value);
 };
 
@@ -36,7 +36,7 @@ trmnlp.setPreviewFormat = function () {
 };
 
 trmnlp.setFrameSrc = function (src) {
-  document.querySelector(".spinner").style.display = "inline-block";
+  trmnlp.spinner.style.display = "inline-block";
   trmnlp.frame.setSrc(src);
 };
 
@@ -46,6 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
   trmnlp.caseSelect = document.querySelector(".select-case");
   trmnlp.formatSelect = document.querySelector(".select-format");
   trmnlp.userData = document.getElementById("user-data");
+  trmnlp.spinner = document.querySelector(".spinner");
   trmnlp.isLiveReloadEnabled =
     document.querySelector("meta[name='live-reload']").content === "true";
 
@@ -67,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   trmnlp.frame._iframe.addEventListener("load", () => {
-    document.querySelector(".spinner").style.display = "none";
+    trmnlp.spinner.style.display = "none";
 
     // On page load, trmnl-frame loads "about:blank", so wait for that to load
     // before updating the src to the preview.
