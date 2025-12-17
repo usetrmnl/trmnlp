@@ -11,7 +11,7 @@ trmnlp.connectLiveRender = function () {
     const payload = JSON.parse(msg.data);
 
     if (payload.type === "reload") {
-      trmnlp.setFrameSrc(trmnlp.frame._src);
+      trmnlp.setFrameSrc(trmnlp.iframe.src);
       trmnlp.userData.textContent = JSON.stringify(payload.user_data, null, 2);
     }
   };
@@ -22,11 +22,6 @@ trmnlp.connectLiveRender = function () {
   };
 };
 
-trmnlp.setFrameColor = function () {
-  const value = trmnlp.caseSelect.value;
-  trmnlp.frame.setAttribute("color", value);
-  localStorage.setItem("trmnlp-case", value);
-};
 
 trmnlp.setPreviewFormat = function () {
   const value = trmnlp.formatSelect.value;
@@ -37,13 +32,12 @@ trmnlp.setPreviewFormat = function () {
 
 trmnlp.setFrameSrc = function (src) {
   trmnlp.spinner.style.display = "inline-block";
-  trmnlp.frame.setSrc(src);
+  trmnlp.iframe.src = src;
 };
 
 document.addEventListener("DOMContentLoaded", function () {
   trmnlp.view = document.querySelector("meta[name='trmnl-view']").content;
-  trmnlp.frame = document.querySelector("trmnl-frame");
-  trmnlp.caseSelect = document.querySelector(".select-case");
+  trmnlp.iframe = document.querySelector("iframe");
   trmnlp.formatSelect = document.querySelector(".select-format");
   trmnlp.userData = document.getElementById("user-data");
   trmnlp.spinner = document.querySelector(".spinner");
@@ -57,25 +51,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const caseValue = localStorage.getItem("trmnlp-case") || "black";
   const formatValue = localStorage.getItem("trmnlp-format") || "html";
 
-  trmnlp.caseSelect.value = caseValue;
-  trmnlp.caseSelect.addEventListener("change", () => {
-    trmnlp.setFrameColor();
-  });
-
   trmnlp.formatSelect.value = formatValue;
   trmnlp.formatSelect.addEventListener("change", () => {
     trmnlp.setPreviewFormat();
   });
 
-  trmnlp.frame._iframe.addEventListener("load", () => {
+  trmnlp.iframe.addEventListener("load", () => {
     trmnlp.spinner.style.display = "none";
-
-    // On page load, trmnl-frame loads "about:blank", so wait for that to load
-    // before updating the src to the preview.
-    if (trmnlp.frame._src === null) {
-      trmnlp.setPreviewFormat();
-    }
   });
-
-  trmnlp.setFrameColor();
+  
+  trmnlp.setPreviewFormat();
 });

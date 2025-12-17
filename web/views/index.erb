@@ -9,7 +9,6 @@
     <title>TRMNL Preview</title>
     
     <link rel="stylesheet" href="/index.css">
-    <script src="/trmnl-component.js" defer></script>
     <script src="/index.js"></script>
 
     <!-- Highlight.js for syntax highlighting -->
@@ -32,19 +31,12 @@
                     <option value="png">PNG</option>
                     <option value="html" selected>HTML</option>
                 </select>
-                <select class="select-case">
-                    <option value="white">White</option>
-                    <option value="black">Black</option>
-                    <option value="mint">Sage</option>
-                    <option value="gray">Gray</option>
-                    <option value="wood">Wood</option>
-                </select>
 
                 <a href="/poll">Poll</a>
             </div>
         </menu>
 
-        <trmnl-frame>Rendering…</trmnl-frame>
+        <iframe style="width: 800px; height: 480px; border: 1px solid black; background: white;">Rendering…</iframe>
 
         <pre id="user-data"><code><%= @user_data %></code></pre>
     </main>

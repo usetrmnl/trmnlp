@@ -1,4 +1,9 @@
+
 # Changelog
+
+## 0.6.0
+
+- Dropped trmnl-component in lieu of plain iframe
 
 ## 0.5.10
 
