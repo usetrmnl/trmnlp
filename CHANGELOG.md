@@ -4,6 +4,7 @@
 ## 0.6.0
 
 - Dropped trmnl-component in lieu of plain iframe
+- Add [trmnl-picker](https://github.com/usetrmnl/trmnl-picker) to support new TRMNL and BYOD screens
 
 ## 0.5.10
 

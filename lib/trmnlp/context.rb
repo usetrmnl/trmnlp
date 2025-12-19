@@ -142,10 +142,8 @@ module TRMNLP
       end)
     end
 
-    def screen_classes
-      classes = 'screen'
+    def screen_classes(classes = 'screen')
       classes << ' screen--no-bleed' if config.plugin.no_screen_padding == 'yes'
-      classes << ' dark-mode' if config.plugin.dark_mode == 'yes'
       classes
     end
 

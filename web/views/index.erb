@@ -9,6 +9,7 @@
     <title>TRMNL Preview</title>
     
     <link rel="stylesheet" href="/index.css">
+    <script src="/trmnl-picker.js"></script>
     <script src="/index.js"></script>
 
     <!-- Highlight.js for syntax highlighting -->
@@ -18,21 +19,44 @@
 </head>
 <body>
     <main>
+        <div class="tabs">
+            <a class="tab <%= 'active' if @view == 'full' %>" href="/full">Full</a>
+            <a class="tab <%= 'active' if @view == 'half_horizontal' %>" href="/half_horizontal">Half Horizontal</a>
+            <a class="tab <%= 'active' if @view == 'half_vertical' %>" href="/half_vertical">Half Vertical</a>
+            <a class="tab <%= 'active' if @view == 'quadrant' %>" href="/quadrant">Quadrant</a>
+            <div style="flex-grow: 1;"></div>
+            <div class="spinner" style="display: none;"></div>
+        </div>
+
         <menu>
-            <div>
-                <a class="<%= 'active' if @view == 'full' %>" href="/full">Full</a>
-                <a class="<%= 'active' if @view == 'half_horizontal' %>" href="/half_horizontal">Half Horizontal</a>
-                <a class="<%= 'active' if @view == 'half_vertical' %>" href="/half_vertical">Half Vertical</a>
-                <a class="<%= 'active' if @view == 'quadrant' %>" href="/quadrant">Quadrant</a>
-            </div>
+            <form id="picker-form">
+                <!-- Required: Model selector -->
+                <select data-model-select></select>
+
+                <!-- Required: Palette selector -->
+                <select data-palette-select></select>
+
+                <!-- Optional: Orientation toggle -->
+                <button class="btn" type="button" data-orientation-toggle>
+                    <span data-orientation-text>Landscape</span>
+                </button>
+
+                <!-- Optional: Dark mode toggle -->
+                <button class="btn" type="button" data-dark-mode-toggle>
+                    <span data-dark-mode-text>Light Mode</span>
+                </button>
+
+                <!-- Optional: Reset button -->
+                <button class="btn" type="button" data-reset-button>Reset</button>
+            </form>
+
             <div style="display: flex; gap: 0.3em; align-items: center;">
-                <div class="spinner" style="display: none;"></div>
                 <select class="select-format">
                     <option value="png">PNG</option>
                     <option value="html" selected>HTML</option>
                 </select>
 
-                <a href="/poll">Poll</a>
+                <a href="/poll" class="btn">Poll</a>
             </div>
         </menu>
 
