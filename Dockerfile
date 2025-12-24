@@ -51,6 +51,5 @@ COPY bin/ /app/bin/
 COPY templates/ /app/templates/
 
 EXPOSE 4567
-git
 WORKDIR /plugin
 ENTRYPOINT [ "/app/bin/trmnlp" ]
