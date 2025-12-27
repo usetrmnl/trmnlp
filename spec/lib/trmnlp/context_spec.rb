@@ -4,18 +4,31 @@ RSpec.describe TRMNLP::Context do
   let(:root_dir) { File.join(__dir__, '../../fixtures') }
   subject(:context) { described_class.new(root_dir) }
 
+  test_responses = [
+    {
+      header: 'application/json; charset=utf-8',
+      response_body: '{"key": "value", "number": 42}',
+      parsed: { 'key' => 'value', 'number' => 42 }
+    },
+    {
+      header: 'application/xml; charset=utf-8',
+      response_body: '<response attr="foobar"><key>value</key><number>42</number></response>',
+      parsed: { 'response' => { 'attr' => 'foobar', 'key' => 'value', 'number' => '42' } }
+    },
+    {
+      header: 'application/soap+xml; charset=utf-8',
+      response_body: '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><Number>42</Number></soap:Body></soap:Envelope>',
+      parsed: { 'Envelope' => { 'xmlns:soap' => 'http://www.w3.org/2003/05/soap-envelope', 'xmlns:xsd' => 'http://www.w3.org/2001/XMLSchema', 'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance', 'Body' => { 'Number' => '42' } } }
+    },
+    {
+      header: 'application/octet-stream',
+      response_body: 'foobar',
+      parsed: {}
+    }
+  ]
+
   describe '#poll_data' do
-    let(:json_response_body) { '{"key": "value", "number": 42}' }
-    let(:json_response_parsed) { { 'key' => 'value', 'number' => 42 } }
-    let(:xml_response_body) { '<response attr="foobar"><key>value</key><number>42</number></response>' }
-    let(:xml_response_parsed) { { 'response' => { 'attr' => 'foobar', 'key' => 'value', 'number' => '42' } } }
-    let(:soap_response_body) { '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><Number>42</Number></soap:Body></soap:Envelope>' }
-    let(:soap_response_parsed) { { 'Envelope' => { 'xmlns:soap' => 'http://www.w3.org/2003/05/soap-envelope', 'xmlns:xsd' => 'http://www.w3.org/2001/XMLSchema', 'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance', 'Body' => { 'Number' => '42' } } } }
     let(:faraday_connection) { instance_double(Faraday::Connection) }
-    let(:faraday_json_response) { instance_double(Faraday::Response, body: json_response_body, headers: { 'content-type' => 'application/json' }, status: 200) }
-    let(:faraday_xml_response) { instance_double(Faraday::Response, body: xml_response_body, headers: { 'content-type' => 'application/xml' }, status: 200) }
-    let(:faraday_soap_response) { instance_double(Faraday::Response, body: soap_response_body, headers: { 'content-type' => 'application/soap+xml; charset=utf-8' }, status: 200) }
-    let(:faraday_octetstream_response) { instance_double(Faraday::Response, body: 'foobar', headers: { 'content-type' => 'application/octet-stream' }, status: 200) }
     let(:faraday_no_header_response) { instance_double(Faraday::Response, body: 'foobar', headers: {}, status: 200) }
 
     before do
@@ -39,75 +52,23 @@ RSpec.describe TRMNLP::Context do
             .and_return('GET')
         end
 
-        context 'when the response has a content type of application/json' do
-          before do
-            allow(faraday_connection).to receive(:get).and_return(faraday_json_response)
-          end
+        test_responses.each do |test_response|
+          context "when the response has a content type of #{test_response[:header]}" do
+            before do
+              allow(faraday_connection).to receive(:get).and_return(instance_double(Faraday::Response, body: test_response[:response_body], headers: { 'content-type' => test_response[:header] }, status: 200))
+            end
 
-          it 'calls write_user_data with the parsed JSON from the response' do
-            context.poll_data
+            it 'calls write_user_data with the parsed response data as a hash' do
+              context.poll_data
 
-            expect(context).to have_received(:write_user_data).with(json_response_parsed)
-          end
+              expect(context).to have_received(:write_user_data).with(test_response[:parsed])
+            end
 
-          it 'returns the parsed JSON data' do
-            result = context.poll_data
+            it 'returns the parsed response data as a hash' do
+              result = context.poll_data
 
-            expect(result).to eq(json_response_parsed)
-          end
-        end
-
-        context 'when the response has a content type of application/xml' do
-          before do
-            allow(faraday_connection).to receive(:get).and_return(faraday_xml_response)
-          end
-
-          it 'calls write_user_data with the parsed XML from the response as a hash' do
-            context.poll_data
-
-            expect(context).to have_received(:write_user_data).with(xml_response_parsed)
-          end
-
-          it 'returns the parsed XML data as a hash' do
-            result = context.poll_data
-
-            expect(result).to eq(xml_response_parsed)
-          end
-        end
-
-        context 'when the response has a content type of application/soap+xml' do
-          before do
-            allow(faraday_connection).to receive(:get).and_return(faraday_soap_response)
-          end
-
-          it 'calls write_user_data with the parsed SOAP XML from the response as a hash' do
-            context.poll_data
-
-            expect(context).to have_received(:write_user_data).with(soap_response_parsed)
-          end
-
-          it 'returns the parsed SOAP XML data as a hash' do
-            result = context.poll_data
-
-            expect(result).to eq(soap_response_parsed)
-          end
-        end
-
-        context 'when the response has a content type of octet-stream' do
-          before do
-            allow(faraday_connection).to receive(:get).and_return(faraday_octetstream_response)
-          end
-
-          it 'calls write_user_data with an empty hash from the response' do
-            context.poll_data
-
-            expect(context).to have_received(:write_user_data).with({})
-          end
-
-          it 'returns an empty hash' do
-            result = context.poll_data
-
-            expect(result).to eq({})
+              expect(result).to eq(test_response[:parsed])
+            end
           end
         end
 
@@ -136,75 +97,23 @@ RSpec.describe TRMNLP::Context do
             .and_return('POST')
         end
 
-        context 'when the response has a content type of application/json' do
-          before do
-            allow(faraday_connection).to receive(:post).and_return(faraday_json_response)
-          end
+        test_responses.each do |test_response|
+          context "when the response has a content type of #{test_response[:header]}" do
+            before do
+              allow(faraday_connection).to receive(:post).and_return(instance_double(Faraday::Response, body: test_response[:response_body], headers: { 'content-type' => test_response[:header] }, status: 200))
+            end
 
-          it 'calls write_user_data with the parsed JSON from the response' do
-            context.poll_data
+            it 'calls write_user_data with the parsed response data as a hash' do
+              context.poll_data
 
-            expect(context).to have_received(:write_user_data).with(json_response_parsed)
-          end
+              expect(context).to have_received(:write_user_data).with(test_response[:parsed])
+            end
 
-          it 'returns the parsed JSON data' do
-            result = context.poll_data
+            it 'returns the parsed response data as a hash' do
+              result = context.poll_data
 
-            expect(result).to eq(json_response_parsed)
-          end
-        end
-
-        context 'when the response has a content type of application/xml' do
-          before do
-            allow(faraday_connection).to receive(:post).and_return(faraday_xml_response)
-          end
-
-          it 'calls write_user_data with the parsed XML from the response as a hash' do
-            context.poll_data
-
-            expect(context).to have_received(:write_user_data).with(xml_response_parsed)
-          end
-
-          it 'returns the parsed XML data as a hash' do
-            result = context.poll_data
-
-            expect(result).to eq(xml_response_parsed)
-          end
-        end
-
-        context 'when the response has a content type of application/soap+xml' do
-          before do
-            allow(faraday_connection).to receive(:post).and_return(faraday_soap_response)
-          end
-
-          it 'calls write_user_data with the parsed SOAP XML from the response as a hash' do
-            context.poll_data
-
-            expect(context).to have_received(:write_user_data).with(soap_response_parsed)
-          end
-
-          it 'returns the parsed SOAP XML data as a hash' do
-            result = context.poll_data
-
-            expect(result).to eq(soap_response_parsed)
-          end
-        end
-
-        context 'when the response has a content type of octet stream' do
-          before do
-            allow(faraday_connection).to receive(:post).and_return(faraday_octetstream_response)
-          end
-
-          it 'calls write_user_data with an empty hash from the response' do
-            context.poll_data
-
-            expect(context).to have_received(:write_user_data).with({})
-          end
-
-          it 'returns an empty hash' do
-            result = context.poll_data
-
-            expect(result).to eq({})
+              expect(result).to eq(test_response[:parsed])
+            end
           end
         end
 
