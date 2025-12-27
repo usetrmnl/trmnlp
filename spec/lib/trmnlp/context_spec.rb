@@ -8,7 +8,9 @@ RSpec.describe TRMNLP::Context do
     let(:response_body) { '{"key": "value", "number": 42}' }
     let(:parsed_json) { { 'key' => 'value', 'number' => 42 } }
     let(:faraday_connection) { instance_double(Faraday::Connection) }
-    let(:faraday_get_response) { instance_double(Faraday::Response, body: response_body, status: 200) }
+    let(:faraday_json_response) { instance_double(Faraday::Response, body: response_body, headers: { 'content-type' => 'application/json' }, status: 200) }
+    let(:faraday_octetstream_response) { instance_double(Faraday::Response, body: 'foobar', headers: { 'content-type' => 'application/octet-stream' }, status: 200) }
+    let(:faraday_no_header_response) { instance_double(Faraday::Response, body: 'foobar', headers: {}, status: 200) }
 
     before do
       allow(context).to receive(:write_user_data)
@@ -27,41 +29,123 @@ RSpec.describe TRMNLP::Context do
 
       context 'when plugin is configured for a GET request' do
         before do
-          allow(faraday_connection).to receive(:get).and_return(faraday_get_response)
           allow(context.config.plugin).to receive(:polling_verb)
             .and_return('GET')
         end
 
-        it 'calls write_user_data with the parsed JSON from the response' do
-          context.poll_data
+        context 'when the response has a content type of application/json' do
+          before do
+            allow(faraday_connection).to receive(:get).and_return(faraday_json_response)
+          end
 
-          expect(context).to have_received(:write_user_data).with(parsed_json)
+          it 'calls write_user_data with the parsed JSON from the response' do
+            context.poll_data
+
+            expect(context).to have_received(:write_user_data).with(parsed_json)
+          end
+
+          it 'returns the parsed JSON data' do
+            result = context.poll_data
+
+            expect(result).to eq(parsed_json)
+          end
         end
 
-        it 'returns the parsed JSON data' do
-          result = context.poll_data
+        context 'when the response has a content type of octet-stream' do
+          before do
+            allow(faraday_connection).to receive(:get).and_return(faraday_octetstream_response)
+          end
 
-          expect(result).to eq(parsed_json)
+          it 'calls write_user_data with an empty hash from the response' do
+            context.poll_data
+
+            expect(context).to have_received(:write_user_data).with({})
+          end
+
+          it 'returns an empty hash' do
+            result = context.poll_data
+
+            expect(result).to eq({})
+          end
+        end
+
+        context 'when the response has no content type header' do
+          before do
+            allow(faraday_connection).to receive(:get).and_return(faraday_no_header_response)
+          end
+
+          it 'calls write_user_data with an empty hash from the response' do
+            context.poll_data
+
+            expect(context).to have_received(:write_user_data).with({})
+          end
+
+          it 'returns an empty hash' do
+            result = context.poll_data
+
+            expect(result).to eq({})
+          end
         end
       end
 
       context 'when plugin is configured for a POST request' do
         before do
-          allow(faraday_connection).to receive(:post).and_return(faraday_get_response)
           allow(context.config.plugin).to receive(:polling_verb)
             .and_return('POST')
         end
 
-        it 'calls write_user_data with the parsed JSON from the response' do
-          context.poll_data
+        context 'when the response has a content type of application/json' do
+          before do
+            allow(faraday_connection).to receive(:post).and_return(faraday_json_response)
+          end
 
-          expect(context).to have_received(:write_user_data).with(parsed_json)
+          it 'calls write_user_data with the parsed JSON from the response' do
+            context.poll_data
+
+            expect(context).to have_received(:write_user_data).with(parsed_json)
+          end
+
+          it 'returns the parsed JSON data' do
+            result = context.poll_data
+
+            expect(result).to eq(parsed_json)
+          end
         end
 
-        it 'returns the parsed JSON data' do
-          result = context.poll_data
+        context 'when the response has a content type of octet stream' do
+          before do
+            allow(faraday_connection).to receive(:post).and_return(faraday_octetstream_response)
+          end
 
-          expect(result).to eq(parsed_json)
+          it 'calls write_user_data with an empty hash from the response' do
+            context.poll_data
+
+            expect(context).to have_received(:write_user_data).with({})
+          end
+
+          it 'returns an empty hash' do
+            result = context.poll_data
+
+            expect(result).to eq({})
+          end
+        end
+
+        context 'when the response has no content type header' do
+          before do
+            allow(faraday_connection).to receive(:post).and_return(faraday_no_header_response)
+          end
+
+          it 'calls write_user_data with an empty hash from the response' do
+            context.poll_data
+
+            expect(context).to have_received(:write_user_data).with({})
+          end
+
+          it 'returns an empty hash' do
+            result = context.poll_data
+
+            expect(result).to eq({})
+          end
         end
       end
     end
