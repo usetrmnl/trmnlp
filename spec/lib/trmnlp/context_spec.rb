@@ -5,10 +5,13 @@ RSpec.describe TRMNLP::Context do
   subject(:context) { described_class.new(root_dir) }
 
   describe '#poll_data' do
-    let(:response_body) { '{"key": "value", "number": 42}' }
-    let(:parsed_json) { { 'key' => 'value', 'number' => 42 } }
+    let(:json_response_body) { '{"key": "value", "number": 42}' }
+    let(:json_response_parsed) { { 'key' => 'value', 'number' => 42 } }
+    let(:xml_response_body) { '<response attr="foobar"><key>value</key><number>42</number></response>' }
+    let(:xml_response_parsed) { { 'response' => { 'attr' => 'foobar', 'key' => 'value', 'number' => '42' } } }
     let(:faraday_connection) { instance_double(Faraday::Connection) }
-    let(:faraday_json_response) { instance_double(Faraday::Response, body: response_body, headers: { 'content-type' => 'application/json' }, status: 200) }
+    let(:faraday_json_response) { instance_double(Faraday::Response, body: json_response_body, headers: { 'content-type' => 'application/json' }, status: 200) }
+    let(:faraday_xml_response) { instance_double(Faraday::Response, body: xml_response_body, headers: { 'content-type' => 'application/xml' }, status: 200) }
     let(:faraday_octetstream_response) { instance_double(Faraday::Response, body: 'foobar', headers: { 'content-type' => 'application/octet-stream' }, status: 200) }
     let(:faraday_no_header_response) { instance_double(Faraday::Response, body: 'foobar', headers: {}, status: 200) }
 
@@ -41,13 +44,31 @@ RSpec.describe TRMNLP::Context do
           it 'calls write_user_data with the parsed JSON from the response' do
             context.poll_data
 
-            expect(context).to have_received(:write_user_data).with(parsed_json)
+            expect(context).to have_received(:write_user_data).with(json_response_parsed)
           end
 
           it 'returns the parsed JSON data' do
             result = context.poll_data
 
-            expect(result).to eq(parsed_json)
+            expect(result).to eq(json_response_parsed)
+          end
+        end
+
+        context 'when the response has a content type of application/xml' do
+          before do
+            allow(faraday_connection).to receive(:get).and_return(faraday_xml_response)
+          end
+
+          it 'calls write_user_data with the parsed XML from the response as a hash' do
+            context.poll_data
+
+            expect(context).to have_received(:write_user_data).with(xml_response_parsed)
+          end
+
+          it 'returns the parsed XML data as a hash' do
+            result = context.poll_data
+
+            expect(result).to eq(xml_response_parsed)
           end
         end
 
@@ -102,13 +123,31 @@ RSpec.describe TRMNLP::Context do
           it 'calls write_user_data with the parsed JSON from the response' do
             context.poll_data
 
-            expect(context).to have_received(:write_user_data).with(parsed_json)
+            expect(context).to have_received(:write_user_data).with(json_response_parsed)
           end
 
           it 'returns the parsed JSON data' do
             result = context.poll_data
 
-            expect(result).to eq(parsed_json)
+            expect(result).to eq(json_response_parsed)
+          end
+        end
+
+        context 'when the response has a content type of application/xml' do
+          before do
+            allow(faraday_connection).to receive(:post).and_return(faraday_xml_response)
+          end
+
+          it 'calls write_user_data with the parsed XML from the response as a hash' do
+            context.poll_data
+
+            expect(context).to have_received(:write_user_data).with(xml_response_parsed)
+          end
+
+          it 'returns the parsed XML data as a hash' do
+            result = context.poll_data
+
+            expect(result).to eq(xml_response_parsed)
           end
         end
 

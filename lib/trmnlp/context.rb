@@ -91,6 +91,8 @@ module TRMNLP
           case content_type
           when 'application/json'
             json = wrap_array(JSON.parse(response.body))
+          when 'application/xml'
+            json = wrap_array(Hash.from_xml(response.body))
           else
             puts "unknown content type received: #{response.headers['content-type']}"
             json = {}

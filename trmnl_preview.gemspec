@@ -60,6 +60,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "oj", "~> 3.16.9"
   spec.add_dependency "tzinfo-data", "~> 1.2025"
   spec.add_dependency "pathname", "~> 0.4"
+  spec.add_dependency "rexml", "~> 3.4"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
