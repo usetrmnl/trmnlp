@@ -1,4 +1,6 @@
-# trmnlp
+# trmnlp-selenium
+
+# FORK TO REPLACE PUPPETEER WITH SELENIUM
 
 A basic self-hosted web server to ease the development and sharing of [TRMNL](https://usetrmnl.com/) plugins.
 
