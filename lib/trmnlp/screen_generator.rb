@@ -1,111 +1,107 @@
 require 'mini_magick'
-require 'puppeteer-ruby'
+require 'selenium-webdriver'
 require 'base64'
 require 'thread'
+require 'tempfile'
+require 'fileutils'
+require 'uri'
 
 module TRMNLP
   class ScreenGenerator
     # Browser pool management for efficient resource usage
     class BrowserPool
       def initialize(max_size: 2)
-        @browsers = []
+        @drivers = []
         @available = Queue.new
         @mutex = Mutex.new
         @max_size = max_size
         @shutdown = false
-        
-        # Register cleanup on exit
+
         at_exit { shutdown }
       end
-      
-      def with_page
-        browser = nil
-        page = nil
-        
+
+      def with_driver
+        driver = nil
+
         begin
-          browser = checkout_browser
-          page = browser.new_page
-          yield page
+          driver = checkout_driver
+          yield driver
         ensure
-          # Clean up page but keep browser alive
-          page&.close rescue nil
-          checkin_browser(browser) if browser
+          checkin_driver(driver) if driver
         end
       end
-      
+
       def shutdown
         @mutex.synchronize do
           return if @shutdown
           @shutdown = true
-          
-          # Close all browsers
-          @browsers.each do |browser|
-            browser.close rescue nil
+
+          @drivers.each do |driver|
+            driver.quit rescue nil
           end
-          @browsers.clear
+
+          @drivers.clear
         end
       end
-      
+
       private
-      
-      def checkout_browser
-        # Try to get an available browser
-        browser = @available.pop(true) rescue nil
-        
-        # If no browser available and we haven't reached max size, create a new one
-        if browser.nil?
+
+      def checkout_driver
+        driver = @available.pop(true) rescue nil
+
+        if driver.nil?
           @mutex.synchronize do
-            if @browsers.size < @max_size
-              browser = create_browser
-              @browsers << browser
+            if @drivers.size < @max_size
+              driver = create_driver
+              @drivers << driver
             end
           end
         end
-        
-        # If still no browser, wait for one to become available
-        browser ||= @available.pop
-        
-        # Verify browser is still alive
+
+        driver ||= @available.pop
+
         begin
-          browser.targets # Simple check to see if browser responds
-          browser
+          # Ping the driver
+          driver.title
+          driver
         rescue
-          # Browser is dead, create a new one
           @mutex.synchronize do
-            @browsers.delete(browser)
-            browser = create_browser
-            @browsers << browser
+            @drivers.delete(driver)
+            driver = create_driver
+            @drivers << driver
           end
-          browser
+          driver
         end
       end
-      
-      def checkin_browser(browser)
+
+      def checkin_driver(driver)
         return if @shutdown
-        @available.push(browser)
+        @available.push(driver)
       end
-      
-      def create_browser
-        Puppeteer.launch(
-          product: 'firefox',
-          headless: true,
-          args: [
-            "--window-size=800,480",
-            "--disable-web-security"
-          ]
-        )
+
+      def create_driver
+        options = Selenium::WebDriver::Firefox::Options.new
+        options.add_argument('--headless')
+        options.add_argument('--disable-web-security')
+
+        Selenium::WebDriver.for(:firefox, options: options)
       end
     end
-    
-    # Class-level browser pool shared across all instances
+
     @@browser_pool = BrowserPool.new
-    
+
     def initialize(html, opts = {})
       self.input = html
       self.image = !!opts[:image]
+
+      # Accept optional rendering parameters (width/height/color depth/dark mode)
+      @requested_width = opts[:width]
+      @requested_height = opts[:height]
+      @requested_color_depth = opts[:color_depth]
+      @is_dark_mode = !!opts[:is_dark_mode]
     end
 
-    attr_accessor :input, :output, :image, :processor, :img_path
+    attr_accessor :input, :output, :image
 
     def process
       convert_to_image
@@ -117,80 +113,124 @@ module TRMNLP
 
     def convert_to_image
       retry_count = 0
-      
+
       begin
-        @@browser_pool.with_page do |page|
-          # Configure page
-          page.viewport = Puppeteer::Viewport.new(width: width, height: height)
-          
-          # Set content with appropriate wait strategy
-          page.set_content(input, timeout: 10000)
-          
-          # Hide scrollbars
-          page.evaluate(<<~JAVASCRIPT)
-            () => {
-              document.getElementsByTagName('html')[0].style.overflow = "hidden";
-              document.getElementsByTagName('body')[0].style.overflow = "hidden";
-            }
-          JAVASCRIPT
-          
-          # Take screenshot
+        @@browser_pool.with_driver do |driver|
+          driver.manage.window.resize_to(width, height)
+
+          prepare_page(driver)
+
           self.output = Tempfile.new(['screenshot', '.png'])
-          page.screenshot(path: output.path, type: 'png')
+          driver.save_screenshot(output.path)
+          output.close
         end
-      rescue Puppeteer::TimeoutError, Puppeteer::FrameManager::NavigationError => e
+      rescue Selenium::WebDriver::Error::TimeoutError,
+            Selenium::WebDriver::Error::WebDriverError => e
         retry_count += 1
-        if retry_count <= 1
-          retry
-        else
-          puts "ERROR -> ScreenGenerator#convert_to_image -> #{e.message}"
-          raise
-        end
+        retry if retry_count <= 1
+        raise
       end
     end
 
-    def mono(img)
+    def prepare_page(driver)
+      driver.navigate.to('about:blank')
+
+      driver.execute_script(<<~JS, input)
+        document.open();
+        document.write(arguments[0]);
+        document.close();
+      JS
+
+      Selenium::WebDriver::Wait.new(timeout: 5).until do
+        driver.execute_script('return document.readyState') == 'complete'
+      end
+
+      # Wait for fonts (prevents layout shifts)
+      driver.execute_script('return document.fonts && document.fonts.ready')
+
+      driver.execute_script(<<~JS)
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+      JS
+
+      # Apply dark mode class inside the rendered page so frameworks relying on
+      # a class (eg. 'screen--dark-mode') will render as expected in the headless browser.
+      if @is_dark_mode
+        driver.execute_script(<<~JS)
+          const el = document.querySelector('.screen');
+          if (el) el.classList.add('screen--dark-mode');
+          else document.documentElement.classList.add('screen--dark-mode');
+        JS
+      end
+    end
+      
+    def convert_with_mini_magick(img, depth)
+      tmp = Tempfile.new(['mono', '.png'])
+      tmp.close
+
+      levels = 2**depth
+
       MiniMagick::Tool::Convert.new do |m|
         m << img.path
-        m.monochrome # Use built-in smart monochrome dithering (but it's not working as expected)
-        m.depth(color_depth) # Should be set to 1 for 1-bit output
-        m.strip # Remove any additional metadata
-        m << img.path
+        m.colorspace 'Gray'
+        m.dither 'FloydSteinberg'
+
+        yield(m, depth, levels)
+
+        m.depth depth
+        m.define "png:bit-depth=#{depth}"
+        m.strip
+        m << tmp.path
+      end
+
+      FileUtils.mv(tmp.path, img.path, force: true)
+    end
+
+    def mono(img)
+      depth = [[color_depth.to_i, 1].max, 8].min
+
+      convert_with_mini_magick(img, depth) do |m, d, levels|
+        m.posterize levels
+        m.colors levels
+        m.type 'Bilevel' if d == 1
       end
     end
 
     def mono_image(img)
-      # Convert to monochrome bitmap with proper dithering
-      # This implementation works with both ImageMagick 6.x and 7.x
-      MiniMagick::Tool::Convert.new do |m|
-        m << img.path
-        
-        # First convert to grayscale to ensure proper channel handling
-        m.colorspace << 'Gray'
-        
-        # Apply Floyd-Steinberg dithering for better quality
-        m.dither << 'FloydSteinberg'
-        
-        # Remap to a 50% gray pattern for better dithering
-        m.remap << 'pattern:gray50'
-        
-        # Set the image type to bilevel (1-bit black and white)
-        m.type << 'Bilevel'
-        
-        # Set color depth to 1 bit
-        m.depth << color_depth
-        
-        # Remove any metadata to reduce file size
-        m.strip
-        
-        m << img.path
+      depth = [[color_depth.to_i, 1].max, 8].min
+
+      convert_with_mini_magick(img, depth) do |m, d, levels|
+        if d == 1
+          # For true 1-bit, use a halftone/remap and bilevel output
+          m.remap 'pattern:gray50'
+          m.posterize 2
+          m.colors 2
+          m.type 'Bilevel'
+        else
+          m.posterize levels
+          m.colors levels
+        end
       end
     end
 
-    def width = 800
 
-    def height = 480
+    def width
+      @requested_width || 800
+    end
 
-    def color_depth = 1
+    def height
+      @requested_height || 480
+    end
+
+    def color_depth
+      return @requested_color_depth if @requested_color_depth
+
+      # Try to infer color depth from the rendered HTML's screen classes
+      if input && input.match(/screen--(\d+)bit/)
+        return $1.to_i
+      end
+
+      1
+    end
   end
 end
