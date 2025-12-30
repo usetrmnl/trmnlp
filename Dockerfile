@@ -1,9 +1,15 @@
 ARG RUBY_VERSION=3.4.1
 # ----- BUILD -----
 
-FROM ruby:${RUBY_VERSION} AS builder
+FROM ruby:${RUBY_VERSION}-slim AS builder
 
 WORKDIR /app
+
+# Install build dependencies for C extensions
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p ./lib/trmnlp/
 
@@ -18,14 +24,18 @@ RUN bundle install
 
 # ----- RUN -----
 
-FROM ruby:${RUBY_VERSION} AS runner
+FROM ruby:${RUBY_VERSION}-slim AS runner
 
-RUN apt-get update && apt-get install -y \
+# Install runtime dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     imagemagick \
-    firefox-esr
+    firefox-esr \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
+# Copy installed gems from builder
 COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
 
 COPY Gemfile \
@@ -40,9 +50,6 @@ COPY web/ /app/web/
 COPY bin/ /app/bin/
 COPY templates/ /app/templates/
 
-RUN bundle install
-
 EXPOSE 4567
-
 WORKDIR /plugin
 ENTRYPOINT [ "/app/bin/trmnlp" ]
