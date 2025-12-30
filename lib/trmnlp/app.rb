@@ -79,7 +79,7 @@ module TRMNLP
 
       get "/render/#{view}.html" do
         @view = view
-        @screen_classes = @context.screen_classes
+        @screen_classes = @context.screen_classes(params[:screen_classes])
         
         erb :render_html do
           @context.render_template(view)

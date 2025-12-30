@@ -1,7 +1,15 @@
+/* define var for bg color */
+:root {
+  --bg-color: #eaebef;
+  --text-color: #000000;
+  --border-color: #c7cbd5;
+}
+
 body {
   font-family: sans-serif;
   margin: 10px;
-  background-color: #eaebef;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 main {
@@ -12,28 +20,63 @@ main {
 
 menu {
   padding: 0;
-  margin: 0;
+  margin: 0 0 1em 0;
   display: flex;
   justify-content: space-between;
   max-width: 950px;
 }
 
-menu a {
+.tabs {
+  display: flex;
+  gap: 0.5em;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1em;
+}
+
+.tabs > .tab {
   padding: 0.5em 1em;
-  background: #c7cbd5;
+  background: var(--bg-color);
+  border-radius: 0.5em 0.5em 0 0;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+  color: inherit;
+  font: inherit;
+  position: relative;
+  top: 1px;
+  transition: filter 0.1s ease-in-out;
+}
+
+.tabs > .tab:hover {
+  filter: brightness(95%);
+}
+.tabs > .tab.active {
+  border-bottom: none;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+  cursor: pointer;
+  padding: 0.5em 1em;
   border-radius: 0.5em;
   display: inline-block;
   text-decoration: none;
-  color: black;
+  color: inherit;
+  font: inherit;
+  transition: filter 0.1s ease-in-out;
 }
 
-menu a:hover {
-  background: #ccc;
+.btn:hover {
+  filter: brightness(95%);
 }
 
-menu a.active {
-  background: #333;
-  color: white;
+.btn:disabled, .btn:disabled:hover {
+  cursor: not-allowed;
+  filter: brightness(100%);
+  opacity: 0.5;
 }
 
 pre > code {
@@ -43,8 +86,9 @@ pre > code {
 }
 
 .spinner {
-  width: 22px;
-  height: 22px;
+  width: 16px;
+  height: 16px;
+  margin: 4px;
   border: 5px solid #f3f3f3; /* Light gray */
   border-top: 5px solid #3498db; /* Blue */
   border-radius: 50%;
@@ -61,17 +105,9 @@ pre > code {
 }
 
 @media (prefers-color-scheme: dark) {
-  body {
-    background-color: #191b21;
-    color: #ffffff;
-  }
-
-  menu a {
-    background-color: #262932;
-    color: #b1b6c4;
-  }
-
-  menu a:hover {
-    background-color: #2f333e;
+  :root {
+    --bg-color: #191b21;
+    --text-color: #eeeeee;
+    --border-color: #3a3e47;
   }
 }
