@@ -4,7 +4,7 @@ RSpec.describe TRMNLP::Context do
   let(:root_dir) { File.join(__dir__, '../../fixtures') }
   subject(:context) { described_class.new(root_dir) }
 
-  test_responses = [
+  TEST_RESPONSES = [
     {
       header: 'application/json; charset=utf-8',
       response_body: '{"key": "value", "number": 42}',
@@ -25,7 +25,7 @@ RSpec.describe TRMNLP::Context do
       response_body: 'foobar',
       parsed: {}
     }
-  ]
+  ].freeze
 
   describe '#poll_data' do
     let(:faraday_connection) { instance_double(Faraday::Connection) }
@@ -52,7 +52,7 @@ RSpec.describe TRMNLP::Context do
             .and_return('GET')
         end
 
-        test_responses.each do |test_response|
+        TEST_RESPONSES.each do |test_response|
           context "when the response has a content type of #{test_response[:header]}" do
             before do
               allow(faraday_connection).to receive(:get).and_return(instance_double(Faraday::Response, body: test_response[:response_body], headers: { 'content-type' => test_response[:header] }, status: 200))
@@ -97,7 +97,7 @@ RSpec.describe TRMNLP::Context do
             .and_return('POST')
         end
 
-        test_responses.each do |test_response|
+        TEST_RESPONSES.each do |test_response|
           context "when the response has a content type of #{test_response[:header]}" do
             before do
               allow(faraday_connection).to receive(:post).and_return(instance_double(Faraday::Response, body: test_response[:response_body], headers: { 'content-type' => test_response[:header] }, status: 200))
