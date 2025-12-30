@@ -81,6 +81,15 @@ module TRMNLP
         @view = view
         @screen_classes = @context.screen_classes(params[:screen_classes])
         
+        case view
+        when 'half_horizontal'
+          @mashup_classes = 'mashup mashup--1Tx1B'
+        when 'half_vertical'
+          @mashup_classes = 'mashup mashup--1Lx1R'
+        when 'quadrant'
+          @mashup_classes = 'mashup mashup--2x2'
+        end
+
         erb :render_html do
           @context.render_template(view)
         end

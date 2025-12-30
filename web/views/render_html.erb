@@ -13,9 +13,11 @@
 
   <body class="environment trmnl" style="background: white">
     <div class="<%= @screen_classes %>">
+      <% if @mashup_classes %><div class="<%= @mashup_classes %>"><% end %>
       <div class="view view--<%= @view %>">
         <%= yield %>
       </div>
+      <% if @mashup_classes %></div><% end %>
     </div>
   </body>
 </html>
