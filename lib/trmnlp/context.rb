@@ -1,4 +1,5 @@
 require 'active_support/time'
+require 'active_support/core_ext/hash/conversions'
 require 'erb'
 require 'faraday'
 require 'filewatcher'
@@ -86,7 +87,16 @@ module TRMNLP
 
         puts "received #{response.body.length} bytes (#{response.status} status)"
         if response.status == 200
-          json = wrap_array(JSON.parse(response.body))
+          content_type = response.headers['content-type'].split(';').first.strip if response.headers.include?('content-type')
+          case content_type
+          when 'application/json'
+            json = wrap_array(JSON.parse(response.body))
+          when 'text/xml', 'application/xml', 'application/rss+xml', 'application/atom+xml', 'application/soap+xml'
+            json = wrap_array(Hash.from_xml(response.body))
+          else
+            puts "unknown content type received: #{response.headers['content-type']}"
+            json = {}
+          end
         else
           json = {}
           puts response.body
