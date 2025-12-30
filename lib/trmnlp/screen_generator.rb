@@ -84,7 +84,10 @@ module TRMNLP
         options.add_argument('--headless')
         options.add_argument('--disable-web-security')
 
-        Selenium::WebDriver.for(:firefox, options: options)
+        driver = Selenium::WebDriver.for(:firefox, options: options)
+        # Set a default window size that will be consistent
+        driver.manage.window.maximize
+        driver
       end
     end
 
@@ -116,7 +119,11 @@ module TRMNLP
 
       begin
         @@browser_pool.with_driver do |driver|
-          driver.manage.window.resize_to(width, height)
+          ui_height = 85 # This accounts for the firefox UI elements in headless mode
+          window_height = height + ui_height
+          driver.manage.window.size = Selenium::WebDriver::Dimension.new(width, window_height)
+          
+          sleep(0.1)
 
           prepare_page(driver)
 
