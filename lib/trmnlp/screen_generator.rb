@@ -1,5 +1,5 @@
 require 'mini_magick'
-require 'puppeteer-ruby'
+require 'puppeteer/bidi'
 require 'base64'
 require 'thread'
 
@@ -67,7 +67,7 @@ module TRMNLP
         
         # Verify browser is still alive
         begin
-          browser.targets # Simple check to see if browser responds
+          browser.status # Simple check to see if browser responds
           browser
         rescue
           # Browser is dead, create a new one
@@ -86,14 +86,7 @@ module TRMNLP
       end
       
       def create_browser
-        Puppeteer.launch(
-          product: 'firefox',
-          headless: true,
-          args: [
-            "--window-size=800,480",
-            "--disable-web-security"
-          ]
-        )
+        Puppeteer::Bidi.launch_browser_instance(headless: true)
       end
     end
     
@@ -121,10 +114,10 @@ module TRMNLP
       begin
         @@browser_pool.with_page do |page|
           # Configure page
-          page.viewport = Puppeteer::Viewport.new(width: width, height: height)
+          page.set_viewport(width: width, height: height)
           
           # Set content with appropriate wait strategy
-          page.set_content(input, timeout: 10000)
+          page.set_content(input)
           
           # Hide scrollbars
           page.evaluate(<<~JAVASCRIPT)
@@ -138,7 +131,7 @@ module TRMNLP
           self.output = Tempfile.new(['screenshot', '.png'])
           page.screenshot(path: output.path, type: 'png')
         end
-      rescue Puppeteer::TimeoutError, Puppeteer::FrameManager::NavigationError => e
+      rescue Puppeteer::Bidi::Error => e
         retry_count += 1
         if retry_count <= 1
           retry
@@ -150,7 +143,7 @@ module TRMNLP
     end
 
     def mono(img)
-      MiniMagick::Tool::Convert.new do |m|
+      MiniMagick::Tool.new('convert') do |m|
         m << img.path
         m.monochrome # Use built-in smart monochrome dithering (but it's not working as expected)
         m.depth(color_depth) # Should be set to 1 for 1-bit output
@@ -162,7 +155,7 @@ module TRMNLP
     def mono_image(img)
       # Convert to monochrome bitmap with proper dithering
       # This implementation works with both ImageMagick 6.x and 7.x
-      MiniMagick::Tool::Convert.new do |m|
+      MiniMagick::Tool.new('convert') do |m|
         m << img.path
         
         # First convert to grayscale to ensure proper channel handling
