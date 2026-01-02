@@ -89,9 +89,9 @@ module TRMNLP
         if response.status == 200
           content_type = response.headers['content-type'].split(';').first.strip if response.headers.include?('content-type')
           case content_type
-          when 'application/json'
+          when 'application/json', /^application\/.+\+json/
             json = wrap_array(JSON.parse(response.body))
-          when 'text/xml', 'application/xml', 'application/rss+xml', 'application/atom+xml', 'application/soap+xml'
+          when 'text/xml', 'application/xml', /^application\/.+\+xml/
             json = wrap_array(Hash.from_xml(response.body))
           else
             puts "unknown content type received: #{response.headers['content-type']}"
