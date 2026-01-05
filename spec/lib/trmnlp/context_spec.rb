@@ -11,6 +11,11 @@ RSpec.describe TRMNLP::Context do
       parsed: { 'key' => 'value', 'number' => 42 }
     },
     {
+      header: 'application/vnd.api+json; charset=utf-8',
+      response_body: '{"data":[{"type": "widget", "id": "1", "attributes": {"title": "foobar", "value": 42}}]}',
+      parsed: { 'data' => [{'type' => "widget", 'id' => "1", 'attributes' => {"title" => "foobar", "value" => 42}}] }
+    },
+    {
       header: 'application/xml; charset=utf-8',
       response_body: '<response attr="foobar"><key>value</key><number>42</number></response>',
       parsed: { 'response' => { 'attr' => 'foobar', 'key' => 'value', 'number' => '42' } }
