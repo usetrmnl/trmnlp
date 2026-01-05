@@ -1,6 +1,14 @@
 
 # Changelog
 
+## vNext
+
+- Switch from Puppeteer + CDP to Selenium + WebDriver BiDi (@SorceressLyra)
+
+## 0.6.1
+
+- Update trmnl-liquid to 0.4.0
+
 ## 0.6.0
 
 - Drop trmnl-component in lieu of plain iframe
