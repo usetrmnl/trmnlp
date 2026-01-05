@@ -118,9 +118,17 @@ module TRMNLP
 
       begin
         @@browser_pool.with_driver do |driver|
-          ui_height = 85 # This accounts for the firefox UI elements in headless mode
-          window_height = height + ui_height
-          driver.manage.window.size = Selenium::WebDriver::Dimension.new(width, window_height)
+          # determine dimensions of toolbars, etc
+          borders = driver.execute_script(<<~JS)
+            return {
+              width: window.outerWidth - window.innerWidth,
+              height: window.outerHeight - window.innerHeight
+            }
+          JS
+
+          window_width = width + borders['width']
+          window_height = height + borders['height']
+          driver.manage.window.size = Selenium::WebDriver::Dimension.new(window_width, window_height)
           
           sleep(0.1)
 
