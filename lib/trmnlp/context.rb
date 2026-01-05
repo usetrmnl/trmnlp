@@ -127,7 +127,7 @@ module TRMNLP
       puts "webhook error: #{e.message}"
     end
 
-    def render_template(view)
+    def render_liquid_template(view)
       template_path = paths.template(view)
       return "Missing template: #{template_path}" unless template_path.exist?
 
@@ -144,11 +144,11 @@ module TRMNLP
       e.message
     end
 
-    def render_full_page(view)
+    def render_full_page(view, params = {})
       template = paths.render_template.read
       
-      ERB.new(template).result(TemplateBinding.new(self, view).get_binding do
-        render_template(view)
+      ERB.new(template).result(TemplateBinding.new(self, view, params).get_binding do
+        render_liquid_template(view)
       end)
     end
 
@@ -161,9 +161,18 @@ module TRMNLP
 
     # bindings must match the `GET /render/{view}.html` route in app.rb
     class TemplateBinding
-      def initialize(context, view)
-        @screen_classes = context.screen_classes
+      def initialize(context, view, params)
         @view = view
+        @screen_classes = context.screen_classes(params[:screen_classes])
+
+        case view
+        when 'half_horizontal'
+          @mashup_classes = 'mashup mashup--1Tx1B'
+        when 'half_vertical'
+          @mashup_classes = 'mashup mashup--1Lx1R'
+        when 'quadrant'
+          @mashup_classes = 'mashup mashup--2x2'
+        end
       end
 
       def get_binding = binding

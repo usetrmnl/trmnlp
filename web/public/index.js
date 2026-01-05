@@ -27,7 +27,21 @@ trmnlp.connectLiveRender = function () {
 trmnlp.fetchPreview = function (pickerState) {
   const screenClasses = (pickerState?.screenClasses || trmnlp.picker.state.screenClasses).join(" ");
   const encodedScreenClasses = encodeURIComponent(screenClasses);
-  const src = `/render/${trmnlp.view}.${trmnlp.formatSelect.value}?screen_classes=${encodedScreenClasses}`;
+  let src = `/render/${trmnlp.view}.${trmnlp.formatSelect.value}?screen_classes=${encodedScreenClasses}`;
+
+  // If requesting a PNG, also include dimensions, dark mode, and color depth
+  if (trmnlp.formatSelect.value === 'png') {
+    const state = pickerState || trmnlp.picker.state;
+    const width = encodeURIComponent(state.width);
+    const height = encodeURIComponent(state.height);
+    const isDarkMode = state.isDarkMode ? 1 : 0;
+
+    // derive numeric color depth from classes like 'screen--1bit'
+    const grays = state.palette.grays || 2;
+    const colorDepth = Math.ceil(Math.log2(grays));
+
+    src += `&width=${width}&height=${height}&color_depth=${colorDepth}`;
+  }
 
   trmnlp.spinner.style.display = "inline-block";
   trmnlp.iframe.src = src;
