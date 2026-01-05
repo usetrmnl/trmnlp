@@ -1,7 +1,7 @@
 
 # Changelog
 
-## vNext
+## 0.7.0
 
 - Switch from Puppeteer + CDP to Selenium + WebDriver BiDi (@SorceressLyra)
 
