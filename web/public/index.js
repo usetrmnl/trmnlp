@@ -37,13 +37,10 @@ trmnlp.fetchPreview = function (pickerState) {
     const isDarkMode = state.isDarkMode ? 1 : 0;
 
     // derive numeric color depth from classes like 'screen--1bit'
-    let colorDepth = 1;
-    for (const c of (state.screenClasses || [])) {
-      const m = c.match(/screen--(\d+)bit/);
-      if (m) { colorDepth = Number(m[1]); break; }
-    }
+    const grays = state.palette.grays || 2;
+    const colorDepth = Math.ceil(Math.log2(grays));
 
-    src += `&width=${width}&height=${height}&color_depth=${encodeURIComponent(colorDepth)}`;
+    src += `&width=${width}&height=${height}&color_depth=${colorDepth}`;
   }
 
   trmnlp.spinner.style.display = "inline-block";
