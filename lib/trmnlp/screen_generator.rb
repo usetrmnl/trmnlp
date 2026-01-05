@@ -101,7 +101,6 @@ module TRMNLP
       @requested_width = opts[:width]
       @requested_height = opts[:height]
       @requested_color_depth = opts[:color_depth]
-      @is_dark_mode = !!opts[:is_dark_mode]
     end
 
     attr_accessor :input, :output, :image
@@ -159,16 +158,6 @@ module TRMNLP
         document.documentElement.style.overflow = 'hidden';
         document.body.style.overflow = 'hidden';
       JS
-
-      # Apply dark mode class inside the rendered page so frameworks relying on
-      # a class (eg. 'screen--dark-mode') will render as expected in the headless browser.
-      if @is_dark_mode
-        driver.execute_script(<<~JS)
-          const el = document.querySelector('.screen');
-          if (el) el.classList.add('screen--dark-mode');
-          else document.documentElement.classList.add('screen--dark-mode');
-        JS
-      end
     end
       
     def convert_with_mini_magick(img, depth)

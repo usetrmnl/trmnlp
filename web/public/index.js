@@ -43,7 +43,7 @@ trmnlp.fetchPreview = function (pickerState) {
       if (m) { colorDepth = Number(m[1]); break; }
     }
 
-    src += `&width=${width}&height=${height}&is_dark_mode=${isDarkMode}&color_depth=${encodeURIComponent(colorDepth)}`;
+    src += `&width=${width}&height=${height}&color_depth=${encodeURIComponent(colorDepth)}`;
   }
 
   trmnlp.spinner.style.display = "inline-block";

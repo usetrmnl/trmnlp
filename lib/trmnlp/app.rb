@@ -78,25 +78,19 @@ module TRMNLP
       end
 
       get "/render/#{view}.html" do
-        @view = view
-        @screen_classes = @context.screen_classes(params[:screen_classes])
-        
-        erb :render_html do
-          @context.render_template(view)
-        end
+        @context.render_full_page(view, params)
       end
-
+      
       get "/render/#{view}.png" do
         @view = view
-        html = @context.render_full_page(view)
+        html = @context.render_full_page(view, params)
 
         # Parse optional rendering params (sent by the web UI for PNG output)
         width = params[:width] && params[:width].to_i
         height = params[:height] && params[:height].to_i
         color_depth = params[:color_depth] && params[:color_depth].to_i
-        is_dark_mode = params[:is_dark_mode] && (params[:is_dark_mode] == '1' || params[:is_dark_mode] == 'true')
 
-        generator = ScreenGenerator.new(html, image: true, width: width, height: height, color_depth: color_depth, is_dark_mode: is_dark_mode)
+        generator = ScreenGenerator.new(html, image: true, width: width, height: height, color_depth: color_depth)
         temp_image = generator.process
         
         send_file temp_image.path, type: 'image/png', disposition: 'inline'
