@@ -44,7 +44,7 @@ Gem::Specification.new do |spec|
 
   # HTML rendering
   spec.add_dependency "activesupport", "~> 8.0"
-  spec.add_dependency "trmnl-liquid", "~> 0.2.0"
+  spec.add_dependency "trmnl-liquid", "~> 0.4.0"
 
   # PNG rendering
   spec.add_dependency 'puppeteer-ruby', '~> 0.45.6'
