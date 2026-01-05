@@ -89,9 +89,9 @@ module TRMNLP
         if response.status == 200
           content_type = response.headers['content-type'].split(';').first.strip if response.headers.include?('content-type')
           case content_type
-          when 'application/json'
+          when 'application/json', /^application\/.+\+json/
             json = wrap_array(JSON.parse(response.body))
-          when 'text/xml', 'application/xml', 'application/rss+xml', 'application/atom+xml', 'application/soap+xml'
+          when 'text/xml', 'application/xml', /^application\/.+\+xml/
             json = wrap_array(Hash.from_xml(response.body))
           else
             puts "unknown content type received: #{response.headers['content-type']}"
@@ -164,6 +164,15 @@ module TRMNLP
       def initialize(context, view, params)
         @view = view
         @screen_classes = context.screen_classes(params[:screen_classes])
+
+        case view
+        when 'half_horizontal'
+          @mashup_classes = 'mashup mashup--1Tx1B'
+        when 'half_vertical'
+          @mashup_classes = 'mashup mashup--1Lx1R'
+        when 'quadrant'
+          @mashup_classes = 'mashup mashup--2x2'
+        end
       end
 
       def get_binding = binding
