@@ -46,6 +46,7 @@ If you have built a plugin with the web-based editor, you can `clone` it, work o
 
 ```sh
 trmnlp login                   # authenticate
+trmnlp list                    # list your plugins
 trmnlp clone [my_plugin] [id]  # first download
 cd [my_plugin]
 trmnlp serve                   # develop locally
@@ -85,6 +86,41 @@ docker run \
     --publish 4567:4567 \
     --volume "$(pwd):/plugin" \
     trmnl/trmnlp serve
+```
+
+#### Interactive Mode
+
+For running multiple commands (login, clone, serve), you can start an interactive shell:
+
+```sh
+docker run -it \
+    --publish 4567:4567 \
+    --volume "$HOME/.config/trmnlp:/root/.config/trmnlp" \
+    --volume "$(pwd):/plugin" \
+    --entrypoint /bin/bash \
+    trmnl/trmnlp
+```
+
+Then run commands inside the container:
+
+```sh
+trmnlp login
+trmnlp list                    # see all your plugins with IDs
+trmnlp clone my_plugin 12345
+cd my_plugin
+trmnlp serve
+```
+
+The config volume (`$HOME/.config/trmnlp`) persists your API key between sessions.
+
+#### Building Locally
+
+To build the Docker image from source:
+
+```sh
+git clone https://github.com/usetrmnl/trmnlp.git
+cd trmnlp
+docker build -t trmnlp .
 ```
 
 ## `.trmnlp.yml` Reference - Project Config

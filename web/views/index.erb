@@ -50,6 +50,25 @@
                 <button class="btn" type="button" data-reset-button>Reset</button>
             </form>
 
+            <!-- Plugin selector (for logged-in users) -->
+            <div id="plugin-selector" style="display: none;">
+                <select id="plugin-dropdown">
+                    <option value="">-- Select Plugin --</option>
+                </select>
+                <button class="btn" id="load-plugin-btn" disabled>Load</button>
+            </div>
+
+            <div class="payload-sizes">
+                <div class="payload-size" data-payload-size="html">
+                    <span class="payload-size__label">HTML:</span>
+                    <span class="payload-size__value" data-payload-value>--</span>
+                </div>
+                <div class="payload-size" data-payload-size="png">
+                    <span class="payload-size__label">PNG:</span>
+                    <span class="payload-size__value" data-payload-value>--</span>
+                </div>
+            </div>
+
             <div style="display: flex; gap: 0.3em; align-items: center;">
                 <select class="select-format">
                     <option value="png">PNG</option>
@@ -61,6 +80,16 @@
         </menu>
 
         <iframe style="width: 800px; height: 480px; border: 1px solid black; background: white;">Rendering…</iframe>
+
+        <!-- Custom Fields Editor -->
+        <details id="custom-fields-editor" class="custom-fields-editor">
+            <summary>Custom Fields</summary>
+            <div id="custom-fields-container"></div>
+            <div class="custom-fields-actions">
+                <button class="btn" id="add-field-btn">+ Add Field</button>
+                <button class="btn btn-primary" id="save-fields-btn">Save & Reload</button>
+            </div>
+        </details>
 
         <pre id="user-data"><code><%= @user_data %></code></pre>
     </main>
