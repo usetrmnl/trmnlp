@@ -1,7 +1,7 @@
 #
 # Changes to this file will be overwritten by `trmnlp pull`.
 #
-# Docs: https://help.usetrmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0
+# Docs: https://help.trmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0
 #
 ---
 strategy: polling

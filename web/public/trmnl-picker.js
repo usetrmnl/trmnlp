@@ -26,7 +26,7 @@ var TRMNLPicker = (() => {
   var _API_CACHE_KEY = "trmnl-picker-api-cache";
   var _CACHE_TTL_MS = 24 * 60 * 60 * 1e3;
   var TRMNLPicker = class _TRMNLPicker {
-    static API_BASE_URL = "https://usetrmnl.com";
+    static API_BASE_URL = "https://trmnl.com";
     /**
      * Get cached API response from localStorage
      * @private
@@ -652,5 +652,5 @@ var TRMNLPicker = (() => {
   var src_default = TRMNLPicker;
   return __toCommonJS(src_exports);
 })();
-TRMNLPicker=TRMNLPicker.default;
+TRMNLPicker = TRMNLPicker.default;
 //# sourceMappingURL=trmnl-picker.js.map

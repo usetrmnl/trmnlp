@@ -55,7 +55,7 @@
 
 ## 0.5.3
 
-- Added support for [reusable markup](https://docs.usetrmnl.com/go/reusing-markup) in `shared.liquid`
+- Added support for [reusable markup](https://docs.trmnl.com/go/reusing-markup) in `shared.liquid`
 - Replaced custom case images with [\<trmnl-frame\> component](https://github.com/usetrmnl/trmnl-component)
 - Updated custom Liquid filters
 - Added API key validation during `trmnlp login`
@@ -63,7 +63,7 @@
 ## 0.5.2
 
 - Added `time_zone` project config option, which is injected into `trmnl.user` variables
-- Fixed time zone to always be UTC, matching usetrmnl.com servers (#38)
+- Fixed time zone to always be UTC, matching trmnl.com servers (#38)
 
 ## 0.5.1
 
@@ -81,13 +81,13 @@
 
 ### Plugin Migration Strategy
 
-The plugin directory structure has changed to better align with the [plugin archive format](https://help.usetrmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0). 
+The plugin directory structure has changed to better align with the [plugin archive format](https://help.trmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0). 
 
 Here is a migration strategy for existing plugin repositories:
 
 1. Create `.trmnlp.yml` and bring over preview settings from `config.toml` - [see README](README.md)
 2. Rename directory `views/` to `src/`
-3. Create `src/settings.yml` and bring over plugin settings from `config.toml` - [see TRMNL docs](https://help.usetrmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0)
+3. Create `src/settings.yml` and bring over plugin settings from `config.toml` - [see TRMNL docs](https://help.trmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0)
 4. Delete `config.toml`
 
 ### Changes
@@ -112,7 +112,7 @@ Here is a migration strategy for existing plugin repositories:
 ## 0.3.2
 
 - Add bitmap rendering
-- Add TRMNL's [custom plugin filters](https://help.usetrmnl.com/en/articles/10347358-custom-plugin-filters)
+- Add TRMNL's [custom plugin filters](https://help.trmnl.com/en/articles/10347358-custom-plugin-filters)
 - Add support for user-supplied custom filters
 
 ## 0.3.1

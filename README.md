@@ -1,8 +1,8 @@
 # trmnlp
 
-A basic self-hosted web server to ease the development and sharing of [TRMNL](https://usetrmnl.com/) plugins.
+A basic self-hosted web server to ease the development and sharing of [TRMNL](https://trmnl.com/) plugins.
 
-[Liquid](https://shopify.github.io/liquid/) templates are rendered leveraging the [TRMNL Design System](https://usetrmnl.com/framework). They may be generated as HTML (faster, and a good approximation of the final result) or as PNG images (slower, but more accurate).
+[Liquid](https://shopify.github.io/liquid/) templates are rendered leveraging the [TRMNL Design System](https://trmnl.com/framework). They may be generated as HTML (faster, and a good approximation of the final result) or as PNG images (slower, but more accurate).
 
 Custom Liquid filters and tags are provided by the [trmnl-liquid](https://github.com/usetrmnl/trmnl-liquid) gem.
 
@@ -124,7 +124,7 @@ variables:
 
 The `settings.yml` file is part of the plugin definition. 
 
-See [TRMNL documentation](https://help.usetrmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0) for details on this file's contents.
+See [TRMNL documentation](https://help.trmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0) for details on this file's contents.
 
 
 ## Tests
