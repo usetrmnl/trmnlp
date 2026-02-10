@@ -37,6 +37,11 @@ module TRMNLP
       Commands::Clone.new(options).call(name, id)
     end
 
+    desc 'list', 'List private plugins from TRMNL server'
+    def list
+      Commands::List.new(options).call
+    end
+
     desc 'pull', 'Download latest plugin settings from TRMNL server'
     method_option :force, type: :boolean, default: false, aliases: '-f',
                   desc: 'Skip confirmation prompts'
