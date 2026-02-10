@@ -87,6 +87,40 @@ docker run \
     trmnl/trmnlp serve
 ```
 
+#### Interactive Mode
+
+For running multiple commands (login, clone, serve), you can start an interactive shell:
+
+```sh
+docker run -it \
+    --publish 4567:4567 \
+    --volume "$HOME/.config/trmnlp:/root/.config/trmnlp" \
+    --volume "$(pwd):/plugin" \
+    --entrypoint /bin/bash \
+    trmnl/trmnlp
+```
+
+Then run commands inside the container:
+
+```sh
+trmnlp login
+trmnlp clone my_plugin 12345
+cd my_plugin
+trmnlp serve
+```
+
+The config volume (`$HOME/.config/trmnlp`) persists your API key between sessions.
+
+#### Building Locally
+
+To build the Docker image from source:
+
+```sh
+git clone https://github.com/usetrmnl/trmnlp.git
+cd trmnlp
+docker build -t trmnlp .
+```
+
 ## `.trmnlp.yml` Reference - Project Config
 
 The `.trmnlp.yml` file lives in the root of the plugin project, and is for configuring the local dev server.
