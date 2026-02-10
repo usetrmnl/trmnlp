@@ -3,6 +3,7 @@
 require 'securerandom'
 require 'sinatra'
 require 'sinatra/base'
+require 'yaml'
 
 require_relative 'context'
 require_relative 'screen_generator'
@@ -127,6 +128,44 @@ module TRMNLP
       redirect back
     end
 
+    # API: current project config (custom field values) plus the plugin's
+    # field definitions, so the editor can render plugin-declared fields.
+    get '/api/config' do
+      content_type :json
+
+      # author_bio is informational-only — not a data field a user can set.
+      plugin_fields = @context.config.plugin.custom_field_definitions.reject do |field|
+        field['field_type'] == 'author_bio'
+      end
+
+      {
+        custom_fields: @context.config.project.custom_fields,
+        plugin_fields: plugin_fields
+      }.to_json
+    end
+
+    # API: update the project config's custom_fields in .trmnlp.yml
+    post '/api/config' do
+      content_type :json
+
+      body = JSON.parse(request.body.read)
+      custom_fields = body['custom_fields'] || {}
+
+      config_path = @context.paths.trmnlp_config
+      config = read_project_config(config_path)
+      config['custom_fields'] = custom_fields
+      config_path.write(YAML.dump(config))
+
+      # Reload config and re-poll so URLs/headers pick up the new values
+      @context.config.project.reload!
+      @poller.poll_data
+
+      { success: true, custom_fields: @context.config.project.custom_fields }.to_json
+    rescue StandardError => e
+      status 500
+      { error: e.message }.to_json
+    end
+
     get '/oauth/connect' do
       halt 400, 'OAuth is not configured. Add the oauth_* keys to src/settings.yml.' unless @oauth_session.configured?
 
@@ -188,6 +227,14 @@ module TRMNLP
     end
 
     private
+
+    # Mirrors Config::Project#reload! so a round-trip through the editor
+    # preserves whatever else lives in .trmnlp.yml.
+    def read_project_config(config_path)
+      return {} unless config_path.exist?
+
+      YAML.safe_load_file(config_path, permitted_classes: [Date, Time]) || {}
+    end
 
     # On timeout (queue idle), a colon-prefixed SSE comment line both
     # keeps proxies awake and surfaces a dead client via the next
