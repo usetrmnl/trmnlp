@@ -58,6 +58,11 @@ module TRMNLP
       Commands::Push.new(options).call
     end
 
+    desc 'lint', 'Validate plugin code against TRMNL best practices'
+    def lint
+      Commands::Lint.new(options).call
+    end
+
     desc 'serve', 'Start a local dev server'
     method_option :bind, type: :string, default: default_bind, aliases: '-b', desc: 'Bind address'
     method_option :port, type: :numeric, default: 4567, aliases: '-p', desc: 'Port number'
