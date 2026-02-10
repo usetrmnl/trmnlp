@@ -49,6 +49,11 @@ module TRMNLP
 
       def id = @config['id']
 
+      # Returns the custom field definitions from settings.yml
+      def custom_fields_definitions
+        (@config['custom_fields'] || []).select { |f| f['field_type'] != 'author_bio' }
+      end
+
       def static_data
         JSON.parse(@config['static_data'] || '{}')
       rescue JSON::ParserError

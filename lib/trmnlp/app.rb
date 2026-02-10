@@ -67,7 +67,49 @@ module TRMNLP
       @context.poll_data
       redirect back
     end
-    
+
+    # API: Get current project config (custom_fields) and plugin field definitions
+    get '/api/config' do
+      content_type :json
+
+      # Get custom field definitions from plugin settings.yml
+      plugin_custom_fields = @context.config.plugin.custom_fields_definitions rescue []
+
+      {
+        custom_fields: @context.config.project.custom_fields,
+        plugin_fields: plugin_custom_fields
+      }.to_json
+    end
+
+    # API: Update project config (custom_fields)
+    post '/api/config' do
+      content_type :json
+
+      begin
+        body = JSON.parse(request.body.read)
+        custom_fields = body['custom_fields'] || {}
+
+        # Read current config
+        config_path = @context.paths.trmnlp_config
+        config = config_path.exist? ? YAML.load_file(config_path) : {}
+
+        # Update custom_fields
+        config['custom_fields'] = custom_fields
+
+        # Write back
+        config_path.write(YAML.dump(config))
+
+        # Reload config and re-poll data
+        @context.config.project.reload!
+        @context.poll_data
+
+        { success: true, custom_fields: @context.config.project.custom_fields }.to_json
+      rescue => e
+        status 500
+        { error: e.message }.to_json
+      end
+    end
+
     VIEWS.each do |view|
       get "/#{view}" do
         @view = view
