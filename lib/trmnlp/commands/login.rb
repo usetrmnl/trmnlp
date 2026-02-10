@@ -1,4 +1,5 @@
 require_relative 'base'
+require_relative '../api_client'
 
 module TRMNLP
   module Commands
@@ -18,9 +19,16 @@ module TRMNLP
         raise Error, "Invalid API key; did you copy it from the right place?" unless api_key.start_with?("user_")
         
         config.app.api_key = api_key
-        config.app.save
-        
-        output "Saved changes to #{paths.app_config}"
+
+        api_client = APIClient.new(config)
+        begin
+          user_info = api_client.get_me
+          output "Authenticated as #{user_info['name']} (#{user_info['email']})"
+          config.app.save
+          output "Saved changes to #{paths.app_config}"
+        rescue => e
+          raise Error, "Authentication failed; changes were not saved.\n#{e.message}"
+        end
       end
     end
   end
