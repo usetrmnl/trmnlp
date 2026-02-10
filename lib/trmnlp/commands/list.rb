@@ -4,13 +4,15 @@ require_relative '../api_client'
 module TRMNLP
   module Commands
     class List < Base
+      PRIVATE_PLUGIN_ID = 37
+
       def call
         authenticate!
 
         api = APIClient.new(config)
         response = api.get_plugin_settings
         plugins = (response['data'] || [])
-          .select { |p| p['plugin_id'] == 37 }
+          .select { |p| p['plugin_id'] == PRIVATE_PLUGIN_ID }
           .sort_by { |p| (p['name'] || '').downcase }
 
         if plugins.empty?
