@@ -104,6 +104,97 @@ pre > code {
   }
 }
 
+/* Custom Fields Editor */
+.custom-fields-editor {
+  margin: 1em 0;
+  max-width: 950px;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5em;
+  background: var(--bg-color);
+}
+
+.custom-fields-editor summary {
+  padding: 0.75em 1em;
+  cursor: pointer;
+  font-weight: bold;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.custom-fields-editor[open] summary {
+  border-bottom: 1px solid var(--border-color);
+}
+
+#custom-fields-container {
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.custom-field-row {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+}
+
+.custom-field-row input {
+  padding: 0.5em;
+  border: 1px solid var(--border-color);
+  border-radius: 0.25em;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.custom-field-row input[name="key"] {
+  width: 150px;
+}
+
+.custom-field-row input[name="key"].required-field {
+  background: #3b82f620;
+  border-color: #3b82f6;
+  font-weight: bold;
+}
+
+.custom-field-row input[name="value"] {
+  flex: 1;
+}
+
+.custom-field-row select[name="value"],
+.custom-field-select {
+  flex: 1;
+  padding: 0.5em;
+  border: 1px solid var(--border-color);
+  border-radius: 0.25em;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font: inherit;
+}
+
+.custom-field-row .btn-remove {
+  padding: 0.3em 0.6em;
+  background: #ef4444;
+  color: white;
+  border: none;
+}
+
+.custom-fields-actions {
+  padding: 1em;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 0.5em;
+  justify-content: flex-end;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+  border-color: #2563eb;
+}
+
+.btn-primary:hover {
+  filter: brightness(110%);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-color: #191b21;

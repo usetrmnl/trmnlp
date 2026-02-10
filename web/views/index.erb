@@ -62,6 +62,16 @@
 
         <iframe style="width: 800px; height: 480px; border: 1px solid black; background: white;">Rendering…</iframe>
 
+        <!-- Custom Fields Editor -->
+        <details id="custom-fields-editor" class="custom-fields-editor">
+            <summary>Custom Fields</summary>
+            <div id="custom-fields-container"></div>
+            <div class="custom-fields-actions">
+                <button class="btn" id="add-field-btn">+ Add Field</button>
+                <button class="btn btn-primary" id="save-fields-btn">Save & Reload</button>
+            </div>
+        </details>
+
         <pre id="user-data"><code><%= @user_data %></code></pre>
     </main>
 </body>
