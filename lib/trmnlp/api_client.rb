@@ -9,6 +9,16 @@ module TRMNLP
       @config = config
     end
 
+    def get_plugin_settings
+      response = conn.get("plugin_settings")
+
+      if response.status == 200
+        JSON.parse(response.body)
+      else
+        raise Error, "failed to list plugin settings: #{response.status} #{response.body}"
+      end
+    end
+
     def get_plugin_setting_archive(id)
       response = conn.get("plugin_settings/#{id}/archive")
 
