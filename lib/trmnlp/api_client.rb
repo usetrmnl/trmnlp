@@ -9,11 +9,21 @@ module TRMNLP
       @config = config
     end
 
+    def get_me
+      response = conn.get("me")
+
+      if response.status == 200
+        JSON.parse(response.body).dig('data')
+      else
+        raise Error, "failed to fetch user info: #{response.status} #{response.body}"
+      end
+    end
+
     def get_plugin_settings
       response = conn.get("plugin_settings")
 
       if response.status == 200
-        JSON.parse(response.body)
+        JSON.parse(response.body).dig('data')
       else
         raise Error, "failed to list plugin settings: #{response.status} #{response.body}"
       end

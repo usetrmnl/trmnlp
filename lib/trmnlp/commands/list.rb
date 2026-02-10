@@ -11,7 +11,7 @@ module TRMNLP
 
         api = APIClient.new(config)
         response = api.get_plugin_settings
-        plugins = (response['data'] || [])
+        plugins = (response || [])
           .select { |p| p['plugin_id'] == PRIVATE_PLUGIN_ID }
           .sort_by { |p| (p['name'] || '').downcase }
 
