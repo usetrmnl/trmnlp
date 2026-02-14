@@ -83,6 +83,8 @@ module TRMNLP
         options = Selenium::WebDriver::Firefox::Options.new
         options.add_argument('--headless')
         options.add_argument('--disable-web-security')
+        options.add_preference('gfx.text.disable-aa', true)
+        options.add_preference('gfx.text.subpixel-position.force-disabled', true)
 
         driver = Selenium::WebDriver.for(:firefox, options: options)
         # Set a default window size that will be consistent
