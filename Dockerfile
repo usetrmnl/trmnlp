@@ -50,6 +50,8 @@ COPY web/ /app/web/
 COPY bin/ /app/bin/
 COPY templates/ /app/templates/
 
+RUN ln -s /app/bin/trmnlp /usr/local/bin/trmnlp
+
 EXPOSE 4567
 WORKDIR /plugin
 ENTRYPOINT [ "/app/bin/trmnlp" ]
