@@ -1,0 +1,3 @@
+strategy: static
+static_data: '{"message": "hello from fixture"}'
+dark_mode: 'no'

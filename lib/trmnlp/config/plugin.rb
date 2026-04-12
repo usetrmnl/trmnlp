@@ -1,3 +1,4 @@
+require 'cgi'
 require 'yaml'
 
 module TRMNLP
@@ -11,7 +12,7 @@ module TRMNLP
 
       def reload!
         if paths.plugin_config.exist?
-          @config = YAML.load_file(paths.plugin_config)
+          @config = YAML.safe_load_file(paths.plugin_config, permitted_classes: [Date, Time]) || {}
         else
           @config = {}
         end

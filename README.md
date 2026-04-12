@@ -161,13 +161,29 @@ The `settings.yml` file is part of the plugin definition.
 See [TRMNL documentation](https://help.trmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0) for details on this file's contents.
 
 
-## Tests
+## Development
 
-To test, run:
+After checking out the repo, install dependencies:
 
 ```sh
-bin/rake
+bundle install
 ```
+
+Run the test suite:
+
+```sh
+bundle exec rake check
+```
+
+This is the same command that CI runs on every pull request.
+
+### Releasing
+
+1. Bump the version in `lib/trmnlp/version.rb`
+2. Update `CHANGELOG.md`
+3. Commit and merge to `main`
+
+When the version bump lands on `main`, CI automatically creates a git tag, publishes the gem to RubyGems, and builds the Docker image.
 
 ## Contributing
 

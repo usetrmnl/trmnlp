@@ -1,0 +1,77 @@
+# Triggered when lib/trmnlp/version.rb changes on main (i.e., a version
+# bump is merged). Creates a git tag, publishes the gem to RubyGems, and
+# builds + pushes the Docker image.
+#
+# Replaces the previous workflow that required manually pushing a git tag.
+#
+# Required repository secrets:
+#   RUBYGEMS_API_KEY  - API key from https://rubygems.org/profile/api_keys
+#   DOCKER_USERNAME   - Docker Hub username
+#   DOCKER_PASSWORD   - Docker Hub access token
+
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/trmnlp/version.rb"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # needed to push the git tag
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Read Ruby version
+        run: echo "RUBY_VERSION=$(cat .ruby-version)" >> $GITHUB_ENV
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+
+      - name: Run tests
+        run: bundle exec rake check
+
+      - name: Read gem version
+        run: echo "VERSION=v$(ruby -r ./lib/trmnlp/version -e 'puts TRMNLP::VERSION')" >> $GITHUB_ENV
+
+      - name: Create git tag
+        run: |
+          git tag "${{ env.VERSION }}"
+          git push origin "${{ env.VERSION }}"
+
+      - name: Build and publish gem
+        run: |
+          gem build trmnl_preview.gemspec
+          gem push trmnl_preview-*.gem
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          build-args: |
+            RUBY_VERSION=${{ env.RUBY_VERSION }}
+          platforms: |
+            linux/amd64
+            linux/arm64
+          push: true
+          tags: |
+            trmnl/trmnlp:latest
+            trmnl/trmnlp:${{ env.VERSION }}

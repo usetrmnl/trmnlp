@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email = ["rockwell@schrock.me"]
 
   spec.summary = "Local web server to preview TRMNL plugins"
-  spec.description = "Automatically rebuild and preview TRNML plugins in multiple views"
+  spec.description = "Automatically rebuild and preview TRMNL plugins in multiple views"
   spec.homepage = "https://github.com/usetrmnl/trmnlp"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0.0"

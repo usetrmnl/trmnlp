@@ -5,6 +5,8 @@
 /doc/
 /pkg/
 /spec/reports/
+/spec/examples.txt
 /tmp/
 *.gem
 .DS_Store
+vendor/

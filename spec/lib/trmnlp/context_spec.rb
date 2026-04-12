@@ -4,6 +4,10 @@ RSpec.describe TRMNLP::Context do
   let(:root_dir) { File.join(__dir__, '../../fixtures') }
   subject(:context) { described_class.new(root_dir) }
 
+  # Context#poll_data and #put_webhook use puts/print for logging.
+  # Silence them so test output stays clean.
+  before { allow($stdout).to receive(:write) }
+
   TEST_RESPONSES = [
     {
       header: 'application/json; charset=utf-8',
@@ -153,6 +157,86 @@ RSpec.describe TRMNLP::Context do
         expect(result).to be_nil
         expect(context).not_to have_received(:write_user_data)
       end
+    end
+  end
+
+  describe '#put_webhook' do
+    before { allow(context).to receive(:write_user_data) }
+
+    it 'parses JSON payload and writes user_data' do
+      context.put_webhook('{"key": "value"}')
+      expect(context).to have_received(:write_user_data).with({ 'key' => 'value' })
+    end
+
+    it 'wraps array payloads under a data key' do
+      context.put_webhook('[1, 2, 3]')
+      expect(context).to have_received(:write_user_data).with({ data: [1, 2, 3] })
+    end
+
+    it 'logs an error on invalid JSON without raising' do
+      expect { context.put_webhook('not json {') }.not_to raise_error
+      expect(context).not_to have_received(:write_user_data)
+    end
+  end
+
+  describe '#validate!' do
+    context 'when .trmnlp.yml exists' do
+      it 'does not raise' do
+        expect { context.validate! }.not_to raise_error
+      end
+    end
+
+    context 'when .trmnlp.yml does not exist' do
+      let(:root_dir) { Dir.mktmpdir }
+
+      after { FileUtils.rm_rf(root_dir) }
+
+      it 'raises TRMNLP::Error' do
+        expect { context.validate! }.to raise_error(TRMNLP::Error, /not a plugin directory/)
+      end
+    end
+  end
+
+  describe '#user_data' do
+    it 'includes base trmnl mock data' do
+      data = context.user_data
+      expect(data).to have_key('trmnl')
+      expect(data['trmnl']['user']['name']).to eq('name')
+      expect(data['trmnl']['device']['friendly_id']).to eq('ABC123')
+      expect(data['trmnl']['system']).to have_key('timestamp_utc')
+    end
+
+    it 'merges static data from plugin config' do
+      data = context.user_data
+      expect(data['message']).to eq('hello from fixture')
+    end
+
+    it 'includes plugin_settings in trmnl data' do
+      data = context.user_data
+      settings = data['trmnl']['plugin_settings']
+      expect(settings['strategy']).to eq('static')
+    end
+  end
+
+  describe '#render_liquid_template' do
+    it 'renders the template with user_data variables' do
+      result = context.render_liquid_template('full')
+      expect(result).to include('hello from fixture')
+    end
+
+    it 'returns an error message for a missing template' do
+      result = context.render_liquid_template('nonexistent')
+      expect(result).to include('Missing template')
+    end
+  end
+
+  describe '#render_full_page' do
+    it 'wraps rendered Liquid in the TRMNL HTML shell' do
+      result = context.render_full_page('full')
+      expect(result).to include('<!DOCTYPE html>')
+      expect(result).to include('environment trmnl')
+      expect(result).to include('hello from fixture')
+      expect(result).to include('view--full')
     end
   end
 end

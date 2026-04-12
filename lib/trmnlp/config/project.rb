@@ -13,7 +13,7 @@ module TRMNLP
 
       def reload!
         if paths.trmnlp_config.exist?
-          @config = YAML.load_file(paths.trmnlp_config)
+          @config = YAML.safe_load_file(paths.trmnlp_config, permitted_classes: [Date, Time]) || {}
         else
           @config = {}
         end

@@ -1,3 +1,4 @@
+require 'active_support'
 require 'active_support/time'
 require 'active_support/core_ext/hash/conversions'
 require 'erb'
@@ -123,7 +124,7 @@ module TRMNLP
     def put_webhook(payload)
       data = wrap_array(JSON.parse(payload))
       write_user_data(data)
-    rescue
+    rescue => e
       puts "webhook error: #{e.message}"
     end
 
@@ -153,6 +154,7 @@ module TRMNLP
     end
 
     def screen_classes(classes = 'screen')
+      classes ||= 'screen'
       classes << ' screen--no-bleed' if config.plugin.no_screen_padding == 'yes'
       classes
     end
