@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 0.7.1
+
+- Update reference from usetrmnl.com to trmnl.com
+
 ## 0.7.0
 
 - Switch from Puppeteer + CDP to Selenium + WebDriver BiDi (@SorceressLyra)

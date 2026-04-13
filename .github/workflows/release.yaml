@@ -2,6 +2,10 @@
 # bump is merged). Creates a git tag, publishes the gem to RubyGems, and
 # builds + pushes the Docker image.
 #
+# Each release step is idempotent: it checks whether the artifact already
+# exists and skips if so. This means the workflow can be safely re-run
+# after a partial failure (e.g., tag pushed but gem publish failed).
+#
 # Replaces the previous workflow that required manually pushing a git tag.
 #
 # Required repository secrets:
@@ -37,46 +41,63 @@ jobs:
         run: bundle exec rake check
 
       - name: Read gem version
-        run: echo "VERSION=v$(ruby -r ./lib/trmnlp/version -e 'puts TRMNLP::VERSION')" >> $GITHUB_ENV
+        run: |
+          GEM_VERSION=$(ruby -r ./lib/trmnlp/version -e 'puts TRMNLP::VERSION')
+          echo "VERSION=v${GEM_VERSION}" >> $GITHUB_ENV
+          echo "GEM_VERSION=${GEM_VERSION}" >> $GITHUB_ENV
 
+      # Git tag
       - name: Check if tag already exists
         run: |
           if git ls-remote --tags origin "refs/tags/${{ env.VERSION }}" | grep -q .; then
-            echo "Tag ${{ env.VERSION }} already exists -- skipping release."
-            echo "SKIP_RELEASE=true" >> $GITHUB_ENV
+            echo "TAG_EXISTS=true" >> $GITHUB_ENV
           fi
 
       - name: Create git tag
-        if: env.SKIP_RELEASE != 'true'
+        if: env.TAG_EXISTS != 'true'
         run: |
           git tag "${{ env.VERSION }}"
           git push origin "${{ env.VERSION }}"
 
+      # RubyGems
+      - name: Check if gem version already published
+        run: |
+          if gem info trmnl_preview -r -e -v "${{ env.GEM_VERSION }}" 2>/dev/null | grep -q "${{ env.GEM_VERSION }}"; then
+            echo "GEM_EXISTS=true" >> $GITHUB_ENV
+          fi
+
       - name: Build and publish gem
-        if: env.SKIP_RELEASE != 'true'
+        if: env.GEM_EXISTS != 'true'
         run: |
           gem build trmnl_preview.gemspec
           gem push trmnl_preview-*.gem
         env:
           GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
 
+      # Docker image
+      - name: Check if Docker image already exists
+        run: |
+          if docker manifest inspect "trmnl/trmnlp:${{ env.VERSION }}" > /dev/null 2>&1; then
+            echo "IMAGE_EXISTS=true" >> $GITHUB_ENV
+          fi
+
       - name: Login to Docker Hub
-        if: env.SKIP_RELEASE != 'true'
+        if: env.IMAGE_EXISTS != 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Setup QEMU
-        if: env.SKIP_RELEASE != 'true'
+        if: env.IMAGE_EXISTS != 'true'
         uses: docker/setup-qemu-action@v3
 
       - name: Setup Docker Buildx
-        if: env.SKIP_RELEASE != 'true'
+        if: env.IMAGE_EXISTS != 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Build and push Docker image
-        if: env.SKIP_RELEASE != 'true'
+        if: env.IMAGE_EXISTS != 'true'
         uses: docker/build-push-action@v6
         with:
           build-args: |
