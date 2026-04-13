@@ -180,7 +180,7 @@ module TRMNLP
         end
       end
 
-      def get_binding = binding
+      def get_binding(&block) = binding
     end
 
     def wrap_array(json)

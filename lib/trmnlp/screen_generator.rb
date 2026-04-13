@@ -139,7 +139,7 @@ module TRMNLP
           output.close
         end
       rescue Selenium::WebDriver::Error::TimeoutError,
-            Selenium::WebDriver::Error::WebDriverError => e
+            Selenium::WebDriver::Error::WebDriverError
         retry_count += 1
         retry if retry_count <= 1
         raise
