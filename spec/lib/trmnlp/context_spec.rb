@@ -230,6 +230,12 @@ RSpec.describe TRMNLP::Context do
     end
   end
 
+  describe '#screen_classes' do
+    it 'defaults to screen when called with nil' do
+      expect(context.screen_classes(nil)).to start_with('screen')
+    end
+  end
+
   describe '#render_full_page' do
     it 'wraps rendered Liquid in the TRMNL HTML shell' do
       result = context.render_full_page('full')
