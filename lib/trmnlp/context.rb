@@ -89,6 +89,9 @@ module TRMNLP
         puts "received #{response.body.length} bytes (#{response.status} status)"
         if response.status == 200
           content_type = response.headers['content-type'].split(';').first.strip if response.headers.include?('content-type')
+          # NOTE: trmnl supports these polling response content types:
+          # JSON, RSS, XML, plaintext, or CSV (see https://help.trmnl.com/en/articles/9510536-private-plugins)
+          # trmnlp only supports json and xml today
           case content_type
           when 'application/json', /^application\/.+\+json/
             json = wrap_array(JSON.parse(response.body))
