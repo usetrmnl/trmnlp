@@ -14,8 +14,6 @@
 
 require File.join(__dir__, '../lib/trmnlp')
 require 'webmock/rspec'
-require 'rack/test'
-require 'tmpdir'
 
 WebMock.disable_net_connect!
 

@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'trmnlp/app'
+require 'rack/test'
 
 RSpec.describe TRMNLP::App do
   include Rack::Test::Methods

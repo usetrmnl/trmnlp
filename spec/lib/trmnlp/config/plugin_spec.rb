@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'tmpdir'
 
 RSpec.describe TRMNLP::Config::Plugin do
   let(:fixture_dir) { File.join(__dir__, '../../../fixtures') }

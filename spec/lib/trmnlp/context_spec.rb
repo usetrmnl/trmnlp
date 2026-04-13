@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'tmpdir'
 
 RSpec.describe TRMNLP::Context do
   let(:root_dir) { File.join(__dir__, '../../fixtures') }

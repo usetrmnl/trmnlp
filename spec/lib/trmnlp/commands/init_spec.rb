@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'trmnlp/commands'
+require 'tmpdir'
 
 RSpec.describe TRMNLP::Commands::Init do
   let(:tmpdir) { Dir.mktmpdir }
