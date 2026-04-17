@@ -4,6 +4,40 @@ RSpec.describe TRMNLP::Context do
   let(:root_dir) { File.join(__dir__, '../../fixtures') }
   subject(:context) { described_class.new(root_dir) }
 
+  describe '#user_data' do
+    context 'with default device dimensions' do
+      it 'uses 800x480 as default device dimensions' do
+        data = context.user_data
+        expect(data['trmnl']['device']['width']).to eq(800)
+        expect(data['trmnl']['device']['height']).to eq(480)
+      end
+    end
+
+    context 'with custom device dimensions' do
+      it 'uses the provided width and height' do
+        data = context.user_data(device_width: 1024, device_height: 600)
+        expect(data['trmnl']['device']['width']).to eq(1024)
+        expect(data['trmnl']['device']['height']).to eq(600)
+      end
+    end
+
+    context 'with only width provided' do
+      it 'uses the provided width and default height' do
+        data = context.user_data(device_width: 1024)
+        expect(data['trmnl']['device']['width']).to eq(1024)
+        expect(data['trmnl']['device']['height']).to eq(480)
+      end
+    end
+
+    context 'with only height provided' do
+      it 'uses the default width and provided height' do
+        data = context.user_data(device_height: 600)
+        expect(data['trmnl']['device']['width']).to eq(800)
+        expect(data['trmnl']['device']['height']).to eq(600)
+      end
+    end
+  end
+
   TEST_RESPONSES = [
     {
       header: 'application/json; charset=utf-8',

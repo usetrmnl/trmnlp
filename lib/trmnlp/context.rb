@@ -47,8 +47,8 @@ module TRMNLP
       @view_change_callback = block
     end
 
-    def user_data
-      merged_data = base_trmnl_data
+    def user_data(device_width: nil, device_height: nil)
+      merged_data = base_trmnl_data(device_width: device_width, device_height: device_height)
 
       if config.plugin.static?
         merged_data.merge!(config.plugin.static_data)
@@ -182,7 +182,7 @@ module TRMNLP
       json.is_a?(Array) ? { data: json } : json
     end
 
-    def base_trmnl_data
+    def base_trmnl_data(device_width: nil, device_height: nil)
       tz = ActiveSupport::TimeZone.find_tzinfo(config.project.time_zone)
       time_zone_iana = tz.name
       time_zone_name = ActiveSupport::TimeZone::MAPPING.invert[time_zone_iana] || time_zone_iana
@@ -203,8 +203,8 @@ module TRMNLP
             'friendly_id' => 'ABC123',
             'percent_charged' => 85.0,
             'wifi_strength' => 90,
-            'height' => 480,
-            'width' => 800
+            'height' => device_height || 480,
+            'width' => device_width || 800
           },
           'system' => {
             'timestamp_utc' => Time.now.utc.to_i,

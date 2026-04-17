@@ -46,7 +46,9 @@ module TRMNLP
 
     get '/data' do
       content_type :json
-      JSON.pretty_generate(@context.user_data)
+      device_width = params[:device_width] && params[:device_width].to_i
+      device_height = params[:device_height] && params[:device_height].to_i
+      JSON.pretty_generate(@context.user_data(device_width: device_width, device_height: device_height))
     end
 
     get '/live_reload' do

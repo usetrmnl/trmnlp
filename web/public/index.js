@@ -12,8 +12,7 @@ trmnlp.connectLiveRender = function () {
 
     if (payload.type === "reload") {
       trmnlp.fetchPreview();
-      trmnlp.userData.textContent = JSON.stringify(payload.user_data, null, 2);
-      hljs.highlightAll();
+      trmnlp.fetchUserData();
     }
   };
 
@@ -21,6 +20,20 @@ trmnlp.connectLiveRender = function () {
     console.log("Reconnecting to live reload socket...");
     setTimeout(trmnlp.connectLiveRender, 1000);
   };
+};
+
+
+trmnlp.fetchUserData = function (pickerState) {
+  const state = pickerState || trmnlp.picker.state;
+  const width = encodeURIComponent(state.width);
+  const height = encodeURIComponent(state.height);
+
+  fetch(`/data?device_width=${width}&device_height=${height}`)
+    .then(response => response.text())
+    .then(json => {
+      trmnlp.userData.textContent = json;
+      hljs.highlightAll();
+    });
 };
 
 
@@ -77,6 +90,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     trmnlp.iframe.style.height = `${event.detail.height}px`;
 
     trmnlp.fetchPreview(event.detail);
+    trmnlp.fetchUserData(event.detail);
   });
 
   trmnlp.picker = await TRMNLPicker.create('picker-form', { localStorageKey: 'trmnlp-picker' });
