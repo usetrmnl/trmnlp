@@ -9,6 +9,7 @@ no_screen_padding: 'no'
 dark_mode: 'no'
 static_data: ''
 polling_verb: get
+framework_version: latest
 polling_url: ''
 polling_headers: ''
 name: My Plugin
