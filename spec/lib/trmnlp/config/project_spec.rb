@@ -4,9 +4,10 @@ require 'spec_helper'
 require 'tmpdir'
 
 RSpec.describe TRMNLP::Config::Project do
+  subject(:project) { described_class.new(paths) }
+
   let(:root_dir) { File.join(__dir__, '../../../fixtures') }
   let(:paths) { TRMNLP::Paths.new(root_dir) }
-  subject { TRMNLP::Config::Project.new(paths) }
 
   describe '#custom_fields' do
     it 'transforms scalar values to strings' do
@@ -23,8 +24,9 @@ RSpec.describe TRMNLP::Config::Project do
 
     context 'when there is no .trmnlp yaml file in the path' do
       let(:root_dir) { 'not-a-valid-path' }
+
       it 'returns an empty hash' do
-        expect(subject.custom_fields).to eq({})
+        expect(project.custom_fields).to eq({})
       end
     end
   end

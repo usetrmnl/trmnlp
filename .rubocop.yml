@@ -1,0 +1,19 @@
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  TargetRubyVersion: 4.0
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'templates/**/*'
+    - 'vendor/**/*'
+
+# A small CLI gem — a doc comment on every class is noise, not value.
+Style/Documentation:
+  Enabled: false
+
+# RSpec describe/context blocks and the gemspec block are meant to be long.
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - '*.gemspec'
