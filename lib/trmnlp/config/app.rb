@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'yaml'
 
 module TRMNLP
@@ -18,8 +20,9 @@ module TRMNLP
       def logged_out? = !logged_in?
 
       def api_key
-        env_api_key = ENV['TRMNL_API_KEY']
+        env_api_key = ENV.fetch('TRMNL_API_KEY', nil)
         return env_api_key if env_api_key && !env_api_key.empty?
+
         @config['api_key']
       end
 
@@ -33,7 +36,7 @@ module TRMNLP
 
       def account_uri = URI.join(base_uri, '/account')
 
-      def edit_plugin_settings_uri(id) = URI.join(base_uri, "/plugin_settings/#{id.to_s}/edit")
+      def edit_plugin_settings_uri(id) = URI.join(base_uri, "/plugin_settings/#{id}/edit")
 
       def playlists_uri = URI.join(base_uri, '/playlists')
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'faraday'
 require 'faraday/multipart'
 
@@ -10,39 +12,35 @@ module TRMNLP
     end
 
     def get_me
-      response = conn.get("me")
+      response = conn.get('me')
 
-      if response.status == 200
-        JSON.parse(response.body).dig('data')
-      else
-        raise Error, "failed to fetch user info: #{response.status} #{response.body}"
-      end
+      raise Error, "failed to fetch user info: #{response.status} #{response.body}" unless response.status == 200
+
+      JSON.parse(response.body)['data']
     end
 
     def get_plugin_settings
-      response = conn.get("plugin_settings")
+      response = conn.get('plugin_settings')
 
-      if response.status == 200
-        JSON.parse(response.body).dig('data')
-      else
-        raise Error, "failed to list plugin settings: #{response.status} #{response.body}"
-      end
+      raise Error, "failed to list plugin settings: #{response.status} #{response.body}" unless response.status == 200
+
+      JSON.parse(response.body)['data']
     end
 
     def get_plugin_setting_archive(id)
       response = conn.get("plugin_settings/#{id}/archive")
 
-      if response.status == 200
-        temp_file = Tempfile.new(["plugin_settings_#{id}", '.zip'])
-        temp_file.binmode
-        temp_file.write(response.body)
-        temp_file.rewind
-
-        # return the temp file IO
-        temp_file
-      else
+      unless response.status == 200
         raise Error, "failed to download plugin settings archive: #{response.status} #{response.body}"
       end
+
+      temp_file = Tempfile.new(["plugin_settings_#{id}", '.zip'])
+      temp_file.binmode
+      temp_file.write(response.body)
+      temp_file.rewind
+
+      # return the temp file IO
+      temp_file
     end
 
     def post_plugin_setting_archive(id, path)
@@ -56,37 +54,33 @@ module TRMNLP
 
       filepart.close
 
-      if response.status == 200
-        JSON.parse(response.body)
-      else
+      unless response.status == 200
         raise Error, "failed to upload plugin settings archive: #{response.status} #{response.body}"
       end
+
+      JSON.parse(response.body)
     end
 
     def post_plugin_setting(params)
-      response = conn.post("plugin_settings", params.to_json, content_type: 'application/json')
+      response = conn.post('plugin_settings', params.to_json, content_type: 'application/json')
 
-      if response.status == 200
-        JSON.parse(response.body)
-      else
-        raise Error, "failed to create plugin setting: #{response.status} #{response.body}"
-      end
+      raise Error, "failed to create plugin setting: #{response.status} #{response.body}" unless response.status == 200
+
+      JSON.parse(response.body)
     end
 
     def delete_plugin_setting(id)
       response = conn.delete("plugin_settings/#{id}")
 
-      if response.status == 204
-        true
-      else
-        raise Error, "failed to delete plugin setting: #{response.status} #{response.body}"
-      end
+      raise Error, "failed to delete plugin setting: #{response.status} #{response.body}" unless response.status == 204
+
+      true
     end
 
     private
-  
+
     attr_reader :config
-  
+
     def api_uri = config.app.api_uri
 
     def conn
@@ -95,11 +89,10 @@ module TRMNLP
       end
     end
 
-
     def headers
       {
         'Authorization' => "Bearer #{config.app.api_key}",
-        'User-Agent' => "trmnlp/#{VERSION}",
+        'User-Agent' => "trmnlp/#{VERSION}"
       }
     end
   end
