@@ -1,0 +1,16 @@
+# Single-image preview server for the Hacker News example.
+# trmnlp now bundles python/node/php/ruby alongside the Sinatra
+# preview server, so serverless transforms (this example's
+# src/transform.py) run in the same container — no sidecar.
+#
+# To point at a remote transform daemon instead, set
+# serverless_daemon_url in .trmnlp.yml.
+
+services:
+  trmnlp:
+    image: trmnl/trmnlp:latest
+    command: ["serve"]
+    ports:
+      - "4567:4567"
+    volumes:
+      - .:/plugin
