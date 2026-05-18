@@ -19,6 +19,7 @@ module TRMNLP
     def self.default_bind = File.exist?('/.dockerenv') ? '0.0.0.0' : '127.0.0.1'
 
     desc 'build', 'Generate static HTML files'
+    method_option :png, type: :boolean, default: false, desc: 'Also render a PNG per view'
     def build
       Commands::Build.run(options)
     end

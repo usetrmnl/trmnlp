@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'tempfile'
 require 'tmpdir'
 require 'trmnlp/commands/build'
 
 RSpec.describe TRMNLP::Commands::Build do
   subject(:command) do
-    described_class.new(context:, options: described_class::Options.new(dir: tmp_root, quiet: true), reporter:)
+    described_class.new(context:,
+                        options: described_class::Options.new(dir: tmp_root, quiet: true, png: false),
+                        reporter:)
   end
 
   let(:tmp_root) { Dir.mktmpdir('trmnlp-build-') }
@@ -58,11 +61,51 @@ RSpec.describe TRMNLP::Commands::Build do
       bad_root = Dir.mktmpdir('trmnlp-build-bad-')
       cmd = described_class.new(context: TRMNLP::Context.new(bad_root),
                                 options: described_class::Options.new(dir: bad_root,
-                                                                      quiet: true))
+                                                                      quiet: true, png: false))
 
       expect { cmd.call }.to raise_error(TRMNLP::NotAPlugin)
     ensure
       FileUtils.rm_rf(bad_root)
+    end
+
+    context 'with --png (#92)' do
+      subject(:command) do
+        described_class.new(context:,
+                            options: described_class::Options.new(dir: tmp_root, quiet: true, png: true),
+                            reporter:)
+      end
+
+      let(:screen_generator) { instance_double(TRMNLP::ScreenGenerator) }
+
+      before do
+        allow(TRMNLP::ScreenGenerator).to receive(:new).and_return(screen_generator)
+        allow(screen_generator).to receive(:process) do
+          file = Tempfile.new(['screenshot', '.png'])
+          file.write('fake-png')
+          file.close
+          file
+        end
+      end
+
+      it 'writes a PNG for every view' do
+        command.call
+
+        written = Dir[File.join(tmp_root, '_build', '*.png')].map { |path| File.basename(path, '.png') }
+        expect(written).to contain_exactly(*TRMNLP::Screen.names)
+      end
+
+      it 'still writes the HTML files' do
+        command.call
+
+        written = Dir[File.join(tmp_root, '_build', '*.html')].map { |path| File.basename(path, '.html') }
+        expect(written).to contain_exactly(*TRMNLP::Screen.names)
+      end
+
+      it 'screenshots the rendered markup for each view' do
+        command.call
+
+        expect(TRMNLP::ScreenGenerator).to have_received(:new).with('<html>full</html>', screenshot: anything)
+      end
     end
   end
 end

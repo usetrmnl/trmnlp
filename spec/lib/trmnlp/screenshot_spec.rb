@@ -11,7 +11,7 @@ RSpec.describe TRMNLP::Screenshot do
 
   class FakeDriver
     attr_reader :scripts_run, :window_size, :screenshot_path, :navigated_to, :size_set_count
-    attr_accessor :script_errors, :viewport_overrides
+    attr_accessor :script_errors, :viewport_overrides, :min_window_width
 
     def initialize
       @scripts_run = []
@@ -19,6 +19,7 @@ RSpec.describe TRMNLP::Screenshot do
       @script_errors = []
       @viewport_overrides = []
       @size_set_count = 0
+      @min_window_width = nil
     end
 
     def execute_script(script, *_args)
@@ -46,11 +47,14 @@ RSpec.describe TRMNLP::Screenshot do
 
     # A real browser's viewport is the window minus the chrome borders
     # (10x20 above). Queue `viewport_overrides` to simulate a cold Firefox
-    # reporting a not-yet-settled size before the resize lands.
+    # reporting a not-yet-settled size before the resize lands. Set
+    # `min_window_width` to simulate Firefox refusing to shrink its window
+    # below a minimum (clamping the viewport wider than requested).
     def next_viewport
       return @viewport_overrides.shift if @viewport_overrides.any?
 
-      [@window_size.width - 10, @window_size.height - 20]
+      effective_width = [@window_size.width, @min_window_width || 0].max
+      [effective_width - 10, @window_size.height - 20]
     end
   end
 
@@ -110,6 +114,17 @@ RSpec.describe TRMNLP::Screenshot do
     it 'raises after two failed attempts' do
       pool.raise_on = Array.new(2) { Selenium::WebDriver::Error::WebDriverError.new('flake') }
       expect { result }.to raise_error(Selenium::WebDriver::Error::WebDriverError)
+    end
+
+    context 'when the browser clamps the window below the requested width' do
+      subject(:screenshot) { described_class.new(pool:, viewport_timeout: 0.1) }
+
+      before { driver.min_window_width = 510 }
+
+      it 'raises a RenderError naming the requested and clamped sizes' do
+        expect { screenshot.call(html: '<p>hi</p>', width: 400, height: 240) }
+          .to raise_error(TRMNLP::RenderError, /400x240.+500x240/)
+      end
     end
   end
 end
