@@ -1,0 +1,19 @@
+<div class="layout">
+  <div class="grid grid--cols-1 gap--xsmall">
+    {% for story in stories limit:3 %}
+      <div class="item">
+        <div class="meta">
+          <span class="index">{{ story.rank }}</span>
+        </div>
+        <div class="content">
+          <span class="title title--xsmall" data-clamp="1">{{ story.title }}</span>
+          <span class="description">{{ story.score }} pts &nbsp;·&nbsp; {{ story.comments }} comments</span>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="title_bar">
+  <span class="title">Hacker News</span>
+</div>

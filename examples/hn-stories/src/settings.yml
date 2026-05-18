@@ -1,0 +1,10 @@
+---
+strategy: polling
+name: Hacker News Top Stories
+polling_verb: get
+polling_url: https://hacker-news.firebaseio.com/v0/topstories.json
+polling_headers: ''
+no_screen_padding: 'no'
+dark_mode: 'no'
+refresh_interval: 15
+serverless_language: python

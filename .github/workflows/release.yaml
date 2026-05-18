@@ -1,0 +1,129 @@
+# Triggered when lib/trmnlp/version.rb changes on main (i.e. a version
+# bump is merged). Creates a git tag, publishes the gem to RubyGems, and
+# builds + pushes the multi-arch Docker image.
+#
+# Each release step is idempotent: it checks whether the artifact already
+# exists and skips if so. The workflow can be safely re-run after a
+# partial failure (e.g. tag pushed but gem publish failed).
+#
+# Required repository secrets:
+#   RUBYGEMS_API_KEY  - API key from https://rubygems.org/profile/api_keys
+#   DOCKER_USERNAME   - Docker Hub username
+#   DOCKER_PASSWORD   - Docker Hub access token
+
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/trmnlp/version.rb"
+
+# Serialize releases: a second run queues behind the first instead of
+# racing it on the tag push. Never cancel an in-flight release — that
+# could interrupt a publish midway and leave a partial state.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # needed to push the git tag
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Read Ruby version
+        run: echo "RUBY_VERSION=$(cat .ruby-version)" >> "$GITHUB_ENV"
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+
+      - name: Run specs
+        run: bundle exec rspec
+
+      - name: Read gem version
+        run: |
+          GEM_VERSION=$(ruby -r ./lib/trmnlp/version -e 'puts TRMNLP::VERSION')
+          echo "VERSION=v${GEM_VERSION}" >> "$GITHUB_ENV"
+          echo "GEM_VERSION=${GEM_VERSION}" >> "$GITHUB_ENV"
+
+      # Git tag
+      - name: Check if tag already exists
+        run: |
+          if git ls-remote --tags origin "refs/tags/${{ env.VERSION }}" | grep -q .; then
+            echo "TAG_EXISTS=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Create git tag
+        if: env.TAG_EXISTS != 'true'
+        run: |
+          git tag "${{ env.VERSION }}"
+          git push origin "${{ env.VERSION }}"
+
+      # RubyGems
+      - name: Check if gem version already published
+        run: |
+          if gem info trmnl_preview -r -e -v "${{ env.GEM_VERSION }}" 2>/dev/null | grep -q "${{ env.GEM_VERSION }}"; then
+            echo "GEM_EXISTS=true" >> "$GITHUB_ENV"
+          fi
+
+      # No RubyGems key → skip the publish (a maintainer pushes it manually) so the Docker steps still run.
+      - name: Check for RubyGems API key
+        env:
+          RUBYGEMS_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
+        run: |
+          if [ -n "$RUBYGEMS_API_KEY" ]; then
+            echo "HAS_RUBYGEMS_KEY=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build and publish gem
+        if: env.GEM_EXISTS != 'true' && env.HAS_RUBYGEMS_KEY == 'true'
+        run: |
+          gem build trmnl_preview.gemspec
+          gem push trmnl_preview-*.gem
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
+
+      - name: Warn that gem publish was skipped
+        if: env.GEM_EXISTS != 'true' && env.HAS_RUBYGEMS_KEY != 'true'
+        run: echo "::warning::RUBYGEMS_API_KEY not set — gem ${{ env.GEM_VERSION }} was NOT published. Push it manually."
+
+      # Docker image
+      - name: Check if Docker image already exists
+        run: |
+          if docker manifest inspect "trmnl/trmnlp:${{ env.VERSION }}" > /dev/null 2>&1; then
+            echo "IMAGE_EXISTS=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Login to Docker Hub
+        if: env.IMAGE_EXISTS != 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Setup QEMU
+        if: env.IMAGE_EXISTS != 'true'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker Buildx
+        if: env.IMAGE_EXISTS != 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        if: env.IMAGE_EXISTS != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          build-args: |
+            RUBY_VERSION=${{ env.RUBY_VERSION }}
+          platforms: |
+            linux/amd64
+            linux/arm64
+          push: true
+          tags: |
+            trmnl/trmnlp:latest
+            trmnl/trmnlp:${{ env.VERSION }}

@@ -1,103 +1,132 @@
+# frozen_string_literal: true
 
-require 'faye/websocket'
 require 'sinatra'
 require 'sinatra/base'
 
 require_relative 'context'
 require_relative 'screen_generator'
+require_relative 'screenshot'
 
 module TRMNLP
   class App < Sinatra::Base
     # Sinatra settings
     set :views, File.join(File.dirname(__FILE__), '..', '..', 'web', 'views')
     set :public_folder, File.join(File.dirname(__FILE__), '..', '..', 'web', 'public')
-    
+
+    helpers do
+      def format_bytes(bytes)
+        bytes < 1024 ? "#{bytes} bytes" : format('%.1f KB', bytes / 1024.0)
+      end
+
+      # NOTE: render_html.erb's layout yields raw plugin HTML through `<%= yield %>`,
+      # so a global `escape_html` setting would corrupt the render. Escape per-value.
+      def h(text)
+        Rack::Utils.escape_html(text.to_s)
+      end
+    end
+
     def initialize(*args)
       super
 
       @context = settings.context
+      @poller = @context.poller
+      @renderer = @context.renderer
+      @user_data_assembler = @context.user_data_assembler
+      @transform_pipeline = @context.transform_pipeline
+      @watcher = @context.watcher
+      @screenshot = Screenshot.new(pool: settings.browser_pool)
 
-      @context.poll_data
+      @poller.poll_data
 
-      @context.start_filewatcher if @context.config.project.live_render?
+      @watcher.start if @context.config.project.live_render?
 
       @live_reload_clients = []
-      @context.on_view_change do |view, user_data|
-        @live_reload_clients.each do |ws|
-          payload = {
-            'type' => 'reload',
-            'view' => view,
-            'user_data' => user_data
-          }
-
-          ws.send(payload.to_json)
-        end
+      @watcher.on_change do |view, user_data|
+        payload = {
+          'type' => 'reload',
+          'view' => view,
+          'user_data' => user_data
+        }
+        message = "data: #{payload.to_json}\n\n"
+        @live_reload_clients.each { |queue| queue << message }
       end
     end
 
     post '/webhook' do
-      @context.put_webhook(request.body.read)
-      "OK"
+      @poller.put_webhook(request.body.read)
+      'OK'
     end
-    
+
     get '/' do
       redirect '/full'
     end
 
     get '/data' do
       content_type :json
-      JSON.pretty_generate(@context.user_data)
+      device = @user_data_assembler.device_from_params(params)
+      JSON.pretty_generate(@user_data_assembler.call(device:))
     end
 
+    # Live reload is a one-directional server->browser push, so it uses
+    # server-sent events rather than a websocket. Each client gets a blocking
+    # queue; the stream thread parks on queue.pop until the watcher broadcasts.
     get '/live_reload' do
-      ws = Faye::WebSocket.new(request.env)
-
-      ws.on(:open) do |event|
-        @live_reload_clients << ws
+      content_type 'text/event-stream'
+      queue = Thread::Queue.new
+      @live_reload_clients << queue
+      stream(:keep_open) do |out|
+        out.callback { @live_reload_clients.delete(queue) }
+        out << queue.pop until out.closed?
       end
-  
-      ws.on(:close) do |event|
-        @live_reload_clients.delete(ws)
-      end
-  
-      ws.rack_response
     end
 
     get '/poll' do
-      @context.poll_data
+      @poller.poll_data
       redirect back
     end
-    
-    VIEWS.each do |view|
+
+    Screen.all.each do |screen|
+      view = screen.name
       get "/#{view}" do
         @view = view
-        @user_data = JSON.pretty_generate(@context.user_data)
+        device = @user_data_assembler.device_from_params(params)
+        user_data = @user_data_assembler.call(device:)
+        @user_data = JSON.pretty_generate(user_data)
+        # Measured on compact JSON, the way the hosted service sizes merge variables.
+        @payload_size = JSON.generate(user_data).bytesize
         @live_reload = @context.config.project.live_render?
+        @transform_error = @transform_pipeline.error
 
         erb :index
       end
 
       get "/render/#{view}.html" do
-        @context.render_full_page(view, params)
+        @renderer.render_full_page(view, params)
       end
-      
+
       get "/render/#{view}.png" do
         @view = view
-        html = @context.render_full_page(view, params)
+        html = @renderer.render_full_page(view, params)
+        temp_image = render_png(html, params)
 
-        # Parse optional rendering params (sent by the web UI for PNG output)
-        width = params[:width] && params[:width].to_i
-        height = params[:height] && params[:height].to_i
-        color_depth = params[:color_depth] && params[:color_depth].to_i
-
-        generator = ScreenGenerator.new(html, image: true, width: width, height: height, color_depth: color_depth)
-        temp_image = generator.process
-        
         send_file temp_image.path, type: 'image/png', disposition: 'inline'
 
         temp_image.close
         temp_image.unlink
       end
+    end
+
+    private
+
+    # ScreenGenerator is request-scoped — it carries the per-request width,
+    # height, and color_depth — so it is built here rather than on the shared
+    # Context graph. Screenshots are a serve-only concern and would not belong
+    # on a Context shared by every command (build, lint, push, ...).
+    def render_png(html, params)
+      ScreenGenerator.new(html, screenshot: @screenshot,
+                                width: params[:width]&.to_i,
+                                height: params[:height]&.to_i,
+                                color_depth: params[:color_depth]&.to_i).process
     end
   end
 end

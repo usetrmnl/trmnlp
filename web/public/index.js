@@ -1,14 +1,15 @@
 const trmnlp = {};
 
 trmnlp.connectLiveRender = function () {
-  const ws = new WebSocket("/live_reload");
+  // EventSource reconnects automatically, so no manual retry loop is needed.
+  const source = new EventSource("/live_reload");
 
-  ws.onopen = function () {
-    console.log("Connected to live reload socket");
+  source.onopen = function () {
+    console.log("Connected to live reload stream");
   };
 
-  ws.onmessage = function (msg) {
-    const payload = JSON.parse(msg.data);
+  source.onmessage = function (event) {
+    const payload = JSON.parse(event.data);
 
     if (payload.type === "reload") {
       trmnlp.fetchPreview();
@@ -16,35 +17,46 @@ trmnlp.connectLiveRender = function () {
       hljs.highlightAll();
     }
   };
-
-  ws.onclose = function () {
-    console.log("Reconnecting to live reload socket...");
-    setTimeout(trmnlp.connectLiveRender, 1000);
-  };
 };
 
 
 trmnlp.fetchPreview = function (pickerState) {
-  const screenClasses = (pickerState?.screenClasses || trmnlp.picker.state.screenClasses).join(" ");
+  const state = pickerState || trmnlp.picker?.state;
+  const screenClasses = (state?.screenClasses || []).join(" ");
   const encodedScreenClasses = encodeURIComponent(screenClasses);
   let src = `/render/${trmnlp.view}.${trmnlp.formatSelect.value}?screen_classes=${encodedScreenClasses}`;
 
-  // If requesting a PNG, also include dimensions, dark mode, and color depth
-  if (trmnlp.formatSelect.value === 'png') {
-    const state = pickerState || trmnlp.picker.state;
+  // Pass dimensions for both HTML and PNG renders so trmnl.device.{width,height}
+  // in the Liquid context tracks the picker model selection.
+  if (state) {
     const width = encodeURIComponent(state.width);
     const height = encodeURIComponent(state.height);
-    const isDarkMode = state.isDarkMode ? 1 : 0;
+    src += `&width=${width}&height=${height}`;
+  }
 
-    // derive numeric color depth from classes like 'screen--1bit'
+  // PNG-only: dark mode + color depth from palette
+  if (trmnlp.formatSelect.value === 'png' && state) {
+    const isDarkMode = state.isDarkMode ? 1 : 0;
     const grays = state.palette.grays || 2;
     const colorDepth = Math.ceil(Math.log2(grays));
-
-    src += `&width=${width}&height=${height}&color_depth=${colorDepth}`;
+    src += `&color_depth=${colorDepth}`;
   }
 
   trmnlp.spinner.style.display = "inline-block";
   trmnlp.iframe.src = src;
+};
+
+trmnlp.refreshUserData = async function (state) {
+  if (!state) return;
+  const params = new URLSearchParams({ width: state.width, height: state.height });
+  try {
+    const response = await fetch(`/data?${params}`);
+    if (!response.ok) return;
+    trmnlp.userData.textContent = await response.text();
+    hljs.highlightAll();
+  } catch (e) {
+    console.warn("Failed to refresh user-data:", e);
+  }
 };
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -77,6 +89,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     trmnlp.iframe.style.height = `${event.detail.height}px`;
 
     trmnlp.fetchPreview(event.detail);
+    trmnlp.refreshUserData(event.detail);
   });
 
   trmnlp.picker = await TRMNLPicker.create('picker-form', { localStorageKey: 'trmnlp-picker' });

@@ -1,9 +1,13 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 require_relative '../api_client'
 
 module TRMNLP
   module Commands
     class List < Base
+      Options = Data.define(:dir, :quiet)
+
       PRIVATE_PLUGIN_ID = 37
 
       def call
@@ -12,24 +16,24 @@ module TRMNLP
         api = APIClient.new(config)
         response = api.get_plugin_settings
         plugins = (response || [])
-          .select { |p| p['plugin_id'] == PRIVATE_PLUGIN_ID }
-          .sort_by { |p| (p['name'] || '').downcase }
+                  .select { |p| p['plugin_id'] == PRIVATE_PLUGIN_ID }
+                  .sort_by { |p| (p['name'] || '').downcase }
 
         if plugins.empty?
-          output "No plugins found."
+          reporter.info 'No plugins found.'
           return
         end
 
-        output "Your plugins:\n\n"
-        output "  %-8s  %s" % ["ID", "NAME"]
-        output "  " + "-" * 50
+        reporter.info "Your plugins:\n\n"
+        reporter.info '  ID        NAME'
+        reporter.info "  #{'-' * 50}"
 
         plugins.each do |plugin|
-          output "  %-8s  %s" % [plugin['id'], plugin['name']]
+          reporter.info format('  %-8s  %s', plugin['id'], plugin['name'])
         end
 
-        output "\nTo clone a plugin:"
-        output "    trmnlp clone [folder_name] [id]"
+        reporter.info "\nTo clone a plugin:"
+        reporter.info '    trmnlp clone [folder_name] [id]'
       end
     end
   end

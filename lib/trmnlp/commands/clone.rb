@@ -1,24 +1,29 @@
+# frozen_string_literal: true
+
 require_relative 'base'
+require_relative 'init'
 require_relative 'pull'
 
 module TRMNLP
   module Commands
     class Clone < Base
+      Options = Data.define(:dir, :quiet)
+
       def call(directory_name, id)
         authenticate!
 
         destination_path = Pathname.new(options.dir).join(directory_name)
-        raise Error, "directory #{destination_path} already exists, aborting" if destination_path.exist?
+        raise DirectoryExists, "directory #{destination_path} already exists, aborting" if destination_path.exist?
 
-        Init.new(dir: options.dir, skip_liquid: true, quiet: true).call(directory_name)
+        Init.run({ dir: options.dir, skip_liquid: true, quiet: true }, directory_name)
 
-        Pull.new(dir: destination_path.to_s, force: true, id: id).call
+        Pull.run({ dir: destination_path.to_s, force: true, id: id })
 
-        output <<~HEREDOC
+        reporter.info <<~HEREDOC
 
-        To start the local server:
+          To start the local server:
 
-            cd #{Pathname.new(destination_path).relative_path_from(Dir.pwd)} && trmnlp serve
+              cd #{Pathname.new(destination_path).relative_path_from(Dir.pwd)} && trmnlp serve
         HEREDOC
       end
 

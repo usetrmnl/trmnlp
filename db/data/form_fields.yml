@@ -1,0 +1,24 @@
+# Form-field schema vendored from the TRMNL hosted service.
+#
+# Unlike framework_versions.yml there is no upstream YAML to sync from —
+# the canonical schema lives in the hosted service's Ruby code. Refresh
+# this file by hand when that schema changes.
+#
+# author_bio is included although the hosted service validates it on a
+# separate branch (so it is absent from the hosted FIELDS allowlist) —
+# it is still a real field type a plugin may declare.
+required_keys:
+  - keyname
+  - field_type
+  - name
+field_types:
+  - text
+  - string
+  - number
+  - password
+  - boolean
+  - xhrString
+  - xhrSelect
+  - xhrFunction
+  - select
+  - author_bio

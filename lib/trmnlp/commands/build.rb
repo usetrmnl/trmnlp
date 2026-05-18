@@ -1,20 +1,25 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 
 module TRMNLP
   module Commands
     class Build < Base
+      Options = Data.define(:dir, :quiet)
+
       def call
         context.validate!
-        context.poll_data
+        report_form_field_warnings
+        context.poller.poll_data
         context.paths.create_build_dir
 
-        VIEWS.each do |view|
-          output_path = context.paths.build_dir.join("#{view}.html")
-          output "Writing #{output_path}..."
-          output_path.write(context.render_full_page(view))
+        Screen.all.each do |screen|
+          output_path = context.paths.build_dir.join("#{screen.name}.html")
+          reporter.info "Writing #{output_path}..."
+          output_path.write(context.renderer.render_full_page(screen.name))
         end
-  
-        output "Done!"
+
+        reporter.info 'Done!'
       end
     end
   end

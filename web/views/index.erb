@@ -60,9 +60,14 @@
             </div>
         </menu>
 
+        <% if @transform_error %>
+          <div class="transform-error" style="padding: 0.5em 0.75em; margin: 0.5em 0; background: #fee; border: 1px solid #c33; border-radius: 4px; color: #900; font-family: monospace; white-space: pre-wrap;">Transform error: <%= h @transform_error %></div>
+        <% end %>
+
         <iframe style="width: 800px; height: 480px; border: 1px solid black; background: white;">Rendering…</iframe>
 
-        <pre id="user-data"><code><%= @user_data %></code></pre>
+        <div class="payload-size">Payload: <%= format_bytes(@payload_size) %></div>
+        <pre id="user-data"><code><%= h @user_data %></code></pre>
     </main>
 </body>
 </html>

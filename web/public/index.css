@@ -104,6 +104,12 @@ pre > code {
   }
 }
 
+.payload-size {
+  font-size: 0.85em;
+  opacity: 0.6;
+  margin: 0.5em 0 0.2em;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-color: #191b21;
