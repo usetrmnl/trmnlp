@@ -35,5 +35,37 @@ RSpec.describe TRMNLP::Commands::Init do
       expect(File).to exist(File.join(project, 'src', 'settings.yml'))
       expect(File).not_to exist(File.join(project, 'src', 'full.liquid'))
     end
+
+    context 'when the template source is read-only (#83)' do
+      let(:templates_dir) { Pathname.new(Dir.mktmpdir('trmnlp-templates-')) }
+      let(:read_only_file) { templates_dir.join('init', 'src', 'settings.yml') }
+      let(:read_only_executable) { templates_dir.join('init', 'bin', 'trmnlp') }
+
+      before do
+        read_only_file.dirname.mkpath
+        read_only_file.write("---\nname: demo\n")
+        read_only_file.chmod(0o444)
+
+        read_only_executable.dirname.mkpath
+        read_only_executable.write("#!/usr/bin/env ruby\n")
+        read_only_executable.chmod(0o555)
+
+        allow(context.paths).to receive(:templates_dir).and_return(templates_dir)
+      end
+
+      after { FileUtils.rm_rf(templates_dir) }
+
+      it 'makes copied files owner-writable' do
+        command.call('demo')
+
+        expect(Pathname.new(tmp_root).join('demo/src/settings.yml').stat.mode & 0o200).to eq(0o200)
+      end
+
+      it 'preserves the executable bit on copied files' do
+        command.call('demo')
+
+        expect(Pathname.new(tmp_root).join('demo/bin/trmnlp').stat.mode & 0o100).to eq(0o100)
+      end
+    end
   end
 end
