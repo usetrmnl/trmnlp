@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'tone'
+
 module TRMNLP
   # Single sink for user-facing command output. Records every message so
   # specs can assert on what a command would have said, and writes to the
@@ -11,6 +13,9 @@ module TRMNLP
       @quiet = quiet
       @stream = stream
       @messages = []
+      # Colour only when the stream is a real terminal, so ANSI codes
+      # never leak into piped or redirected output.
+      @tone = Tone.new(enabled: stream.tty?)
     end
 
     def info(message)
@@ -18,11 +23,12 @@ module TRMNLP
       @stream.puts(message) unless @quiet
     end
 
-    def green(text) = colorize(text, 32)
-    def yellow(text) = colorize(text, 33)
+    def green(text) = tone[text, :green]
+    def yellow(text) = tone[text, :yellow]
+    def red(text) = tone[text, :red]
 
     private
 
-    def colorize(text, code) = "\e[#{code}m#{text}\e[0m"
+    attr_reader :tone
   end
 end

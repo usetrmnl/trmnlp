@@ -50,7 +50,7 @@ module TRMNLP
       # plugin author notices before the field misbehaves in production.
       def report_form_field_warnings
         FormField.validate_all(config.plugin.custom_field_definitions).each do |warning|
-          reporter.info("warning: settings.yml custom_fields — #{warning}")
+          reporter.info(reporter.yellow("warning: settings.yml custom_fields — #{warning}"))
         end
       end
 

@@ -11,7 +11,8 @@ ENV['TZ'] = 'UTC'
 begin
   TRMNLP::CLI.start
 rescue TRMNLP::Error => e
-  puts "Error: #{e.message}"
+  reporter = TRMNLP::Reporter.new
+  reporter.info reporter.red("Error: #{e.message}")
   exit 1
 rescue Interrupt
   exit 1

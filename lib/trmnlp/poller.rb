@@ -25,7 +25,7 @@ module TRMNLP
     # and keep the preview server alive, not crash the user's session. We
     # deliberately swallow here and return {} so the renderer keeps rendering.
     rescue StandardError => e
-      reporter.info("warning: #{e.message}")
+      reporter.info(reporter.yellow("warning: #{e.message}"))
       {}
     end
 
@@ -34,7 +34,7 @@ module TRMNLP
     # NOTE: Same rationale as #poll_data — a bad webhook payload shouldn't take
     # down the dev server. Report a warning and keep serving.
     rescue StandardError => e
-      reporter.info("webhook warning: #{e.message}")
+      reporter.info(reporter.yellow("webhook warning: #{e.message}"))
     end
 
     private

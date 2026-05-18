@@ -60,6 +60,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'rexml', '~> 3.4'
   spec.add_dependency 'rubyzip', '~> 3.3'
   spec.add_dependency 'thor', '~> 1.3'
+  spec.add_dependency 'tone', '~> 3.2'
   spec.add_dependency 'tzinfo-data', '~> 1.2025'
   spec.add_dependency 'xdg', '~> 10.2'
 
