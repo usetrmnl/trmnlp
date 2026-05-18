@@ -95,6 +95,32 @@ RSpec.describe TRMNLP::App do
     end
   end
 
+  describe 'GET /:view payload-size badge (#67)' do
+    it 'marks a payload under 75 KB green' do
+      allow(context.user_data_assembler).to receive(:call).and_return({ 'k' => 'small' })
+
+      get '/full'
+
+      expect(last_response.body).to include('payload-size payload-size--ok')
+    end
+
+    it 'marks a payload between 75 and 100 KB yellow' do
+      allow(context.user_data_assembler).to receive(:call).and_return({ 'k' => 'a' * 90_000 })
+
+      get '/full'
+
+      expect(last_response.body).to include('payload-size payload-size--warn')
+    end
+
+    it 'marks a payload at or above 100 KB red' do
+      allow(context.user_data_assembler).to receive(:call).and_return({ 'k' => 'a' * 110_000 })
+
+      get '/full'
+
+      expect(last_response.body).to include('payload-size payload-size--over')
+    end
+  end
+
   describe 'GET /poll' do
     it 'triggers a poll and redirects back' do
       get '/poll', {}, { 'HTTP_REFERER' => '/full' }

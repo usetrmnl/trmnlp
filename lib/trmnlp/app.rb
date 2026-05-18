@@ -18,6 +18,16 @@ module TRMNLP
         bytes < 1024 ? "#{bytes} bytes" : format('%.1f KB', bytes / 1024.0)
       end
 
+      # Colour-codes the payload badge so an author notices when merge
+      # variables approach the size the hosted service starts rejecting.
+      # KB = 1024, matching format_bytes.
+      def payload_size_class(bytes)
+        return 'payload-size--over' if bytes >= 100 * 1024
+        return 'payload-size--warn' if bytes >= 75 * 1024
+
+        'payload-size--ok'
+      end
+
       # NOTE: render_html.erb's layout yields raw plugin HTML through `<%= yield %>`,
       # so a global `escape_html` setting would corrupt the render. Escape per-value.
       def h(text)
