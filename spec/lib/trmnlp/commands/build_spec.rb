@@ -6,15 +6,15 @@ require 'tmpdir'
 require 'trmnlp/commands/build'
 
 RSpec.describe TRMNLP::Commands::Build do
-  subject(:command) do
-    described_class.new(context:,
-                        options: described_class::Options.new(dir: tmp_root, quiet: true, png: false),
-                        reporter:)
-  end
+  subject(:command) { described_class.new(context:, options:, reporter:) }
 
   let(:tmp_root) { Dir.mktmpdir('trmnlp-build-') }
   let(:context) { TRMNLP::Context.new(tmp_root) }
   let(:reporter) { TRMNLP::Reporter.new(quiet: true) }
+  let(:options) do
+    described_class::Options.new(dir: tmp_root, quiet: true, png: false,
+                                 width: nil, height: nil, color_depth: nil)
+  end
 
   before do
     File.write(File.join(tmp_root, '.trmnlp.yml'), '---')
@@ -59,9 +59,9 @@ RSpec.describe TRMNLP::Commands::Build do
 
     it 'raises when the project is not a trmnlp directory' do
       bad_root = Dir.mktmpdir('trmnlp-build-bad-')
-      cmd = described_class.new(context: TRMNLP::Context.new(bad_root),
-                                options: described_class::Options.new(dir: bad_root,
-                                                                      quiet: true, png: false))
+      bad_options = described_class::Options.new(dir: bad_root, quiet: true, png: false,
+                                                 width: nil, height: nil, color_depth: nil)
+      cmd = described_class.new(context: TRMNLP::Context.new(bad_root), options: bad_options)
 
       expect { cmd.call }.to raise_error(TRMNLP::NotAPlugin)
     ensure
@@ -69,12 +69,10 @@ RSpec.describe TRMNLP::Commands::Build do
     end
 
     context 'with --png (#92)' do
-      subject(:command) do
-        described_class.new(context:,
-                            options: described_class::Options.new(dir: tmp_root, quiet: true, png: true),
-                            reporter:)
+      let(:options) do
+        described_class::Options.new(dir: tmp_root, quiet: true, png: true,
+                                     width: nil, height: nil, color_depth: nil)
       end
-
       let(:screen_generator) { instance_double(TRMNLP::ScreenGenerator) }
 
       before do
@@ -104,7 +102,17 @@ RSpec.describe TRMNLP::Commands::Build do
       it 'screenshots the rendered markup for each view' do
         command.call
 
-        expect(TRMNLP::ScreenGenerator).to have_received(:new).with('<html>full</html>', screenshot: anything)
+        expect(TRMNLP::ScreenGenerator).to have_received(:new).with('<html>full</html>', anything)
+      end
+
+      it 'passes the width, height and colour depth to the screen generator' do
+        sized = described_class::Options.new(dir: tmp_root, quiet: true, png: true,
+                                             width: 400, height: 200, color_depth: 2)
+        described_class.new(context:, options: sized, reporter:).call
+
+        expect(TRMNLP::ScreenGenerator).to have_received(:new).with(
+          '<html>full</html>', hash_including(width: 400, height: 200, color_depth: 2)
+        )
       end
     end
   end

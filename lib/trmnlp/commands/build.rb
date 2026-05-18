@@ -11,7 +11,7 @@ require_relative '../screenshot'
 module TRMNLP
   module Commands
     class Build < Base
-      Options = Data.define(:dir, :quiet, :png)
+      Options = Data.define(:dir, :quiet, :png, :width, :height, :color_depth)
 
       def call
         context.validate!
@@ -45,10 +45,17 @@ module TRMNLP
       def write_png(view, html)
         path = context.paths.build_dir.join("#{view}.png")
         reporter.info "Writing #{path}..."
-        image = ScreenGenerator.new(html, screenshot:).process
+        image = screen_generator(html).process
         FileUtils.cp(image.path, path)
       ensure
         image&.close!
+      end
+
+      # --width/--height/--color-depth are optional; nil lets ScreenGenerator
+      # fall back to 800x480 and the screen--Nbit depth sniffed from the markup.
+      def screen_generator(html)
+        ScreenGenerator.new(html, screenshot:, width: options.width,
+                                  height: options.height, color_depth: options.color_depth)
       end
 
       def screenshot = @screenshot ||= Screenshot.new(pool: browser_pool)
