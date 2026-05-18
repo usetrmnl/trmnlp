@@ -80,7 +80,7 @@ trmnlp push                    # upload
 |---|---|
 | `trmnlp init NAME` | Start a new plugin project |
 | `trmnlp serve` | Start a local dev server |
-| `trmnlp build` | Generate static HTML files |
+| `trmnlp build` | Generate static HTML files, or PNGs with `--png` |
 | `trmnlp lint` | Check plugin code against TRMNL best practices |
 | `trmnlp login` | Authenticate with TRMNL server |
 | `trmnlp list` | List private plugins from TRMNL server |
@@ -90,6 +90,30 @@ trmnlp push                    # upload
 | `trmnlp version` | Show version |
 
 `trmnlp lint` exits non-zero when it finds issues, so you can gate CI on it. Run `trmnlp help` for all flags.
+
+## Building Static Files
+
+`trmnlp build` renders every view to a static file under `_build/` — handy for exporting a snapshot or feeding the output into another pipeline. Run it from inside a plugin project:
+
+```sh
+trmnlp build        # writes _build/full.html, _build/half_horizontal.html, ...
+trmnlp build --png  # also writes a PNG for each view
+```
+
+`--png` renders each view through the same screenshot pipeline `serve` uses. By default a PNG is 800×480 at the bit depth declared by the markup's `screen--Nbit` class (1-bit if none). Override any of those:
+
+```sh
+trmnlp build --png --color-depth 2
+```
+
+| Flag | Purpose |
+|---|---|
+| `--png` | Render a PNG per view alongside the HTML |
+| `--width` | PNG width in pixels (default 800) |
+| `--height` | PNG height in pixels (default 480) |
+| `--color-depth` | PNG bit depth — 1, 2, or 4 — overriding the markup |
+
+`--width`, `--height`, and `--color-depth` apply only with `--png`. PNG rendering needs Firefox and ImageMagick installed; plain `trmnlp build` needs neither.
 
 ## Authentication
 
@@ -309,6 +333,8 @@ To test, run:
 ```sh
 bin/rake
 ```
+
+Specs run under SimpleCov; a coverage report is written to `coverage/`.
 
 ## Contributing
 

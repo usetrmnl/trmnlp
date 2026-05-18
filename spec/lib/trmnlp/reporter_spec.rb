@@ -34,4 +34,44 @@ RSpec.describe TRMNLP::Reporter do
       end
     end
   end
+
+  describe '#green' do
+    context 'when the stream is a terminal' do
+      subject(:reporter) { described_class.new(stream:) }
+
+      before { allow(stream).to receive(:tty?).and_return(true) }
+
+      it 'wraps the text in the green ANSI code' do
+        expect(reporter.green('ok')).to eq("\e[32mok\e[0m")
+      end
+    end
+
+    context 'when the stream is not a terminal' do
+      subject(:reporter) { described_class.new(stream:) }
+
+      it 'returns plain text so ANSI never leaks into redirected output' do
+        expect(reporter.green('ok')).to eq('ok')
+      end
+    end
+  end
+
+  describe '#yellow' do
+    subject(:reporter) { described_class.new(stream:) }
+
+    before { allow(stream).to receive(:tty?).and_return(true) }
+
+    it 'wraps the text in the yellow ANSI code' do
+      expect(reporter.yellow('hmm')).to eq("\e[33mhmm\e[0m")
+    end
+  end
+
+  describe '#red' do
+    subject(:reporter) { described_class.new(stream:) }
+
+    before { allow(stream).to receive(:tty?).and_return(true) }
+
+    it 'wraps the text in the red ANSI code' do
+      expect(reporter.red('no')).to eq("\e[31mno\e[0m")
+    end
+  end
 end

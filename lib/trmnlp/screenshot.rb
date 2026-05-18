@@ -3,10 +3,13 @@
 require 'selenium-webdriver'
 require 'tempfile'
 
+require_relative 'errors'
+
 module TRMNLP
   class Screenshot
-    def initialize(pool:)
+    def initialize(pool:, viewport_timeout: 5)
       @pool = pool
+      @viewport_timeout = viewport_timeout
     end
 
     def call(html:, width:, height:)
@@ -50,15 +53,25 @@ module TRMNLP
     # NOTE: A cold Firefox — e.g. the first render after the container boots —
     # applies a window resize lazily. The old fixed sleep raced that reflow and
     # clipped the first screenshot short (800x433 instead of 800x480). Poll the
-    # real viewport instead, re-applying the size until it lands; a resize that
-    # never settles surfaces as a TimeoutError that #call already retries.
+    # real viewport instead, re-applying the size until it lands. A width the
+    # browser refuses to honour (below its ~500px window minimum) never settles;
+    # that surfaces as a clear RenderError rather than an opaque, retried timeout.
     def wait_for_viewport(driver, width, height)
-      Selenium::WebDriver::Wait.new(timeout: 5, interval: 0.1).until do
+      Selenium::WebDriver::Wait.new(timeout: @viewport_timeout, interval: 0.1).until do
         next true if viewport(driver) == [width, height]
 
         apply_window_size(driver, width, height)
         false
       end
+    rescue Selenium::WebDriver::Error::TimeoutError
+      raise RenderError, viewport_clamp_message(driver, width, height)
+    end
+
+    def viewport_clamp_message(driver, width, height)
+      actual_width, actual_height = viewport(driver)
+      "Could not render at #{width}x#{height}: the browser clamped the viewport " \
+        "to #{actual_width}x#{actual_height}. PNG rendering needs a width of " \
+        'roughly 500px or more — headless Firefox will not size its window narrower.'
     end
 
     def viewport(driver)

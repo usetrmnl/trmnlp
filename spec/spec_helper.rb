@@ -1,5 +1,16 @@
 # frozen_string_literal: true
 
+# Must load before any application code so every line is counted.
+require 'simplecov'
+
+SimpleCov.start do
+  add_filter '/spec/'
+  # Enforce the floor in CI only: a partial local run loads just a few
+  # files and would otherwise report a misleadingly low number. Ratchet
+  # this upward as coverage improves.
+  minimum_coverage 90 if ENV.fetch('CI', false) == 'true'
+end
+
 require File.join(__dir__, '../lib/trmnlp')
 
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration

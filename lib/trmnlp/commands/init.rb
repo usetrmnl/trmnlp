@@ -35,6 +35,10 @@ module TRMNLP
 
           reporter.info "Creating #{destination_pathname}"
           FileUtils.cp(source_pathname, destination_pathname)
+          # NOTE: cp preserves the source mode. Templates installed read-only
+          # (e.g. NixOS /nix/store is 0444) would leave the author unable to
+          # edit their own project. Add owner-write; keep any exec bit.
+          destination_pathname.chmod(destination_pathname.stat.mode | 0o200)
         end
 
         reporter.info <<~HEREDOC

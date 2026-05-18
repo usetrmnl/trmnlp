@@ -110,6 +110,11 @@ pre > code {
   margin: 0.5em 0 0.2em;
 }
 
+/* A coloured badge is a warning — full opacity so the colour reads true. */
+.payload-size--ok { color: #1a7f37; opacity: 1; }
+.payload-size--warn { color: #bf8700; opacity: 1; }
+.payload-size--over { color: #d1242f; opacity: 1; }
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-color: #191b21;
