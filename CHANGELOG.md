@@ -1,6 +1,24 @@
 
 # Changelog
 
+## 0.8.1
+
+### Added
+
+- `trmnlp build --png` renders a PNG for every view alongside the HTML, with `--width`, `--height`, and `--color-depth` flags to override the defaults (#92)
+- Colour-coded the preview's payload-size badge — yellow from 75 KB, red from 100 KB — so an oversized merge-variable payload is visible at a glance (#67)
+- Added colour to CLI output — `lint` results, warnings, and errors — suppressed automatically when output is piped or redirected (#33)
+
+### Fixed
+
+- `trmnlp init` no longer produces read-only project files when trmnlp itself is installed read-only, such as on NixOS (#83)
+- Non-JSON polling responses (`text/html`, `text/plain`) are exposed to templates as `{{ data }}`, matching the hosted service — previously `{{ text }}` (#81)
+
+### Housekeeping
+
+- Added SimpleCov coverage tracking, gated in CI at a 90% floor, plus dedicated specs for every lint check
+- Extracted the headless-Firefox driver into a shared `FirefoxDriver` module used by both `serve` and `build --png`
+
 ## 0.8.0
 
 ### Housekeeping
