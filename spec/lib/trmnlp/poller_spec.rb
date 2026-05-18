@@ -45,11 +45,11 @@ RSpec.describe TRMNLP::Poller do
       { name: 'html',
         header: 'text/html; charset=utf-8',
         body: '<html>not json</html>',
-        parsed: { 'text' => '<html>not json</html>' } },
+        parsed: { 'data' => '<html>not json</html>' } },
       { name: 'plain text',
         header: 'text/plain',
         body: 'hello world',
-        parsed: { 'text' => 'hello world' } }
+        parsed: { 'data' => 'hello world' } }
     ]
   end
   let(:expected_by_case) { content_type_cases.to_h { |test_case| [test_case[:name], test_case[:parsed]] } }

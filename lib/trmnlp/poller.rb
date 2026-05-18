@@ -76,7 +76,7 @@ module TRMNLP
       case content_type
       when 'application/json', %r{^application/.+\+json} then wrap_array(JSON.parse(body))
       when 'text/xml', 'application/xml', %r{^application/.+\+xml} then wrap_array(Hash.from_xml(body))
-      when 'text/html', 'text/plain' then sniff_json(body) || { 'text' => body }
+      when 'text/html', 'text/plain' then sniff_json(body) || { 'data' => body }
       else log_unknown_type(content_type_header)
       end
     end
