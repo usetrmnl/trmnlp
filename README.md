@@ -1,14 +1,26 @@
 # trmnlp
 
+[![CI](https://github.com/usetrmnl/trmnlp/actions/workflows/ci.yaml/badge.svg)](https://github.com/usetrmnl/trmnlp/actions/workflows/ci.yaml)
+[![Gem Version](https://img.shields.io/gem/v/trmnl_preview)](https://rubygems.org/gems/trmnl_preview)
+
 A basic self-hosted web server to ease the development and sharing of [TRMNL](https://trmnl.com/) plugins.
 
 [Liquid](https://shopify.github.io/liquid/) templates are rendered leveraging the [TRMNL Design System](https://trmnl.com/framework). They may be generated as HTML (faster, and a good approximation of the final result) or as PNG images (slower, but more accurate).
 
-Custom Liquid filters and tags are provided by the [trmnl-liquid](https://github.com/usetrmnl/trmnl-liquid) gem.
-
 The server watches the filesystem for changes to the Liquid templates, seamlessly updating the preview without the need to refresh.
 
 ![Screenshot](docs/preview.png)
+
+## Quick Start
+
+```sh
+gem install trmnl_preview     # install
+trmnlp init my_plugin         # scaffold a project
+cd my_plugin
+trmnlp serve                  # preview at http://localhost:4567
+```
+
+No Ruby on hand? Run it through Docker instead — see [Installing via Docker](#installing-via-docker).
 
 ## Project Structure
 
@@ -18,7 +30,7 @@ This is the structure of a plugin project:
 .
 ├── .trmnlp.yml
 ├── bin
-│   └── dev
+│   └── trmnlp
 └── src
     ├── full.liquid
     ├── half_horizontal.liquid
@@ -27,6 +39,16 @@ This is the structure of a plugin project:
     ├── shared.liquid
     └── settings.yml
 ```
+
+| File | Purpose |
+|---|---|
+| `.trmnlp.yml` | Local dev-server config — not uploaded to TRMNL |
+| `src/full.liquid` | Markup for the full screen |
+| `src/half_horizontal.liquid` | Top or bottom half of a stacked mashup |
+| `src/half_vertical.liquid` | Left or right half of a side-by-side mashup |
+| `src/quadrant.liquid` | One quarter of a 2x2 mashup |
+| `src/shared.liquid` | Reusable markup included by the other templates |
+| `src/settings.yml` | Plugin configuration — uploaded to TRMNL |
 
 ## Creating a New Plugin
 
@@ -52,6 +74,23 @@ trmnlp serve                   # develop locally
 trmnlp push                    # upload
 ```
 
+## Commands
+
+| Command | Description |
+|---|---|
+| `trmnlp init NAME` | Start a new plugin project |
+| `trmnlp serve` | Start a local dev server |
+| `trmnlp build` | Generate static HTML files |
+| `trmnlp lint` | Check plugin code against TRMNL best practices |
+| `trmnlp login` | Authenticate with TRMNL server |
+| `trmnlp list` | List private plugins from TRMNL server |
+| `trmnlp clone NAME ID` | Copy a plugin project from TRMNL server |
+| `trmnlp pull` | Download latest plugin settings from TRMNL server |
+| `trmnlp push` | Upload latest plugin settings to TRMNL server |
+| `trmnlp version` | Show version |
+
+`trmnlp lint` exits non-zero when it finds issues, so you can gate CI on it. Run `trmnlp help` for all flags.
+
 ## Authentication
 
 The `trmnlp login` command saves your API key to `~/.config/trmnlp/config.yml`.
@@ -64,11 +103,13 @@ The `bin/trmnlp` script is provided as a convenience. It will use the local Ruby
 
 You can modify the `bin/trmnlp` script to set up environment variables (plugin secrets, etc.) before running the server.
 
+**Gem or Docker?** Install the gem if you already have Ruby >= 3.4 — it has the fastest startup. Use Docker for zero local setup.
+
 ### Installing via RubyGems
 
 Prerequisites:
 
-- Ruby 3.x
+- Ruby >= 3.4
 - For PNG rendering (optional):
   - Firefox
   - ImageMagick
@@ -86,6 +127,10 @@ docker run \
     --volume "$(pwd):/plugin" \
     trmnl/trmnlp serve
 ```
+
+Inside a container, `serve` binds to `0.0.0.0` automatically (it detects `/.dockerenv`) so the preview is reachable from your host browser. Outside Docker it binds to `127.0.0.1`.
+
+Swap `serve` for any other command (`lint`, `login`, `clone`, etc.) to run it in a one-off container.
 
 #### Interactive Mode
 
@@ -110,6 +155,23 @@ trmnlp serve
 ```
 
 The config volume (`$HOME/.config/trmnlp`) persists your API key between sessions.
+
+#### Docker Compose
+
+For a checked-in config — like [`examples/hn-stories/`](examples/hn-stories/) uses — a minimal `docker-compose.yml`:
+
+```yaml
+services:
+  trmnlp:
+    image: trmnl/trmnlp
+    command: ["serve"]
+    ports:
+      - "4567:4567"
+    volumes:
+      - .:/plugin
+```
+
+Then `docker compose up`.
 
 #### Building Locally
 
@@ -144,6 +206,18 @@ custom_fields:
 # Time zone IANA identifier to inject into trmnl.user; see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 time_zone: America/New_York
 
+# Serverless transforms run automatically when a src/transform.*
+# file is present. Set to 'disabled' to turn off.
+transform_runtime: enabled
+
+# Optional remote transform daemon URL — when set, transforms POST
+# here instead of running locally. Useful for production-fidelity
+# testing against a real microVM daemon.
+# serverless_daemon_url: https://transforms.your-team.example
+
+# Optional explicit language for src/transform.* (otherwise inferred from extension)
+# serverless_language: python
+
 # override variables
 variables:
   trmnl:
@@ -154,12 +228,79 @@ variables:
 
 ```
 
+## Serverless Transforms
+
+`trmnlp` can run a transform script (`python`, `ruby`, `php`, or `node`) against the polled API response before handing data to your Liquid templates — matching the hosted plugin service's behavior.
+
+Drop a file at `src/transform.{py,rb,php,js}` and define a `run(input)` function — transforms are enabled by default, so it runs automatically. To turn them off, set `transform_runtime: disabled` in `.trmnlp.yml`.
+
+> **Heads up:** because transforms run by default, a plugin you `clone` or `pull` from somewhere else will execute its `src/transform.*` code on your machine the first time you preview it — there is no opt-in prompt. Review a third-party plugin's transform script before serving it, or set `transform_runtime: disabled`.
+
+The transform receives the polled response on stdin as JSON; whatever `run(input)` returns becomes the new merge data.
+
+Example `src/transform.py`:
+
+```python
+def run(input):
+    return {"items": [x["title"] for x in input["data"]]}
+```
+
+The trmnlp image bundles `python3`, `node`, `php`, and `ruby` — no sidecar daemon required.
+
+### Language detection
+
+The transform language comes from the **file extension**:
+
+| File              | Language |
+|-------------------|----------|
+| `src/transform.py`  | `python` |
+| `src/transform.rb`  | `ruby`   |
+| `src/transform.js`  | `node`   |
+| `src/transform.php` | `php`    |
+
+`trmnlp push` uploads the file under its own name, and the hosted service records `serverless_language` from the extension automatically — you don't need to set it by hand. `trmnlp pull` / `trmnlp clone` bring the transform file back under the same name.
+
+### Pointing at a remote daemon
+
+For production-fidelity testing against a real microVM daemon, set `serverless_daemon_url:` in `.trmnlp.yml`:
+
+```yaml
+transform_runtime: enabled
+serverless_daemon_url: https://transforms.your-team.example
+```
+
+Provide the daemon's bearer token via `$TRMNL_SERVERLESS_DAEMON_API_KEY` (env-first, mirroring how `$TRMNL_API_KEY` works for trmnl.com auth):
+
+```sh
+export TRMNL_SERVERLESS_DAEMON_API_KEY=...
+trmnlp serve
+```
+
+Or commit a per-project value to `.trmnlp.yml` as `serverless_daemon_api_key:` — though the env var is preferred to keep the secret out of version control.
+
+A complete worked example lives at [`examples/hn-stories/`](examples/hn-stories/) — a polling plugin that fetches the Hacker News top-stories list, enriches each story via additional HTTPS calls from inside the transform, and renders the result with TRMNL design-system markup across all four sizes. `cd examples/hn-stories && docker compose up` and you're running it.
+
 ## `src/settings.yml` Reference (Plugin Config)
 
-The `settings.yml` file is part of the plugin definition. 
+The `settings.yml` file is part of the plugin definition, and is uploaded and downloaded by `trmnlp push` / `pull`.
+
+`framework_version:` pins the [TRMNL Design System](https://trmnl.com/framework) version this plugin renders against — `latest` (the default) tracks the newest release, or set a specific version for reproducibility. It lives here rather than in `.trmnlp.yml` so the value round-trips with the hosted plugin service.
 
 See [TRMNL documentation](https://help.trmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0) for details on this file's contents.
 
+
+## Development
+
+To run trmnlp from a checkout of this repo — handy for trying unreleased changes or contributing:
+
+```sh
+git clone https://github.com/usetrmnl/trmnlp.git
+cd trmnlp
+bundle install
+bundle exec bin/trmnlp serve
+```
+
+The repo pins its Ruby version in `.ruby-version` — a version manager will pick it up when you `cd` in. This `bin/trmnlp` runs the CLI straight from `lib/`; it's a different script from the gem-or-Docker `bin/trmnlp` that `trmnlp init` scaffolds into a plugin project.
 
 ## Tests
 

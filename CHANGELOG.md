@@ -1,6 +1,59 @@
 
 # Changelog
 
+## 0.8.0
+
+### Housekeeping
+
+- Upgraded the development, CI, and Docker baseline to Ruby 4.0.4
+- Replaced the faye-websocket live reload with server-sent events, removing the eventmachine dependency
+- Upgraded `filewatcher` to 3.x for Ruby 4.0 support
+- Upgraded `mini_magick` to 5.x (ImageMagick 7 only)
+- Upgraded `rubyzip` to 3.x
+- Upgraded `puma` to 8.x
+- Upgraded `oj` and `selenium-webdriver` to their latest releases
+- Upgraded `trmnl-liquid` to 0.7 and `xdg` to 10
+- Added the `cgi` gem, removed from Ruby's standard library in 4.0
+- Dropped the redundant `pathname` gem dependency; Ruby provides `Pathname` built in
+- Added `.rspec` configuration and a `Rakefile`
+
+### Refactor
+
+- Refactored screen generation into focused objects: `Screen`, `Screenshot`, `Renderer`, `ImageQuantizer`, `BrowserPool`, `Reporter`, `Watcher`, `Poller`, `UserDataAssembler`
+- Added support for `text/html` and `text/plain` polling responses with JSON body sniffing (#81)
+- Fixed Liquid conditionals (`{% if %}...{% endif %}`) spanning `polling_headers` values (#79)
+- Fixed multi-select custom_fields being coerced into JSON strings — arrays now preserved (#80)
+- Fixed `trmnl.device.{width,height}` in user-data so they reflect the picker's selected model (#94)
+- Fixed `Permission denied` from `trmnlp clone` on Linux when overwriting template files (#83)
+- Fixed deprecated `convert` warning by switching to mini_magick's `Magick` tool (#89)
+
+### Serverless Transforms
+
+- Added `transform_runtime:` config in `.trmnlp.yml` — serverless transforms are enabled by default and run whenever a `src/transform.*` file is present; set to `disabled` to turn them off
+- Added `serverless_daemon_url:` override for pointing at a remote transform daemon (production-fidelity testing, shared team daemons)
+- Added `serverless_language:` override (`python`, `ruby`, `php`, `node`)
+- Added detection of `src/transform.{py,rb,php,js}` with language inferred from extension
+- Added `TRMNLP::TransformClient` strategy host that selects `TransformBackend::Subprocess` (default) or `TransformBackend::Http` (when `serverless_daemon_url` is set) via `.from_config`
+- Added `TRMNLP::TransformBackend::Subprocess` — local subprocess execution mirroring the hosted serverless wrapper contract verbatim, output flows back via a per-execution tempfile
+- Added `python3`, `nodejs`, and `php-cli` to the main `Dockerfile`'s runtime stage alongside the existing `ruby` so all four supported transform languages work out of the box — no sidecar required
+- Added transform-error surfacing in the preview UI when execution fails
+- Added filewatcher re-poll when transform source changes (hot reload)
+- Added `examples/hn-stories/` — a complete worked example fetching Hacker News top stories and rendering across all four sizes
+
+### Framework Picker
+
+- Added `framework_version:` plugin setting in `src/settings.yml` (defaults to `latest`, supports pinning to any released version) — round-trips through `trmnlp push`/`pull` alongside the hosted plugin archive format
+- Added `framework_asset_host:` override in `.trmnlp.yml` for offline / mirrored development
+- Added `TRMNLP::FrameworkVersion` mirroring the hosted framework versioning
+- Added `rake framework:sync` to refresh `db/data/framework_versions.yml` from a local design-system checkout
+- Updated `render_html.erb` to derive CSS/JS URLs from the resolved framework version
+
+### FormField & Init Template
+
+- Added FormField schema vendored from the hosted service (`db/data/form_fields.yml`) covering the full field-type allowlist
+- Refreshed the `trmnlp init` template to scaffold `framework_version` and transform configuration, including a `transform.py.example`
+- Fixed non-portable `/bin/bash` shebang in the generated `bin/trmnlp` (#78)
+
 ## 0.7.0
 
 - Switch from Puppeteer + CDP to Selenium + WebDriver BiDi (@SorceressLyra)
@@ -29,7 +82,7 @@
 
 ## 0.5.7
 
-- Use the `trmnl-liquid` gem so tags and filters stay up-to-date with the core offering
+- Use the `trmnl-liquid` gem so tags and filters stay up-to-date with the hosted offering
 
 ## 0.5.6
 
