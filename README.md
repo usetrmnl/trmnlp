@@ -121,6 +121,53 @@ The `trmnlp login` command saves your API key to `~/.config/trmnlp/config.yml`.
 
 If an environment variable is more convenient (for example in a CI/CD pipeline), you can set `$TRMNL_API_KEY` instead.
 
+## Continuous Integration
+
+`trmnlp` runs in GitHub Actions without `trmnlp login` — set the `TRMNL_API_KEY`
+environment variable and it's used in place of the saved config. Add it as a
+repository secret, then drop this into `.github/workflows/trmnl.yml`:
+
+```yaml
+name: TRMNL
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
+      - run: gem install trmnl_preview
+      - run: trmnlp lint
+
+  push:
+    needs: lint
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
+      - run: gem install trmnl_preview
+      - run: trmnlp push --force
+        env:
+          TRMNL_API_KEY: ${{ secrets.TRMNL_API_KEY }}
+```
+
+The `lint` job gates every pull request — `trmnlp lint` exits non-zero on
+issues, so a failing check blocks the merge. The `push` job uploads to TRMNL
+only on `main`.
+
+> **Make sure `src/settings.yml` has an `id`.** `trmnlp push` updates the
+> plugin with that id; without one it creates a *new* plugin on every run.
+> Projects made with `trmnlp clone` or `trmnlp pull` already have it.
+
 ## Running trmnlp
 
 The `bin/trmnlp` script is provided as a convenience. It will use the local Ruby gem if available, falling back to the `trmnl/trmnlp` Docker image.
@@ -335,6 +382,21 @@ bin/rake
 ```
 
 Specs run under SimpleCov; a coverage report is written to `coverage/`.
+
+## Releasing
+
+Releases are automated. The [`Release` workflow](.github/workflows/release.yaml)
+fires whenever `lib/trmnlp/version.rb` changes on `main`, then tags the commit,
+publishes the gem to RubyGems, and pushes the multi-arch Docker image. Each step
+is idempotent, so the workflow is safe to re-run after a partial failure.
+
+To cut a release:
+
+1. Bump the version in `lib/trmnlp/version.rb`.
+2. Run `bundle install` so `Gemfile.lock` picks up the new version.
+3. Commit and merge to `main` — the workflow does the rest.
+
+By convention, add a matching `CHANGELOG.md` entry in the same change.
 
 ## Contributing
 
