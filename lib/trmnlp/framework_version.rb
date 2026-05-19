@@ -44,9 +44,13 @@ module TRMNLP
 
     def pinned? = @pinned
 
-    def css_url = "#{@asset_host}/css/#{path_segment}/plugins.css"
+    # Both a pinned and an unpinned ("latest") version resolve to a
+    # concrete release here — #number is never the literal "latest" — so a
+    # local preview renders the same bundle as the hosted service instead
+    # of drifting onto a new release the moment one ships.
+    def css_url = "#{@asset_host}/css/#{number}/plugins.css"
 
-    def js_url = "#{@asset_host}/js/#{path_segment}/plugins.js"
+    def js_url = "#{@asset_host}/js/#{number}/plugins.js"
 
     def ==(other) = other.is_a?(self.class) && number == other.number
 
@@ -59,11 +63,5 @@ module TRMNLP
     def as_json(*) = number
 
     def to_s = number
-
-    private
-
-    # When pinned, requests assets at /css/<version>/plugins.css to lock
-    # behavior; otherwise hit /css/latest/ for live updates.
-    def path_segment = pinned? ? @number : 'latest'
   end
 end

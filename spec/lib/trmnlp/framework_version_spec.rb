@@ -20,9 +20,14 @@ RSpec.describe TRMNLP::FrameworkVersion do
     context 'when version is "latest"' do
       subject(:framework) { described_class.new('latest') }
 
-      it 'serves from the /latest/ path so updates are live' do
-        expect(framework.css_url).to eq('https://trmnl.com/css/latest/plugins.css')
-        expect(framework.js_url).to eq('https://trmnl.com/js/latest/plugins.js')
+      # NOTE: "latest" resolves to a concrete version rather than the
+      # auto-upgrading /latest/ CDN path, matching the hosted service —
+      # otherwise a local preview silently drifts when a new release ships.
+      it 'serves from the concrete current version' do
+        number = described_class.latest.number
+
+        expect(framework.css_url).to eq("https://trmnl.com/css/#{number}/plugins.css")
+        expect(framework.js_url).to eq("https://trmnl.com/js/#{number}/plugins.js")
       end
     end
 
