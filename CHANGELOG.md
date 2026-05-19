@@ -1,6 +1,11 @@
 
 # Changelog
 
+## 0.8.2
+
+- Fixed `framework_version: latest` rendering against the auto-upgrading `/latest/` asset path instead of the current concrete release, matching the hosted service (#99)
+- Cleanup and minor improvements
+
 ## 0.8.1
 
 ### Added
