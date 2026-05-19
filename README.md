@@ -111,7 +111,7 @@ trmnlp build --png --color-depth 2
 | `--png` | Render a PNG per view alongside the HTML |
 | `--width` | PNG width in pixels (default 800) |
 | `--height` | PNG height in pixels (default 480) |
-| `--color-depth` | PNG bit depth — 1, 2, or 4 — overriding the markup |
+| `--color-depth` | PNG bit depth — 1-8 — overriding the markup |
 
 `--width`, `--height`, and `--color-depth` apply only with `--png`. PNG rendering needs Firefox and ImageMagick installed; plain `trmnlp build` needs neither.
 

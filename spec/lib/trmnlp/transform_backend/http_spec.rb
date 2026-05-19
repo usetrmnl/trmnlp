@@ -80,16 +80,6 @@ RSpec.describe TRMNLP::TransformBackend::Http do
       expect(result).to be_success
     end
 
-    it 'falls back to stdout when output field is absent (older daemons)' do
-      stubs.post('/execute') do
-        [200, {}, '{"stdout":"{\"legacy\":true}","stderr":"","exit_code":0,"duration_ms":7,"error":null}']
-      end
-
-      result = backend.execute(**payload)
-
-      expect(result.output).to eq('{"legacy":true}')
-    end
-
     it 'returns a failure Result when the daemon responds non-200' do
       stubs.post('/execute') { [500, {}, 'kaboom'] }
 

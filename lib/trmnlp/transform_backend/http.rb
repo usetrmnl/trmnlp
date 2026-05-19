@@ -59,9 +59,7 @@ module TRMNLP
         TransformClient::Result.new(
           stdout: parsed['stdout'] || '',
           stderr: parsed['stderr'] || '',
-          # Fall back to stdout for daemons that haven't been upgraded to
-          # the separate `output` channel yet.
-          output: (parsed['output'].to_s.empty? ? parsed['stdout'] : parsed['output']).to_s,
+          output: parsed['output'].to_s,
           exit_code: parsed['exit_code'] || 0,
           duration_ms: parsed['duration_ms'] || 0,
           error: parsed['error']

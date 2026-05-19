@@ -24,8 +24,8 @@ module TRMNLP
         def pass? = static_image_urls.all? { |url| reachable?(url) }
 
         def static_image_urls
-          source.view_markup.values
-                .flat_map { |html| html.scan(/<img[^>]+src\s*=\s*["']([^"']+)["']/i).flatten }
+          source.all_markup
+                .scan(/<img[^>]+src\s*=\s*["']([^"']+)["']/i).flatten
                 .map(&:strip)
                 .reject { |src| src.empty? || src.include?('{{') || src.start_with?('data:') }
         end

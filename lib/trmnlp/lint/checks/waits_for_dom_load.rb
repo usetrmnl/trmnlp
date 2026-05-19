@@ -6,7 +6,8 @@ module TRMNLP
   module Lint
     module Checks
       class WaitsForDomLoad < Check
-        MESSAGE = 'JavaScript should listen for the DOMContentLoaded event, not window.onLoad()'
+        MESSAGE = 'JavaScript should listen for the DOMContentLoaded event, ' \
+                  'not window.onload or window.addEventListener("load")'
         LEARN_MORE = 'https://help.trmnl.com/en/articles/9510536-private-plugins#h_db7030f8b8'
         FORBIDDEN = ['window.onload', 'window.addeventlistener("load")',
                      "window.addeventlistener('load')"].freeze

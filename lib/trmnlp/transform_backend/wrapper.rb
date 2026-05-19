@@ -9,8 +9,10 @@ module TRMNLP
     # snippet supplied by the caller. Subprocess writes to a tempfile
     # path, Http writes to FD 3 for the production daemon to capture.
     #
-    # Mirrors the hosted serverless runtime's code-wrapping behavior
-    # verbatim except for the configurable sink.
+    # Mirrors the hosted serverless runtime's code-wrapping behavior,
+    # parameterized on the per-backend output sink. PHP additionally
+    # carries a leading `<?php` tag the file-based Subprocess path
+    # needs; the daemon tolerates it, so parity holds.
     #
     # NOTE: `output_sink` is spliced verbatim into the generated script as
     # executable code. It MUST be trmnlp-generated (see Subprocess#sink_for

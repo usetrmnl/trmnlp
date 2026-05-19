@@ -72,7 +72,7 @@ module TRMNLP
       end
     end
 
-    # bindings must match the `GET /render/{view}.html` route in app.rb
+    # ivars must match the @-references in web/views/render_html.erb
     class TemplateBinding
       def initialize(renderer, view, params)
         @view = view

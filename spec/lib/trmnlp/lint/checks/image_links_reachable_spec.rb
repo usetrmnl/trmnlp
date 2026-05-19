@@ -7,7 +7,7 @@ require 'trmnlp/lint/checks/image_links_reachable'
 RSpec.describe TRMNLP::Lint::Checks::ImageLinksReachable do
   subject(:check) { described_class.new(source) }
 
-  let(:source) { instance_double(TRMNLP::Lint::Source, view_markup: { 'full' => markup }) }
+  let(:source) { instance_double(TRMNLP::Lint::Source, all_markup: markup) }
   let(:markup) { '<img src="https://example.com/logo.png">' }
 
   describe '#issues' do
