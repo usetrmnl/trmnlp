@@ -21,17 +21,20 @@ Gem::Specification.new do |spec|
   spec.metadata['rubygems_mfa_required'] = 'true'
 
   spec.files = Dir.chdir(__dir__) do
-    [
+    files = [
       'bin/**/*',
       'db/**/*',
       'lib/**/*',
-      'templates/**/{*,.*}',
       'web/**/*',
       'CHANGELOG.md',
       'LICENSE.txt',
       'README.md',
       'trmnl_preview.gemspec'
     ].flat_map { |glob| Dir[glob] }
+
+    # FNM_DOTMATCH so the glob descends into the templates' hidden directories
+    # (e.g. .github/) — a plain Dir[] skips them and drops the file from the gem.
+    files + Dir.glob('templates/**/{*,.*}', File::FNM_DOTMATCH)
   end
   spec.bindir = 'bin'
   spec.executables = ['trmnlp']

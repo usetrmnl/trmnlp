@@ -5,7 +5,9 @@ require 'tmpdir'
 require 'trmnlp/commands/clone'
 
 RSpec.describe TRMNLP::Commands::Clone do
-  subject(:command) { described_class.new(context:, options: described_class::Options.new(dir: tmp_root, quiet: true)) }
+  subject(:command) do
+    described_class.new(context:, options: described_class::Options.new(dir: tmp_root, quiet: true, skip_git: false))
+  end
 
   let(:tmp_root) { Dir.mktmpdir('trmnlp-clone-') }
   let(:context) { TRMNLP::Context.new(tmp_root) }
@@ -23,8 +25,8 @@ RSpec.describe TRMNLP::Commands::Clone do
     it 'scaffolds the project via Init' do
       command.call('my-plugin', '42')
 
-      expect(TRMNLP::Commands::Init).to have_received(:run).with({ dir: tmp_root, skip_liquid: true, quiet: true },
-                                                                 'my-plugin')
+      expect(TRMNLP::Commands::Init).to have_received(:run)
+        .with({ dir: tmp_root, skip_liquid: true, quiet: true, skip_git: false }, 'my-plugin')
     end
 
     it 'pulls the plugin settings into the new directory' do
@@ -45,6 +47,15 @@ RSpec.describe TRMNLP::Commands::Clone do
       allow(context.config.app).to receive(:logged_in?).and_return(false)
 
       expect { command.call('my-plugin', '42') }.to raise_error(TRMNLP::NotLoggedIn)
+    end
+
+    it 'forwards skip_git to Init' do
+      cmd = described_class.new(context:,
+                                options: described_class::Options.new(dir: tmp_root, quiet: true, skip_git: true))
+      cmd.call('skipped', '99')
+
+      expect(TRMNLP::Commands::Init).to have_received(:run)
+        .with({ dir: tmp_root, skip_liquid: true, quiet: true, skip_git: true }, 'skipped')
     end
   end
 end

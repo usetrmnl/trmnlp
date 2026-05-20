@@ -37,6 +37,7 @@ FROM ruby:${RUBY_VERSION}-slim-trixie AS runner
 # trixie ships IM7 (the `magick` binary trmnlp's PNG quantizer needs).
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    git \
     imagemagick \
     firefox-esr \
     python3 \

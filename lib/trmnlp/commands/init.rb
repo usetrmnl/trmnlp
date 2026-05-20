@@ -7,7 +7,7 @@ require_relative 'base'
 module TRMNLP
   module Commands
     class Init < Base
-      Options = Data.define(:dir, :quiet, :skip_liquid)
+      Options = Data.define(:dir, :quiet, :skip_liquid, :skip_git)
 
       def call(name)
         destination_dir = Pathname.new(options.dir).join(name)
@@ -17,7 +17,9 @@ module TRMNLP
           destination_dir.mkpath
         end
 
-        template_dir.glob('**/{*,.*}').each do |source_pathname|
+        # NOTE: FNM_DOTMATCH so the glob descends into hidden template
+        # directories (e.g. .github/); without it those files are skipped.
+        template_dir.glob('**/{*,.*}', File::FNM_DOTMATCH).each do |source_pathname|
           next if source_pathname.directory?
           next if options.skip_liquid && source_pathname.extname == '.liquid'
 
@@ -41,6 +43,8 @@ module TRMNLP
           destination_pathname.chmod(destination_pathname.stat.mode | 0o200)
         end
 
+        init_git_repo(destination_dir) unless options.skip_git
+
         reporter.info <<~HEREDOC
 
           To start the local server:
@@ -58,6 +62,13 @@ module TRMNLP
       private
 
       def template_dir = paths.templates_dir.join('init')
+
+      # Make the scaffold a Git repository on `main` so it's ready to push
+      # to GitHub (the workflow's `branches: [main]` trigger requires it,
+      # regardless of the host's init.defaultBranch).
+      # Does nothing when git is unavailable — `system` returns nil rather
+      # than raising, so the scaffold itself still succeeds.
+      def init_git_repo(dir) = system('git', 'init', '-q', '-b', 'main', dir.to_s)
     end
   end
 end
