@@ -77,17 +77,40 @@ module TRMNLP
       JSON.pretty_generate(@user_data_assembler.call(device:))
     end
 
-    # Live reload is a one-directional server->browser push, so it uses
-    # server-sent events rather than a websocket. Each client gets a blocking
-    # queue; the stream thread parks on queue.pop until the watcher broadcasts.
+    # Live reload uses rack.hijack so the Puma worker thread is released the
+    # instant we have the raw socket — broadcasting then runs on our own
+    # thread, never competing with HTTP request workers. Adapted from the
+    # Faye::EventSource pattern in faye-websocket (lib/faye/rack_stream.rb)
+    # but without the EventMachine dependency: where Faye uses EM.attach to
+    # get a reactor callback on socket close, we detect close synchronously
+    # via the IOError/EPIPE raised by the next heartbeat write.
+    HEARTBEAT_SECONDS = 5
+
     get '/live_reload' do
-      content_type 'text/event-stream'
+      hijack = env['rack.hijack']
+      halt 500, 'rack.hijack unavailable' unless hijack
+      hijack.call
+      io = env['rack.hijack_io']
+
       queue = Thread::Queue.new
       @live_reload_clients << queue
-      stream(:keep_open) do |out|
-        out.callback { @live_reload_clients.delete(queue) }
-        out << queue.pop until out.closed?
+
+      Thread.new do
+        io.write("HTTP/1.1 200 OK\r\n" \
+                 "Content-Type: text/event-stream\r\n" \
+                 "Cache-Control: no-cache\r\n" \
+                 "Connection: close\r\n\r\n")
+        run_live_reload_loop(io, queue)
+      rescue IOError, Errno::EPIPE, Errno::ECONNRESET
+        # client disconnected mid-write — normal termination
+      ensure
+        @live_reload_clients.delete(queue)
+        io.close
       end
+
+      # -1 status tells the server we've hijacked the response. The body
+      # is never iterated; the thread above owns the socket from here.
+      [-1, {}, []]
     end
 
     get '/poll' do
@@ -127,6 +150,16 @@ module TRMNLP
     end
 
     private
+
+    # On timeout (queue idle), a colon-prefixed SSE comment line both
+    # keeps proxies awake and surfaces a dead client via the next
+    # io.write — the route's outer rescue then cleans up.
+    def run_live_reload_loop(io, queue)
+      loop do
+        message = queue.pop(timeout: HEARTBEAT_SECONDS)
+        io.write(message || ": heartbeat\n\n")
+      end
+    end
 
     # ScreenGenerator is request-scoped — it carries the per-request width,
     # height, and color_depth — so it is built here rather than on the shared
