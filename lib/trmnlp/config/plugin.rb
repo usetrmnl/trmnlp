@@ -73,8 +73,13 @@ module TRMNLP
       # Explicit language for transform.* code. If absent, the language
       # is inferred from the file extension by Paths#transform_file.
       # This one lives on the plugin (settings.yml) because production
-      # stores it on the plugin_setting record.
-      def serverless_language = @config['serverless_language']
+      # stores it on the plugin_setting record. The scaffold emits
+      # `serverless_language: ''`, so empty strings collapse to nil here
+      # to let the `||` in the pipeline fall through to the inferred value.
+      def serverless_language
+        value = @config['serverless_language']
+        value unless value.to_s.empty?
+      end
 
       # The TRMNL design-system version this plugin renders against.
       # Lives on the plugin (settings.yml), like serverless_language,

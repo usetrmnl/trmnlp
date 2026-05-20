@@ -4,6 +4,24 @@ require 'filewatcher'
 
 require_relative 'reporter'
 
+# filewatcher 3.0.1's #watch installs `trap('INT') { exit }` (and HUP/TERM)
+# unconditionally, clobbering Puma's clean-shutdown handler — Ctrl-C then
+# raises SystemExit instead of triggering Puma's graceful stop, which is
+# why the container needs three SIGINTs to die. The gem offers no opt-out;
+# its supported shutdown is Filewatcher#stop, which we're not using. We
+# replace the trap-installing #watch with the rest of its body so signals
+# fall through to whatever handler the host process installed (Puma).
+Filewatcher.prepend(Module.new do
+  def watch(&on_update)
+    @on_update = on_update
+    @keep_watching = true
+    yield({ '' => '' }) if @immediate
+    main_cycle
+    @end_snapshot = current_snapshot
+    finalize(&on_update)
+  end
+end)
+
 module TRMNLP
   class Watcher
     def initialize(config:, user_data_assembler:, transform_pipeline:, reporter: Reporter.new)

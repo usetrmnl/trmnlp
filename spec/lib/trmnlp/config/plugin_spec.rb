@@ -88,6 +88,32 @@ RSpec.describe TRMNLP::Config::Plugin do
     end
   end
 
+  describe '#serverless_language' do
+    context 'when settings.yml sets a language' do
+      before { plugin.instance_variable_set(:@config, { 'serverless_language' => 'python' }) }
+
+      it 'returns the configured language' do
+        expect(plugin.serverless_language).to eq('python')
+      end
+    end
+
+    context "when settings.yml has serverless_language: ''" do
+      before { plugin.instance_variable_set(:@config, { 'serverless_language' => '' }) }
+
+      it 'returns nil so the inferred extension wins' do
+        expect(plugin.serverless_language).to be_nil
+      end
+    end
+
+    context 'when settings.yml omits serverless_language' do
+      before { plugin.instance_variable_set(:@config, {}) }
+
+      it 'returns nil' do
+        expect(plugin.serverless_language).to be_nil
+      end
+    end
+  end
+
   describe '#reload!' do
     it 'raises a readable InvalidConfig when settings.yml is not valid YAML' do
       Dir.mktmpdir('trmnlp-plugin-') do |dir|
