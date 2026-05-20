@@ -7,7 +7,7 @@ require_relative 'pull'
 module TRMNLP
   module Commands
     class Clone < Base
-      Options = Data.define(:dir, :quiet)
+      Options = Data.define(:dir, :quiet, :skip_git)
 
       def call(directory_name, id)
         authenticate!
@@ -15,7 +15,7 @@ module TRMNLP
         destination_path = Pathname.new(options.dir).join(directory_name)
         raise DirectoryExists, "directory #{destination_path} already exists, aborting" if destination_path.exist?
 
-        Init.run({ dir: options.dir, skip_liquid: true, quiet: true }, directory_name)
+        Init.run({ dir: options.dir, skip_liquid: true, quiet: true, skip_git: options.skip_git }, directory_name)
 
         Pull.run({ dir: destination_path.to_s, force: true, id: id })
 

@@ -28,6 +28,10 @@ This is the structure of a plugin project:
 
 ```
 .
+├── .github
+│   └── workflows
+│       └── trmnl.yml
+├── .gitignore
 ├── .trmnlp.yml
 ├── bin
 │   └── trmnlp
@@ -42,6 +46,8 @@ This is the structure of a plugin project:
 
 | File | Purpose |
 |---|---|
+| `.github/workflows/trmnl.yml` | GitHub Actions workflow — lints every PR, deploys to TRMNL on `main` |
+| `.gitignore` | Keeps `trmnlp build` output out of version control |
 | `.trmnlp.yml` | Local dev-server config — not uploaded to TRMNL |
 | `src/full.liquid` | Markup for the full screen |
 | `src/half_horizontal.liquid` | Top or bottom half of a stacked mashup |
@@ -123,9 +129,12 @@ If an environment variable is more convenient (for example in a CI/CD pipeline),
 
 ## Continuous Integration
 
-`trmnlp` runs in GitHub Actions without `trmnlp login` — set the `TRMNL_API_KEY`
-environment variable and it's used in place of the saved config. Add it as a
-repository secret, then drop this into `.github/workflows/trmnl.yml`:
+`trmnlp init` and `trmnlp clone` scaffold a `.github/workflows/trmnl.yml`
+workflow and initialize a Git repository, so a fresh project is ready to push
+to GitHub. The workflow runs in GitHub Actions without `trmnlp login` — set the
+`TRMNL_API_KEY` environment variable and it's used in place of the saved
+config. Add it as a repository secret to activate the workflow; it looks like
+this:
 
 ```yaml
 name: TRMNL

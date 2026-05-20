@@ -6,7 +6,9 @@ require 'trmnlp/commands/init'
 
 RSpec.describe TRMNLP::Commands::Init do
   subject(:command) do
-    described_class.new(context:, options: described_class::Options.new(dir: tmp_root, quiet: true, skip_liquid: false))
+    described_class.new(context:,
+                        options: described_class::Options.new(dir: tmp_root, quiet: true,
+                                                              skip_liquid: false, skip_git: false))
   end
 
   let(:tmp_root) { Dir.mktmpdir('trmnlp-init-') }
@@ -28,12 +30,48 @@ RSpec.describe TRMNLP::Commands::Init do
     it 'omits liquid files when skip_liquid is true' do
       cmd = described_class.new(context:,
                                 options: described_class::Options.new(dir: tmp_root,
-                                                                      quiet: true, skip_liquid: true))
+                                                                      quiet: true, skip_liquid: true,
+                                                                      skip_git: false))
       cmd.call('no-liquid')
 
       project = File.join(tmp_root, 'no-liquid')
       expect(File).to exist(File.join(project, 'src', 'settings.yml'))
       expect(File).not_to exist(File.join(project, 'src', 'full.liquid'))
+    end
+
+    it 'scaffolds the GitHub Actions workflow' do
+      command.call('demo')
+
+      expect(File).to exist(File.join(tmp_root, 'demo', '.github', 'workflows', 'trmnl.yml'))
+    end
+
+    it 'scaffolds a gitignore' do
+      command.call('demo')
+
+      expect(File).to exist(File.join(tmp_root, 'demo', '.gitignore'))
+    end
+
+    it 'initializes a git repository' do
+      command.call('demo')
+
+      expect(File).to be_directory(File.join(tmp_root, 'demo', '.git'))
+    end
+
+    it 'initializes the git repository on the main branch' do
+      command.call('demo')
+
+      head = File.read(File.join(tmp_root, 'demo', '.git', 'HEAD')).strip
+      expect(head).to eq('ref: refs/heads/main')
+    end
+
+    it 'skips git init when skip_git is true' do
+      cmd = described_class.new(context:,
+                                options: described_class::Options.new(dir: tmp_root,
+                                                                      quiet: true, skip_liquid: false,
+                                                                      skip_git: true))
+      cmd.call('no-git')
+
+      expect(File).not_to be_directory(File.join(tmp_root, 'no-git', '.git'))
     end
 
     context 'when the template source is read-only (#83)' do

@@ -1,6 +1,13 @@
 
 # Changelog
 
+## 0.8.3
+
+- `trmnlp init` and `trmnlp clone` now scaffold a `.github/workflows/trmnl.yml` CI workflow and a `.gitignore`, and run `git init -b main`, so a cloned plugin is ready to push to GitHub and deploy on every commit to `main`
+- Added `--skip-git` to `trmnlp init` and `trmnlp clone` for projects that manage Git themselves
+- The Docker image now ships `git` so the `docker run trmnl/trmnlp clone` flow leaves a ready-to-push project on the host
+- View templates now ship canonical `layout` + `title_bar` markup that passes `trmnlp lint`
+
 ## 0.8.2
 
 - Fixed `framework_version: latest` rendering against the auto-upgrading `/latest/` asset path instead of the current concrete release, matching the hosted service (#99)

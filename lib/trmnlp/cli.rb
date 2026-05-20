@@ -34,11 +34,13 @@ module TRMNLP
 
     desc 'init NAME', 'Start a new plugin project'
     method_option :skip_liquid, type: :boolean, default: false, desc: 'Skip generating liquid templates'
+    method_option :skip_git, type: :boolean, default: false, desc: 'Skip initializing a git repository'
     def init(name)
       Commands::Init.run(options, name)
     end
 
     desc 'clone NAME ID', 'Copy a plugin project from TRMNL server'
+    method_option :skip_git, type: :boolean, default: false, desc: 'Skip initializing a git repository'
     def clone(name, id)
       Commands::Clone.run(options, name, id)
     end
