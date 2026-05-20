@@ -1,6 +1,13 @@
 
 # Changelog
 
+## 0.8.4
+
+- Fixed `trmnlp serve` hanging after switching between browser tabs. Live reload now uses `rack.hijack` so SSE connections release their Puma worker thread immediately instead of holding it for the lifetime of the tab.
+- Fixed Ctrl-C requiring three presses to stop the dev server. filewatcher 3.0.1 was clobbering Puma's signal handlers with its own `trap('INT') { exit }`.
+- Fixed scaffolded plugins silently skipping their transform when `settings.yml` had `serverless_language: ''`. The empty string was treated as truthy in Ruby and short-circuited the file-extension fallback.
+- Docker examples in the README now use `--pull always` (and `pull_policy: always` for Compose) so a new release is picked up on the next `docker run` without a manual pull.
+
 ## 0.8.3
 
 - `trmnlp init` and `trmnlp clone` now scaffold a `.github/workflows/trmnl.yml` CI workflow and a `.gitignore`, and run `git init -b main`, so a cloned plugin is ready to push to GitHub and deploy on every commit to `main`
