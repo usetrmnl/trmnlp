@@ -9,6 +9,7 @@
 services:
   trmnlp:
     image: trmnl/trmnlp:latest
+    pull_policy: always
     command: ["serve"]
     ports:
       - "4567:4567"

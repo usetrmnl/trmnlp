@@ -203,10 +203,13 @@ trmnlp serve
 
 ```sh
 docker run \
+    --pull always \
     --publish 4567:4567 \
     --volume "$(pwd):/plugin" \
     trmnl/trmnlp serve
 ```
+
+`--pull always` checks the registry on every run and pulls a newer image if one exists, so you don't have to remember to `docker pull` after each release.
 
 Inside a container, `serve` binds to `0.0.0.0` automatically (it detects `/.dockerenv`) so the preview is reachable from your host browser. Outside Docker it binds to `127.0.0.1`.
 
@@ -218,6 +221,7 @@ For running multiple commands (login, clone, serve), you can start an interactiv
 
 ```sh
 docker run -it \
+    --pull always \
     --publish 4567:4567 \
     --volume "$HOME/.config/trmnlp:/root/.config/trmnlp" \
     --volume "$(pwd):/plugin" \
@@ -244,6 +248,7 @@ For a checked-in config — like [`examples/hn-stories/`](examples/hn-stories/) 
 services:
   trmnlp:
     image: trmnl/trmnlp
+    pull_policy: always
     command: ["serve"]
     ports:
       - "4567:4567"
