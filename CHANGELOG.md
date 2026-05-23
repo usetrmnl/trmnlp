@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 0.8.5
+
+- Fixed `pluralize`, `number_with_delimiter`, and `number_to_currency` Liquid filters raising `Liquid error: internal`. `trmnl-liquid` 0.7 moved `RailsHelpers` behind an opt-in `load(:rails)`, but the filters still probed `RailsHelpers.respond_to?` against the now-undefined constant. Stubbing an empty module makes the probe return false so the bundled fallback implementations run. (#105)
+
 ## 0.8.4
 
 - Fixed `trmnlp serve` hanging after switching between browser tabs. Live reload now uses `rack.hijack` so SSE connections release their Puma worker thread immediately instead of holding it for the lifetime of the tab.
