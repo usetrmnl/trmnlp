@@ -3,7 +3,7 @@
 
 ## 0.8.6
 
-- Added a trailing newline to `db/data/form_fields.yml`.
+- Fix missing form fields `db/data/form_fields.yml`.
 
 ## 0.8.5
 
