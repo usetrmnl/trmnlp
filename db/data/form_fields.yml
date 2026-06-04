@@ -12,13 +12,23 @@ required_keys:
   - field_type
   - name
 field_types:
-  - text
-  - string
+  - author_bio
+  - boolean
+  - code
+  - copyable
+  - copyable_webhook_url
+  - date
+  - multi_string
   - number
   - password
-  - boolean
-  - xhrString
-  - xhrSelect
-  - xhrFunction
+  - plugin_instance_select
   - select
-  - author_bio
+  - string
+  - text
+  - time
+  - time_zone
+  - url
+  - xhrFunction
+  - xhrSelect
+  - xhrSelectSearch
+  - xhrString
