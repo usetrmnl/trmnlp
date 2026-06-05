@@ -1,6 +1,12 @@
 
 # Changelog
 
+## 0.8.7
+
+- Fixed `.trmnlp.yml` `variables` overrides under the `trmnl` namespace being dropped. The assembler re-applied the pre-override namespace after the transform, clobbering user overrides like `trmnl.user.time_zone`. (#110)
+- Fixed the transform receiving the `trmnl.system` namespace, which the hosted service withholds. Transforms now see only `trmnl.user`, `trmnl.device`, and `trmnl.plugin_settings`, matching production.
+- Added `trmnl.user.id` to the user namespace so its shape matches the hosted service.
+
 ## 0.8.6
 
 - Fix missing form fields `db/data/form_fields.yml`.

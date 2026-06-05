@@ -32,6 +32,39 @@ RSpec.describe TRMNLP::UserDataAssembler do
         expect(data.dig('trmnl', 'device', 'height')).to eq(240)
       end
     end
+
+    context 'with trmnl namespace overrides in .trmnlp variables' do
+      before do
+        allow(config.project).to receive(:user_data_overrides).and_return(
+          'trmnl' => {
+            'user' => {
+              'time_zone' => 'Central Time (US & Canada)',
+              'time_zone_iana' => 'America/Chicago',
+              'utc_offset' => -18_000
+            }
+          }
+        )
+      end
+
+      it 'applies the overrides to the trmnl namespace (regression: overrides were dropped after transform)' do
+        data = assembler.call
+
+        expect(data.dig('trmnl', 'user', 'time_zone')).to eq('Central Time (US & Canada)')
+        expect(data.dig('trmnl', 'user', 'time_zone_iana')).to eq('America/Chicago')
+        expect(data.dig('trmnl', 'user', 'utc_offset')).to eq(-18_000)
+      end
+
+      it 'does not clobber other trmnl namespace keys' do
+        data = assembler.call
+
+        expect(data.dig('trmnl', 'device', 'width')).to eq(800)
+        expect(data.dig('trmnl', 'user', 'locale')).to eq('en')
+      end
+    end
+
+    it 'includes a user id, matching the hosted trmnl.user shape' do
+      expect(assembler.call.dig('trmnl', 'user', 'id')).to eq(1)
+    end
   end
 
   describe '#device_from_params' do
@@ -89,6 +122,19 @@ RSpec.describe TRMNLP::UserDataAssembler do
       it 'preserves the trmnl namespace even when the transform omits it' do
         result = assembler.call
         expect(result.dig('trmnl', 'device', 'width')).to eq(800)
+      end
+
+      it 'excludes the system namespace from the transform input (matches the hosted slice)' do
+        assembler.call
+
+        expect(transform_client).to have_received(:execute) do |kwargs|
+          trmnl = JSON.parse(kwargs[:stdin])['trmnl']
+          expect(trmnl.keys).to contain_exactly('user', 'device', 'plugin_settings')
+        end
+      end
+
+      it 'keeps the system namespace in the final result (slice is transform-input only)' do
+        expect(assembler.call.dig('trmnl', 'system', 'timestamp_utc')).to be_a(Integer)
       end
     end
 
