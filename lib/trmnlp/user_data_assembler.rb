@@ -23,7 +23,7 @@ module TRMNLP
     def call(device: {})
       namespace = base_trmnl_data(device:)
       merged = assemble(namespace)
-      result = transform_pipeline.call(merged)
+      result = transform_pipeline.call(transform_input(merged))
       result['trmnl'] = merged['trmnl']
       result
     end
@@ -41,6 +41,13 @@ module TRMNLP
       merge_source_data!(data)
       data.deep_merge!(config.project.user_data_overrides)
       data
+    end
+
+    # The hosted service exposes only user/device/plugin_settings to the
+    # transform; the system namespace is added afterward. Mirror that slice
+    # so transforms behave the same locally as in production.
+    def transform_input(merged)
+      merged.merge('trmnl' => merged['trmnl'].slice('user', 'device', 'plugin_settings'))
     end
 
     def merge_source_data!(data)
@@ -68,6 +75,7 @@ module TRMNLP
       tz = ActiveSupport::TimeZone.find_tzinfo(config.project.time_zone)
       iana = tz.name
       {
+        'id' => 1,
         'name' => 'name', 'first_name' => 'first_name', 'last_name' => 'last_name',
         'locale' => 'en', 'time_zone' => ActiveSupport::TimeZone::MAPPING.invert[iana] || iana,
         'time_zone_iana' => iana, 'utc_offset' => tz.utc_offset

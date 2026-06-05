@@ -61,6 +61,10 @@ RSpec.describe TRMNLP::UserDataAssembler do
         expect(data.dig('trmnl', 'user', 'locale')).to eq('en')
       end
     end
+
+    it 'includes a user id, matching the hosted trmnl.user shape' do
+      expect(assembler.call.dig('trmnl', 'user', 'id')).to eq(1)
+    end
   end
 
   describe '#device_from_params' do
@@ -118,6 +122,19 @@ RSpec.describe TRMNLP::UserDataAssembler do
       it 'preserves the trmnl namespace even when the transform omits it' do
         result = assembler.call
         expect(result.dig('trmnl', 'device', 'width')).to eq(800)
+      end
+
+      it 'excludes the system namespace from the transform input (matches the hosted slice)' do
+        assembler.call
+
+        expect(transform_client).to have_received(:execute) do |kwargs|
+          trmnl = JSON.parse(kwargs[:stdin])['trmnl']
+          expect(trmnl.keys).to contain_exactly('user', 'device', 'plugin_settings')
+        end
+      end
+
+      it 'keeps the system namespace in the final result (slice is transform-input only)' do
+        expect(assembler.call.dig('trmnl', 'system', 'timestamp_utc')).to be_a(Integer)
       end
     end
 
