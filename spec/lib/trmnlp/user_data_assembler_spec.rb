@@ -32,6 +32,35 @@ RSpec.describe TRMNLP::UserDataAssembler do
         expect(data.dig('trmnl', 'device', 'height')).to eq(240)
       end
     end
+
+    context 'with trmnl namespace overrides in .trmnlp variables' do
+      before do
+        allow(config.project).to receive(:user_data_overrides).and_return(
+          'trmnl' => {
+            'user' => {
+              'time_zone' => 'Central Time (US & Canada)',
+              'time_zone_iana' => 'America/Chicago',
+              'utc_offset' => -18_000
+            }
+          }
+        )
+      end
+
+      it 'applies the overrides to the trmnl namespace (regression: overrides were dropped after transform)' do
+        data = assembler.call
+
+        expect(data.dig('trmnl', 'user', 'time_zone')).to eq('Central Time (US & Canada)')
+        expect(data.dig('trmnl', 'user', 'time_zone_iana')).to eq('America/Chicago')
+        expect(data.dig('trmnl', 'user', 'utc_offset')).to eq(-18_000)
+      end
+
+      it 'does not clobber other trmnl namespace keys' do
+        data = assembler.call
+
+        expect(data.dig('trmnl', 'device', 'width')).to eq(800)
+        expect(data.dig('trmnl', 'user', 'locale')).to eq('en')
+      end
+    end
   end
 
   describe '#device_from_params' do
