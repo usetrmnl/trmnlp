@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 0.8.7
+
+- Fixed `.trmnlp.yml` `variables` overrides under the `trmnl` namespace being dropped. The assembler re-applied the pre-override namespace after the transform, clobbering user overrides like `trmnl.user.time_zone`. (#110)
+
 ## 0.8.6
 
 - Fix missing form fields `db/data/form_fields.yml`.
