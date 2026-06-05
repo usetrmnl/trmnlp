@@ -17,14 +17,14 @@ module TRMNLP
 
     # Assembles the merged data hash. The trmnl namespace is built first,
     # layered with static_data / cached polled data / user_data_overrides,
-    # then piped through the transform. The whole trmnl namespace is
-    # re-applied after the transform so it survives even when the
-    # transform doesn't pass it through.
+    # then piped through the transform. The assembled trmnl namespace
+    # (overrides included) is re-applied after the transform so it
+    # survives even when the transform doesn't pass it through.
     def call(device: {})
       namespace = base_trmnl_data(device:)
       merged = assemble(namespace)
       result = transform_pipeline.call(merged)
-      result['trmnl'] = namespace['trmnl'].deep_merge(config.project.user_data_overrides['trmnl'] || {})
+      result['trmnl'] = merged['trmnl']
       result
     end
 
