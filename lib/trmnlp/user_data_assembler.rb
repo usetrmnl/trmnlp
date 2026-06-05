@@ -24,7 +24,7 @@ module TRMNLP
       namespace = base_trmnl_data(device:)
       merged = assemble(namespace)
       result = transform_pipeline.call(merged)
-      result['trmnl'] = namespace['trmnl']
+      result['trmnl'] = namespace['trmnl'].deep_merge(config.project.user_data_overrides['trmnl'] || {})
       result
     end
 
