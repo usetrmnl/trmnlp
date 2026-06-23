@@ -28,6 +28,7 @@ module TRMNLP
     end
 
     desc 'login', 'Authenticate with TRMNL server'
+    method_option :server, type: :string, aliases: '-s', desc: 'Server URL (default: https://trmnl.com)'
     def login
       Commands::Login.run(options)
     end
