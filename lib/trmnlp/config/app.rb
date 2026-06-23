@@ -30,6 +30,10 @@ module TRMNLP
         @config['api_key'] = key
       end
 
+      def base_url=(url)
+        @config['base_url'] = url
+      end
+
       def base_uri = URI.parse(@config['base_url'] || 'https://trmnl.com')
 
       def api_uri = URI.join(base_uri, '/api')

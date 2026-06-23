@@ -65,6 +65,15 @@ RSpec.describe TRMNLP::Config::App do
     end
   end
 
+  describe '#base_url=' do
+    it 'persists the base_url to disk on save' do
+      app_config.base_url = 'http://localhost'
+      app_config.save
+
+      expect(YAML.safe_load(paths.app_config.read)).to include('base_url' => 'http://localhost')
+    end
+  end
+
   describe '#base_uri' do
     it 'defaults to trmnl.com' do
       expect(app_config.base_uri.to_s).to eq('https://trmnl.com')
