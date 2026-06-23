@@ -1,6 +1,11 @@
 
 # Changelog
 
+## 0.8.8
+
+- Added a `--server` flag to `trmnlp login` so commands like `trmnlp push` can target a self-hosted (BYOS) server. The chosen URL is saved as `base_url`, and the `user_` API key prefix is only required for trmnl.com; BYOS servers accept their own token formats. A scheme-less `--server` value (such as `localhost:3000`) no longer crashes the host check. (#113)
+- `trmnlp list` now shows plugins with a nil `plugin_id`, which BYOS servers like LaraPaper return. (#113)
+
 ## 0.8.7
 
 - Fixed `.trmnlp.yml` `variables` overrides under the `trmnl` namespace being dropped. The assembler re-applied the pre-override namespace after the transform, clobbering user overrides like `trmnl.user.time_zone`. (#110)
