@@ -50,16 +50,13 @@ RSpec.describe TRMNLP::Commands::List do
       expect(reporter.messages).to include(match(/No plugins found/))
     end
 
-    it 'shows plugins with nil plugin_id (LaraPaper format)' do
-      allow(api_client).to receive(:get_plugin_settings).and_return([
-                                                                      { 'id' => 'uuid-1', 'plugin_id' => nil,
-                                                                        'name' => 'My LaraPaper Plugin' }
-                                                                    ])
+    it 'includes plugins with a nil plugin_id (BYOS servers like LaraPaper)' do
+      plugins = [{ 'id' => 'uuid-1', 'plugin_id' => nil, 'name' => 'My BYOS Plugin' }]
+      allow(api_client).to receive(:get_plugin_settings).and_return(plugins)
 
       command.call
-      output = reporter.messages.join("\n")
 
-      expect(output).to include('My LaraPaper Plugin')
+      expect(reporter.messages.join("\n")).to include('My BYOS Plugin')
     end
 
     it 'raises when not authenticated' do

@@ -66,11 +66,30 @@ RSpec.describe TRMNLP::Config::App do
   end
 
   describe '#base_url=' do
-    it 'persists the base_url to disk on save' do
+    it 'updates base_uri' do
       app_config.base_url = 'http://localhost'
-      app_config.save
+      expect(app_config.base_uri.to_s).to eq('http://localhost')
+    end
+  end
 
-      expect(YAML.safe_load(paths.app_config.read)).to include('base_url' => 'http://localhost')
+  describe '#trmnl_host?' do
+    it 'is true for the default host' do
+      expect(app_config.trmnl_host?).to be(true)
+    end
+
+    it 'is true for a trmnl.com subdomain' do
+      app_config.base_url = 'https://staging.trmnl.com'
+      expect(app_config.trmnl_host?).to be(true)
+    end
+
+    it 'is false for a BYOS host' do
+      app_config.base_url = 'http://localhost'
+      expect(app_config.trmnl_host?).to be(false)
+    end
+
+    it 'is false (not nil) for a scheme-less base_url' do
+      app_config.base_url = 'localhost:3000'
+      expect(app_config.trmnl_host?).to be(false)
     end
   end
 

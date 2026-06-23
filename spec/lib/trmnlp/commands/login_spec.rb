@@ -5,9 +5,10 @@ require 'trmnlp/commands/login'
 
 RSpec.describe TRMNLP::Commands::Login do
   subject(:command) do
-    described_class.new(context:, options: described_class::Options.new(dir: fixtures_root, quiet: true, server: nil))
+    described_class.new(context:, options: described_class::Options.new(dir: fixtures_root, quiet: true, server:))
   end
 
+  let(:server) { nil }
   let(:api_client) { instance_double(TRMNLP::APIClient) }
   let(:fixtures_root) { File.expand_path('../../../fixtures', __dir__) }
   let(:context) { TRMNLP::Context.new(fixtures_root) }
@@ -26,7 +27,7 @@ RSpec.describe TRMNLP::Commands::Login do
       expect { command.call }.to raise_error(TRMNLP::InvalidApiKey, /cannot be empty/)
     end
 
-    it 'rejects a key that does not start with user_' do
+    it 'rejects a trmnl.com key that is not user_-prefixed' do
       allow(command).to receive(:prompt).and_return('not_a_user_key')
       expect { command.call }.to raise_error(TRMNLP::InvalidApiKey, /Invalid API key/)
     end
@@ -48,35 +49,46 @@ RSpec.describe TRMNLP::Commands::Login do
       expect(app_config).not_to have_received(:save)
     end
 
-    context 'when --server is given' do
-      subject(:command) do
-        described_class.new(
-          context:,
-          options: described_class::Options.new(dir: fixtures_root, quiet: true, server: 'http://localhost')
-        )
+    context 'when already authenticated and re-authentication is declined' do
+      before do
+        allow(app_config).to receive(:logged_in?).and_return(true)
+        allow(app_config).to receive(:api_key).and_return('user_existing_key')
+        allow(command).to receive(:prompt).and_return('n')
       end
 
-      it 'saves base_url to the app config' do
+      it 'aborts without saving' do
+        command.call
+        expect(app_config).not_to have_received(:save)
+      end
+    end
+
+    context 'when --server targets a BYOS host' do
+      let(:server) { 'http://localhost' }
+
+      before do
         allow(command).to receive(:prompt).and_return('3|sanctumtoken')
         allow(api_client).to receive(:get_me).and_return('name' => 'Bluey', 'email' => 'b@example.com')
+      end
 
+      it 'persists the server as the base_uri' do
         command.call
-
         expect(app_config.base_uri.to_s).to eq('http://localhost')
       end
 
-      it 'accepts a Sanctum-format token without raising' do
+      it 'accepts a non-user_ token without raising' do
+        expect { command.call }.not_to raise_error
+      end
+    end
+
+    context 'when --server is scheme-less' do
+      let(:server) { 'localhost:3000' }
+
+      it 'does not crash on the host check' do
         allow(command).to receive(:prompt).and_return('3|sanctumtoken')
         allow(api_client).to receive(:get_me).and_return('name' => 'Bluey', 'email' => 'b@example.com')
 
         expect { command.call }.not_to raise_error
       end
-    end
-
-    it 'still rejects a non-user_ key when targeting trmnl.com (default)' do
-      allow(command).to receive(:prompt).and_return('not_a_user_key')
-
-      expect { command.call }.to raise_error(TRMNLP::InvalidApiKey, /Invalid API key/)
     end
   end
 end
