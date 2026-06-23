@@ -5,7 +5,7 @@ require 'trmnlp/commands/login'
 
 RSpec.describe TRMNLP::Commands::Login do
   subject(:command) do
-    described_class.new(context:, options: described_class::Options.new(dir: fixtures_root, quiet: true))
+    described_class.new(context:, options: described_class::Options.new(dir: fixtures_root, quiet: true, server: nil))
   end
 
   let(:api_client) { instance_double(TRMNLP::APIClient) }
@@ -46,6 +46,39 @@ RSpec.describe TRMNLP::Commands::Login do
 
       expect { command.call }.to raise_error(TRMNLP::AuthenticationFailed, /Authentication failed/)
       expect(app_config).not_to have_received(:save)
+    end
+
+    context 'when --server is given' do
+      subject(:command) do
+        described_class.new(
+          context:,
+          options: described_class::Options.new(dir: fixtures_root, quiet: true, server: 'http://localhost')
+        )
+      end
+
+      it 'saves base_url to the app config' do
+        allow(app_config).to receive(:base_url=)
+        allow(command).to receive(:prompt).and_return('3|sanctumtoken')
+        allow(api_client).to receive(:get_me).and_return('name' => 'Bluey', 'email' => 'b@example.com')
+
+        command.call
+
+        expect(app_config).to have_received(:base_url=).with('http://localhost')
+      end
+
+      it 'accepts a Sanctum-format token without raising' do
+        allow(app_config).to receive(:base_url=)
+        allow(command).to receive(:prompt).and_return('3|sanctumtoken')
+        allow(api_client).to receive(:get_me).and_return('name' => 'Bluey', 'email' => 'b@example.com')
+
+        expect { command.call }.not_to raise_error
+      end
+    end
+
+    it 'still rejects a non-user_ key when targeting trmnl.com (default)' do
+      allow(command).to receive(:prompt).and_return('not_a_user_key')
+
+      expect { command.call }.to raise_error(TRMNLP::InvalidApiKey, /Invalid API key/)
     end
   end
 end

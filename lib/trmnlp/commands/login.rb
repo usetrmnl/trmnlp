@@ -6,9 +6,11 @@ require_relative '../api_client'
 module TRMNLP
   module Commands
     class Login < Base
-      Options = Data.define(:dir, :quiet)
+      Options = Data.define(:dir, :quiet, :server)
 
       def call
+        config.app.base_url = options.server if options.server
+
         if config.app.logged_in?
           anonymous_key = config.app.api_key[0..10] + ('*' * (config.app.api_key.length - 11))
           reporter.info "Currently authenticated as: #{anonymous_key}"
@@ -20,9 +22,9 @@ module TRMNLP
 
         api_key = prompt('API Key: ')
         raise InvalidApiKey, 'API key cannot be empty' if api_key.empty?
-        unless api_key.start_with?('user_')
-          raise InvalidApiKey,
-                'Invalid API key; did you copy it from the right place?'
+
+        if options.server.nil? && config.app.base_uri.host.end_with?('trmnl.com')
+          raise InvalidApiKey, 'Invalid API key; did you copy it from the right place?' unless api_key.start_with?('user_')
         end
 
         config.app.api_key = api_key
