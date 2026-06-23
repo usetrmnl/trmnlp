@@ -57,17 +57,15 @@ RSpec.describe TRMNLP::Commands::Login do
       end
 
       it 'saves base_url to the app config' do
-        allow(app_config).to receive(:base_url=)
         allow(command).to receive(:prompt).and_return('3|sanctumtoken')
         allow(api_client).to receive(:get_me).and_return('name' => 'Bluey', 'email' => 'b@example.com')
 
         command.call
 
-        expect(app_config).to have_received(:base_url=).with('http://localhost')
+        expect(app_config.base_uri.to_s).to eq('http://localhost')
       end
 
       it 'accepts a Sanctum-format token without raising' do
-        allow(app_config).to receive(:base_url=)
         allow(command).to receive(:prompt).and_return('3|sanctumtoken')
         allow(api_client).to receive(:get_me).and_return('name' => 'Bluey', 'email' => 'b@example.com')
 

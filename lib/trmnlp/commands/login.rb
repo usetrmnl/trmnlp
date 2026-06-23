@@ -23,7 +23,7 @@ module TRMNLP
         api_key = prompt('API Key: ')
         raise InvalidApiKey, 'API key cannot be empty' if api_key.empty?
 
-        if options.server.nil? && config.app.base_uri.host.end_with?('trmnl.com')
+        if config.app.base_uri.host.end_with?('trmnl.com')
           raise InvalidApiKey, 'Invalid API key; did you copy it from the right place?' unless api_key.start_with?('user_')
         end
 
