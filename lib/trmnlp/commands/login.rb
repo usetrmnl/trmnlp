@@ -17,7 +17,8 @@ module TRMNLP
         api_key = prompt('API Key: ')
         raise InvalidApiKey, 'API key cannot be empty' if api_key.empty?
 
-        if config.app.base_uri.host.end_with?('trmnl.com') && !api_key.start_with?('user_')
+        # Only trmnl.com issues user_-prefixed keys; BYOS servers use their own token formats (e.g. Sanctum).
+        if config.app.trmnl_host? && !api_key.start_with?('user_')
           raise InvalidApiKey,
                 'Invalid API key; did you copy it from the right place?'
         end

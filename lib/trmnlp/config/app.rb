@@ -36,6 +36,9 @@ module TRMNLP
 
       def base_uri = URI.parse(@config['base_url'] || 'https://trmnl.com')
 
+      # Scheme-less base_urls (e.g. "localhost:3000") parse to a nil host, so guard before matching.
+      def trmnl_host? = !!base_uri.host&.end_with?('trmnl.com')
+
       def api_uri = URI.join(base_uri, '/api')
 
       def account_uri = URI.join(base_uri, '/account')
