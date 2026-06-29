@@ -94,13 +94,28 @@ RSpec.describe TRMNLP::TransformBackend::Subprocess do
 
     it 'reports the interpreter command as failure when it is not on PATH' do
       stub_const("#{described_class}::INTERPRETERS", {
-                   'ghost' => { cmd: 'this-binary-does-not-exist', ext: 'rb', wrapper: :ruby_wrapper }
+                   'ghost' => { cmds: %w[this-binary-does-not-exist], ext: 'rb' }
                  })
 
       result = backend.execute(code: 'noop', language: 'ghost', stdin: '')
 
       expect(result).not_to be_success
       expect(result.error).to match(/interpreter not available/)
+    end
+
+    it 'falls back to the next interpreter candidate when the first is missing (Windows has `python`, not `python3`)' do
+      stub_const("#{described_class}::INTERPRETERS", {
+                   'python' => { cmds: %w[this-binary-does-not-exist python3], ext: 'py' }
+                 })
+
+      result = backend.execute(
+        code: "def run(input):\n    return { 'echoed': input['greeting'] }",
+        language: 'python',
+        stdin: JSON.generate('greeting' => 'hello')
+      )
+
+      expect(result).to be_success
+      expect(JSON.parse(result.output)).to eq('echoed' => 'hello')
     end
   end
 end
