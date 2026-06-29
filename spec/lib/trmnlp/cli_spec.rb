@@ -5,6 +5,32 @@ require 'tmpdir'
 require 'trmnlp/cli'
 
 RSpec.describe TRMNLP::CLI do
+  describe '.default_bind' do
+    before { allow(File).to receive(:exist?).and_return(false) }
+
+    context 'when running inside Docker' do
+      before { allow(File).to receive(:exist?).with('/.dockerenv').and_return(true) }
+
+      it 'binds to all interfaces' do
+        expect(described_class.default_bind).to eq('0.0.0.0')
+      end
+    end
+
+    context 'when running inside Podman' do
+      before { allow(File).to receive(:exist?).with('/run/.containerenv').and_return(true) }
+
+      it 'binds to all interfaces' do
+        expect(described_class.default_bind).to eq('0.0.0.0')
+      end
+    end
+
+    context 'when running outside a container' do
+      it 'binds to localhost' do
+        expect(described_class.default_bind).to eq('127.0.0.1')
+      end
+    end
+  end
+
   describe '#lint' do
     let(:tmp_root) { Dir.mktmpdir('trmnlp-cli-') }
     let(:run_lint) { -> { described_class.start(['lint', '--dir', tmp_root, '--quiet']) } }

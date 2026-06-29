@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 0.8.9
+
+- Fixed `trmnlp serve` binding to localhost under Podman, which left the dev server unreachable through published ports. Container detection only looked for `/.dockerenv`, which Docker writes but Podman does not, so `serve` fell back to `127.0.0.1`. It now also checks for `/run/.containerenv`, which Podman writes, so the automatic `0.0.0.0` bind works for both runtimes. (#112)
+
 ## 0.8.8
 
 - Added a `--server` flag to `trmnlp login` so commands like `trmnlp push` can target a self-hosted (BYOS) server. The chosen URL is saved as `base_url`, and the `user_` API key prefix is only required for trmnl.com; BYOS servers accept their own token formats. A scheme-less `--server` value (such as `localhost:3000`) no longer crashes the host check. (#113)

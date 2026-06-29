@@ -206,7 +206,8 @@ docker run \
     --pull always \
     --publish 4567:4567 \
     --volume "$(pwd):/plugin" \
-    trmnl/trmnlp serve
+    trmnl/trmnlp serve \
+    --bind 0.0.0.0
 ```
 
 `--pull always` checks the registry on every run and pulls a newer image if one exists, so you don't have to remember to `docker pull` after each release.

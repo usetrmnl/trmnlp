@@ -16,7 +16,11 @@ module TRMNLP
 
     def self.exit_on_failure? = true
 
-    def self.default_bind = File.exist?('/.dockerenv') ? '0.0.0.0' : '127.0.0.1'
+    # Docker writes /.dockerenv; Podman writes /run/.containerenv. Either means we're
+    # in a container, where binding to localhost makes the dev server unreachable via
+    # published ports, so we bind to all interfaces instead.
+    def self.in_container? = File.exist?('/.dockerenv') || File.exist?('/run/.containerenv')
+    def self.default_bind = in_container? ? '0.0.0.0' : '127.0.0.1'
 
     desc 'build', 'Generate static HTML files'
     method_option :png, type: :boolean, default: false, desc: 'Also render a PNG per view'

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    trmnl_preview (0.8.8)
+    trmnl_preview (0.8.9)
       activesupport (~> 8.0)
       cgi (~> 0.5)
       faraday (~> 2.1)
