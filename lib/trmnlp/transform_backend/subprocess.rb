@@ -20,7 +20,7 @@ module TRMNLP
       GRACE_PERIOD = 0.1
 
       INTERPRETERS = {
-        'python' => { cmd: 'python3', ext: 'py' },
+        'python' => { cmd: (Gem.win_platform? ? 'python' : 'python3'), ext: 'py' },
         'ruby' => { cmd: 'ruby',    ext: 'rb' },
         'node' => { cmd: 'node',    ext: 'js' },
         'php' => { cmd: 'php', ext: 'php' }
