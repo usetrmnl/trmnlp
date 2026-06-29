@@ -3,7 +3,7 @@
 
 ## 0.8.10
 
-- Fixed Python serverless transforms failing on Windows. The local subprocess backend hardcoded `python3`, which the python.org Windows installer does not put on PATH (it installs `python` and the `py` launcher), so every Python transform raised "interpreter not available". The interpreter is now resolved from a per-language list of command candidates (`python3` then `python`) using a cross-platform PATH lookup, leaving POSIX behavior unchanged. (#116)
+- Fixed Python serverless transforms failing on Windows. The local subprocess backend hardcoded `python3`, which the python.org Windows installer does not put on PATH (it installs `python` and the `py` launcher), so every Python transform raised "interpreter not available". The interpreter is now resolved from a per-language list of command candidates (`python3`, then `python`, then the `py` launcher) using a cross-platform PATH lookup, leaving POSIX behavior unchanged. (#116)
 
 ## 0.8.9
 
