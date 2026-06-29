@@ -94,7 +94,7 @@ RSpec.describe TRMNLP::TransformBackend::Subprocess do
 
     it 'reports the interpreter command as failure when it is not on PATH' do
       stub_const("#{described_class}::INTERPRETERS", {
-                   'ghost' => { cmd: 'this-binary-does-not-exist', ext: 'rb', wrapper: :ruby_wrapper }
+                   'ghost' => { cmds: %w[this-binary-does-not-exist], ext: 'rb' }
                  })
 
       result = backend.execute(code: 'noop', language: 'ghost', stdin: '')

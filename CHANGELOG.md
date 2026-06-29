@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 0.8.10
+
+- Fixed Python serverless transforms failing on Windows. The local subprocess backend hardcoded `python3`, which the python.org Windows installer does not put on PATH (it installs `python` and the `py` launcher), so every Python transform raised "interpreter not available". The interpreter is now resolved from a per-language list of command candidates (`python3`, then `python`, then the `py` launcher) using a cross-platform PATH lookup, leaving POSIX behavior unchanged. (#116)
+
 ## 0.8.9
 
 - Fixed `trmnlp serve` binding to localhost under Podman, which left the dev server unreachable through published ports. Container detection only looked for `/.dockerenv`, which Docker writes but Podman does not, so `serve` fell back to `127.0.0.1`. It now also checks for `/run/.containerenv`, which Podman writes, so the automatic `0.0.0.0` bind works for both runtimes. (#112)

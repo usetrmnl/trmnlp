@@ -4,6 +4,7 @@ require 'open3'
 require 'tmpdir'
 
 require_relative '../transform_client'
+require_relative 'which'
 require_relative 'wrapper'
 
 module TRMNLP
@@ -19,11 +20,16 @@ module TRMNLP
       # Seconds a TERM'd process is given to exit before escalating to KILL.
       GRACE_PERIOD = 0.1
 
+      # Candidate commands per language, highest priority first. Windows is
+      # why a language needs more than one: its python.org installer provides
+      # `python` and the `py` launcher but no `python3`. `py` ranks last yet
+      # is the surest Windows hit — it stays on PATH even when the installer's
+      # optional "Add to PATH" step is skipped.
       INTERPRETERS = {
-        'python' => { cmd: 'python3', ext: 'py' },
-        'ruby' => { cmd: 'ruby',    ext: 'rb' },
-        'node' => { cmd: 'node',    ext: 'js' },
-        'php' => { cmd: 'php', ext: 'php' }
+        'python' => { cmds: %w[python3 python py], ext: 'py' },
+        'ruby' => { cmds: %w[ruby],                ext: 'rb' },
+        'node' => { cmds: %w[node],                ext: 'js' },
+        'php' => { cmds: %w[php],                  ext: 'php' }
       }.freeze
 
       def execute(code:, language:, stdin: '', timeout_seconds: DEFAULT_TIMEOUT)
@@ -40,7 +46,7 @@ module TRMNLP
           output_path = File.join(dir, 'output.json')
           src_path = File.join(dir, "transform.#{spec[:ext]}")
           File.write(src_path, Wrapper.for(language, code, sink_for(language, output_path)))
-          run_process(spec[:cmd], src_path, stdin, timeout_seconds, output_path)
+          run_process(Which.resolve(spec[:cmds]), src_path, stdin, timeout_seconds, output_path)
         end
       rescue Errno::ENOENT, Errno::EACCES => e
         failure("interpreter not available: #{e.message}")
