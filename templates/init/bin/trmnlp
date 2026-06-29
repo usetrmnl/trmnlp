@@ -29,7 +29,8 @@ then
         --publish 4567:4567 \
         --volume "$(pwd):/plugin" \
         --volume "$CONFIG_DIR:/root/.config/trmnlp" \
-        trmnl/trmnlp "$@"
+        trmnl/trmnlp "$@" \
+        --bind 0.0.0.0
     exit
 fi
 
