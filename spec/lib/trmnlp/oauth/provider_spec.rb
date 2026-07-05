@@ -3,42 +3,41 @@
 require 'spec_helper'
 
 RSpec.describe TRMNLP::OAuth::Provider do
-  subject(:provider) { described_class.new(config, env:) }
+  subject(:provider) { described_class.new(settings, env:) }
 
-  let(:config) { {} }
+  let(:settings) { {} }
   let(:env) { {} }
-  let(:full_config) do
+  let(:full_settings) do
     {
-      'authorize_url' => 'https://provider.test/authorize',
-      'token_url' => 'https://provider.test/token',
-      'scopes' => 'read:user user:email',
-      'client_id' => 'client-abc',
-      'pkce' => true
+      'oauth_enabled' => 'true',
+      'oauth_authorize_url' => 'https://provider.test/authorize',
+      'oauth_token_url' => 'https://provider.test/token',
+      'oauth_scopes' => 'read:user user:email',
+      'oauth_pkce_enabled' => 'true'
     }
   end
 
-  describe '#authorize_url, #token_url, #scopes, #client_id' do
-    let(:config) { full_config }
+  describe '#authorize_url, #token_url, #scopes' do
+    let(:settings) { full_settings }
 
-    it 'expose the configured values' do
+    it 'read the flat oauth_* keys from settings.yml' do
       expect(provider).to have_attributes(
         authorize_url: 'https://provider.test/authorize',
         token_url: 'https://provider.test/token',
-        scopes: 'read:user user:email',
-        client_id: 'client-abc'
+        scopes: 'read:user user:email'
       )
     end
   end
 
   describe '#refresh_url' do
-    let(:config) { { 'token_url' => 'https://provider.test/token' } }
+    let(:settings) { { 'oauth_token_url' => 'https://provider.test/token' } }
 
     it 'falls back to the token_url' do
       expect(provider.refresh_url).to eq('https://provider.test/token')
     end
 
     context 'when set explicitly' do
-      let(:config) { super().merge('refresh_url' => 'https://provider.test/refresh') }
+      let(:settings) { super().merge('oauth_refresh_url' => 'https://provider.test/refresh') }
 
       it 'uses the configured refresh_url' do
         expect(provider.refresh_url).to eq('https://provider.test/refresh')
@@ -52,7 +51,7 @@ RSpec.describe TRMNLP::OAuth::Provider do
     end
 
     context 'when configured' do
-      let(:config) { { 'scope_separator' => ',' } }
+      let(:settings) { { 'oauth_scope_separator' => ',' } }
 
       it 'uses the configured separator' do
         expect(provider.scope_separator).to eq(',')
@@ -65,8 +64,16 @@ RSpec.describe TRMNLP::OAuth::Provider do
       expect(provider).not_to be_pkce
     end
 
-    context 'when enabled' do
-      let(:config) { { 'pkce' => true } }
+    context "when enabled with the string 'true'" do
+      let(:settings) { { 'oauth_pkce_enabled' => 'true' } }
+
+      it 'is true' do
+        expect(provider).to be_pkce
+      end
+    end
+
+    context 'when enabled with a boolean' do
+      let(:settings) { { 'oauth_pkce_enabled' => true } }
 
       it 'is true' do
         expect(provider).to be_pkce
@@ -74,11 +81,27 @@ RSpec.describe TRMNLP::OAuth::Provider do
     end
   end
 
-  describe '#client_secret' do
-    let(:config) { { 'client_secret' => 'from-yaml' } }
+  describe '#client_id' do
+    let(:settings) { { 'oauth_client_id' => 'from-settings' } }
 
-    it 'falls back to the yaml value when the env var is absent' do
-      expect(provider.client_secret).to eq('from-yaml')
+    it 'falls back to the settings value when the env var is absent' do
+      expect(provider.client_id).to eq('from-settings')
+    end
+
+    context 'when the env var is set' do
+      let(:env) { { 'TRMNL_OAUTH_CLIENT_ID' => 'from-env' } }
+
+      it 'prefers the env var' do
+        expect(provider.client_id).to eq('from-env')
+      end
+    end
+  end
+
+  describe '#client_secret' do
+    let(:settings) { { 'oauth_client_secret' => 'from-settings' } }
+
+    it 'falls back to the settings value when the env var is absent' do
+      expect(provider.client_secret).to eq('from-settings')
     end
 
     context 'when the env var is set' do
@@ -88,19 +111,13 @@ RSpec.describe TRMNLP::OAuth::Provider do
         expect(provider.client_secret).to eq('from-env')
       end
     end
-
-    context 'when the env var is blank' do
-      let(:env) { { 'TRMNL_OAUTH_CLIENT_SECRET' => '' } }
-
-      it 'falls back to the yaml value' do
-        expect(provider.client_secret).to eq('from-yaml')
-      end
-    end
   end
 
   describe '#configured?' do
+    let(:env) { { 'TRMNL_OAUTH_CLIENT_ID' => 'cid' } }
+
     context 'with a PKCE provider and no secret' do
-      let(:config) { full_config }
+      let(:settings) { full_settings }
 
       it 'is configured' do
         expect(provider).to be_configured
@@ -108,15 +125,16 @@ RSpec.describe TRMNLP::OAuth::Provider do
     end
 
     context 'with a secret and no PKCE' do
-      let(:config) { full_config.merge('pkce' => false, 'client_secret' => 'shh') }
+      let(:settings) { full_settings.merge('oauth_pkce_enabled' => 'false') }
+      let(:env) { super().merge('TRMNL_OAUTH_CLIENT_SECRET' => 'shh') }
 
       it 'is configured' do
         expect(provider).to be_configured
       end
     end
 
-    context 'without PKCE or a secret' do
-      let(:config) { full_config.merge('pkce' => false) }
+    context 'when oauth is disabled' do
+      let(:settings) { full_settings.merge('oauth_enabled' => 'false') }
 
       it 'is not configured' do
         expect(provider).not_to be_configured
@@ -124,14 +142,17 @@ RSpec.describe TRMNLP::OAuth::Provider do
     end
 
     context 'without a client_id' do
-      let(:config) { full_config.except('client_id') }
+      let(:settings) { full_settings }
+      let(:env) { {} }
 
       it 'is not configured' do
         expect(provider).not_to be_configured
       end
     end
 
-    context 'with an empty config' do
+    context 'without PKCE or a secret' do
+      let(:settings) { full_settings.merge('oauth_pkce_enabled' => 'false') }
+
       it 'is not configured' do
         expect(provider).not_to be_configured
       end

@@ -128,7 +128,7 @@ module TRMNLP
     end
 
     get '/oauth/connect' do
-      halt 400, 'OAuth is not configured. Add an `oauth:` block to .trmnlp.yml.' unless @oauth_session.configured?
+      halt 400, 'OAuth is not configured. Add the oauth_* keys to src/settings.yml.' unless @oauth_session.configured?
 
       state = SecureRandom.hex(16)
       if @oauth_session.pkce?

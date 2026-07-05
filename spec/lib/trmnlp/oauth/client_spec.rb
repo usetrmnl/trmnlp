@@ -6,14 +6,15 @@ require 'cgi'
 RSpec.describe TRMNLP::OAuth::Client do
   subject(:client) { described_class.new(provider) }
 
-  let(:provider) { TRMNLP::OAuth::Provider.new(config) }
+  let(:provider) { TRMNLP::OAuth::Provider.new(config, env: {}) }
   let(:config) do
     {
-      'authorize_url' => 'https://provider.test/authorize',
-      'token_url' => 'https://provider.test/token',
-      'scopes' => 'read write',
-      'client_id' => 'cid',
-      'client_secret' => 'secret'
+      'oauth_enabled' => 'true',
+      'oauth_authorize_url' => 'https://provider.test/authorize',
+      'oauth_token_url' => 'https://provider.test/token',
+      'oauth_scopes' => 'read write',
+      'oauth_client_id' => 'cid',
+      'oauth_client_secret' => 'secret'
     }
   end
   let(:redirect_uri) { 'http://localhost:4567/oauth/callback' }
@@ -66,7 +67,7 @@ RSpec.describe TRMNLP::OAuth::Client do
     end
 
     context 'as a public client without a secret' do
-      let(:config) { super().except('client_secret').merge('pkce' => true) }
+      let(:config) { super().except('oauth_client_secret').merge('oauth_pkce_enabled' => 'true') }
 
       it 'sends the client_id in the request body' do
         client.exchange_code(code: 'thecode', redirect_uri:)
@@ -97,7 +98,7 @@ RSpec.describe TRMNLP::OAuth::Client do
     end
 
     context 'with a distinct refresh_url' do
-      let(:config) { super().merge('refresh_url' => 'https://provider.test/refresh') }
+      let(:config) { super().merge('oauth_refresh_url' => 'https://provider.test/refresh') }
 
       before do
         stub_request(:post, 'https://provider.test/refresh').to_return(

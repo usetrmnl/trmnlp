@@ -7,14 +7,15 @@ require 'fileutils'
 RSpec.describe TRMNLP::OAuth::Session do
   subject(:session) { described_class.new(provider:, token_store:, client:) }
 
-  let(:provider) { TRMNLP::OAuth::Provider.new(config) }
+  let(:provider) { TRMNLP::OAuth::Provider.new(config, env: {}) }
   let(:config) do
     {
-      'authorize_url' => 'https://provider.test/authorize',
-      'token_url' => 'https://provider.test/token',
-      'scopes' => 'read',
-      'client_id' => 'cid',
-      'client_secret' => 'secret'
+      'oauth_enabled' => 'true',
+      'oauth_authorize_url' => 'https://provider.test/authorize',
+      'oauth_token_url' => 'https://provider.test/token',
+      'oauth_scopes' => 'read',
+      'oauth_client_id' => 'cid',
+      'oauth_client_secret' => 'secret'
     }
   end
   let(:tmpdir) { Pathname(Dir.mktmpdir) }

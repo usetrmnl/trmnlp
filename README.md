@@ -304,16 +304,6 @@ transform_runtime: enabled
 # Optional explicit language for src/transform.* (otherwise inferred from extension)
 # serverless_language: python
 
-# OAuth2 for a private plugin that fetches data with a user's authorization.
-# Non-secret values live here; the client_secret comes from the
-# TRMNL_OAUTH_CLIENT_SECRET environment variable. See the OAuth2 section below.
-# oauth:
-#   authorize_url: https://github.com/login/oauth/authorize
-#   token_url: https://github.com/login/oauth/access_token
-#   scopes: "read:user user:email"
-#   client_id: "your-oauth-app-client-id"
-#   pkce: true
-
 # override variables
 variables:
   trmnl:
@@ -332,22 +322,22 @@ Some private plugins fetch data from a third-party API that requires the user to
 
 ### 1. Configure the provider
 
-Add an `oauth:` block to `.trmnlp.yml`. These values are not secret, so they are safe to commit:
+Add the flat `oauth_*` keys to `src/settings.yml`. These are the provider definition, and they round-trip through `trmnlp push` and `pull` (the hosted service stores them on the plugin setting):
 
 ```yaml
-oauth:
-  authorize_url: https://github.com/login/oauth/authorize
-  token_url: https://github.com/login/oauth/access_token
-  scopes: "read:user user:email"
-  client_id: "your-oauth-app-client-id"
-  pkce: true            # optional, default false
-  # scope_separator: " "     # optional; some providers use ","
-  # refresh_url: https://...  # optional; defaults to token_url
+oauth_enabled: "true"
+oauth_authorize_url: https://github.com/login/oauth/authorize
+oauth_token_url: https://github.com/login/oauth/access_token
+oauth_scopes: "read:user user:email"
+oauth_pkce_enabled: "true"      # optional, default false
+# oauth_scope_separator: " "      # optional; some providers use ","
+# oauth_refresh_url: https://...  # optional; defaults to oauth_token_url
 ```
 
-The `client_secret` is a secret, so it is never read from the committed `.trmnlp.yml`. Set it in your environment instead:
+Your OAuth app credentials stay local and are never synced, so set them in your environment:
 
 ```sh
+export TRMNL_OAUTH_CLIENT_ID=your-oauth-app-client-id
 export TRMNL_OAUTH_CLIENT_SECRET=your-oauth-app-client-secret
 ```
 

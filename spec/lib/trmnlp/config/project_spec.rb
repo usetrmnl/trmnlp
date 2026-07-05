@@ -31,18 +31,6 @@ RSpec.describe TRMNLP::Config::Project do
     end
   end
 
-  describe '#oauth' do
-    it 'returns the configured oauth block' do
-      project.instance_variable_set(:@config, { 'oauth' => { 'client_id' => 'cid' } })
-      expect(project.oauth).to eq('client_id' => 'cid')
-    end
-
-    it 'defaults to an empty hash' do
-      project.instance_variable_set(:@config, {})
-      expect(project.oauth).to eq({})
-    end
-  end
-
   describe '#with_custom_fields' do
     before { project.instance_variable_set(:@config, { 'custom_fields' => { 'city' => 'Perth' } }) }
 

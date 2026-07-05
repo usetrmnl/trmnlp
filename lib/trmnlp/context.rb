@@ -26,7 +26,7 @@ module TRMNLP
 
     def oauth_session
       @oauth_session ||= begin
-        provider = OAuth::Provider.new(config.project.oauth)
+        provider = OAuth::Provider.new(config.plugin.settings)
         OAuth::Session.new(provider:,
                            token_store: OAuth::TokenStore.new(paths.oauth_tokens),
                            client: OAuth::Client.new(provider))

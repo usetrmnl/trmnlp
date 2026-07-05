@@ -38,8 +38,6 @@ module TRMNLP
 
       def user_data_overrides = @config['variables'] || {}
 
-      def oauth = @config['oauth'] || {}
-
       # extra_variables lets the poller inject live values (e.g.
       # oauth_access_token) into the same custom-field render.
       def with_custom_fields(value, extra_variables: {})
