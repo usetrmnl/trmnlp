@@ -3,6 +3,18 @@
 require 'spec_helper'
 
 RSpec.describe TRMNLP::Context do
+  describe '#oauth_session' do
+    subject(:context) { described_class.new(File.join(__dir__, '../../fixtures')) }
+
+    it 'builds an OAuth session' do
+      expect(context.oauth_session).to be_a(TRMNLP::OAuth::Session)
+    end
+
+    it 'memoizes the session' do
+      expect(context.oauth_session).to be(context.oauth_session)
+    end
+  end
+
   describe '#validate!' do
     context 'when the directory is not a plugin' do
       subject(:context) { described_class.new('/tmp') }

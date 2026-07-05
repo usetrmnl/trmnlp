@@ -38,10 +38,11 @@ module TRMNLP
 
       def user_data_overrides = @config['variables'] || {}
 
-      # for interpolating custom_fields into polling_* options
-      def with_custom_fields(value)
+      # extra_variables lets the poller inject live values (e.g.
+      # oauth_access_token) into the same custom-field render.
+      def with_custom_fields(value, extra_variables: {})
         custom_fields_with_env = custom_fields.transform_values { |v| with_env(v) }
-        parse_liquid(value).render(custom_fields_with_env)
+        parse_liquid(value).render(custom_fields_with_env.merge(extra_variables))
       end
 
       def time_zone = @config['time_zone'] || 'UTC'

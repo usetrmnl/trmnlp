@@ -314,6 +314,63 @@ variables:
 
 ```
 
+## OAuth2
+
+This feature is in beta. Please report incorrect behaviour at https://github.com/usetrmnl/trmnlp/issues.
+
+Some private plugins fetch data from a third-party API that requires the user to authorize access first (the OAuth2 authorization code flow). `trmnlp` can run that flow locally so you can preview the plugin with a real token. It injects the token into your polling request the same way the hosted service does, so a plugin that works locally behaves the same once deployed.
+
+### 1. Configure the provider
+
+Add the flat `oauth_*` keys to `src/settings.yml`. These are the provider definition, and they round-trip through `trmnlp push` and `pull` (the hosted service stores them on the plugin setting):
+
+```yaml
+oauth_enabled: "true"
+oauth_authorize_url: https://github.com/login/oauth/authorize
+oauth_token_url: https://github.com/login/oauth/access_token
+oauth_scopes: "read:user user:email"
+oauth_pkce_enabled: "true"      # optional, default false
+# oauth_scope_separator: " "      # optional; some providers use ","
+# oauth_refresh_url: https://...  # optional; defaults to oauth_token_url
+```
+
+Your OAuth app credentials stay local and are never synced, so set them in your environment:
+
+```sh
+export TRMNL_OAUTH_CLIENT_ID=your-oauth-app-client-id
+export TRMNL_OAUTH_CLIENT_SECRET=your-oauth-app-client-secret
+```
+
+PKCE-only providers do not need a client secret.
+
+### 2. Register the redirect URI
+
+In your OAuth app on the provider's site, register this redirect URI:
+
+```
+http://localhost:4567/oauth/callback
+```
+
+Match the port if you run `trmnlp serve` on a different one.
+
+### 3. Connect
+
+Run `trmnlp serve` and open the preview. When OAuth is configured but not yet connected, a **Connect account** banner appears. Click it to authorize in your browser. `trmnlp` stores the tokens in its cache directory (never in your project) and refreshes them automatically before they expire. Use the **Disconnect** link to reconnect after changing scopes.
+
+### 4. Use the token
+
+Reference the token in your `src/settings.yml` polling configuration with the same variables the hosted service exposes:
+
+- `{{ oauth_access_token }}`
+- `{{ oauth_token_type }}` (defaults to `Bearer`)
+- `{{ oauth_client_id }}`
+
+For example, as a polling header:
+
+```
+Authorization=Bearer {{ oauth_access_token }}
+```
+
 ## Serverless Transforms
 
 `trmnlp` can run a transform script (`python`, `ruby`, `php`, or `node`) against the polled API response before handing data to your Liquid templates — matching the hosted plugin service's behavior.

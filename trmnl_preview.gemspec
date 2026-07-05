@@ -54,6 +54,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'mini_magick', '~> 5.3'
   spec.add_dependency 'selenium-webdriver', '~> 4.44'
 
+  # OAuth2 (local plugin preview auth flow)
+  spec.add_dependency 'oauth2', '~> 2.0'
+
   # Utilities
   spec.add_dependency 'cgi', '~> 0.5'
   spec.add_dependency 'faraday', '~> 2.1'

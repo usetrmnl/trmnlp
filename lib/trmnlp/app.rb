@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'securerandom'
 require 'sinatra'
 require 'sinatra/base'
 
@@ -33,6 +34,10 @@ module TRMNLP
       def h(text)
         Rack::Utils.escape_html(text.to_s)
       end
+
+      # Derived from the live request so it matches at authorize and exchange
+      # time; this is the single URI the developer registers with the provider.
+      def oauth_callback_uri = "#{request.base_url}/oauth/callback"
     end
 
     def initialize(*args)
@@ -44,6 +49,10 @@ module TRMNLP
       @user_data_assembler = @context.user_data_assembler
       @transform_pipeline = @context.transform_pipeline
       @watcher = @context.watcher
+      @oauth_session = @context.oauth_session
+      # Keyed by state. A shared hash (built once) survives Sinatra's
+      # per-request dup, like @live_reload_clients below.
+      @oauth_state = {}
       @screenshot = Screenshot.new(pool: settings.browser_pool)
 
       @poller.poll_data
@@ -116,6 +125,35 @@ module TRMNLP
     get '/poll' do
       @poller.poll_data
       redirect back
+    end
+
+    get '/oauth/connect' do
+      halt 400, 'OAuth is not configured. Add the oauth_* keys to src/settings.yml.' unless @oauth_session.configured?
+
+      state = SecureRandom.hex(16)
+      if @oauth_session.pkce?
+        verifier = OAuth::Pkce.verifier
+        challenge = OAuth::Pkce.challenge(verifier)
+      end
+      @oauth_state[state] = verifier
+      redirect @oauth_session.authorize_url(redirect_uri: oauth_callback_uri, state:, code_challenge: challenge)
+    end
+
+    get '/oauth/callback' do
+      halt 400, "OAuth provider returned an error: #{params[:error]}" if params[:error]
+      halt 400, 'OAuth state mismatch. Restart at /oauth/connect.' unless @oauth_state.key?(params[:state])
+
+      verifier = @oauth_state.delete(params[:state])
+      @oauth_session.complete(code: params[:code], redirect_uri: oauth_callback_uri, code_verifier: verifier)
+      @poller.poll_data
+      redirect '/'
+    rescue StandardError => e
+      halt 502, "OAuth token exchange failed: #{e.message}"
+    end
+
+    get '/oauth/disconnect' do
+      @oauth_session.disconnect
+      redirect '/'
     end
 
     Screen.all.each do |screen|

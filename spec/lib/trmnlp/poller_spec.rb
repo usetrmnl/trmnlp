@@ -3,11 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe TRMNLP::Poller do
-  subject(:poller) { described_class.new(config:, paths:) }
+  subject(:poller) { described_class.new(config:, paths:, oauth_session:) }
 
   let(:root_dir) { File.join(__dir__, '../../fixtures') }
   let(:paths) { TRMNLP::Paths.new(root_dir) }
   let(:config) { TRMNLP::Config.new(paths) }
+  let(:oauth_session) { instance_double(TRMNLP::OAuth::Session, liquid_variables: {}) }
   let(:content_type_cases) do
     [
       { name: 'json',
@@ -131,6 +132,31 @@ RSpec.describe TRMNLP::Poller do
         it 'parses to an empty hash' do
           expect(poller.poll_data).to eq({})
         end
+      end
+    end
+
+    context 'when an oauth session is connected' do
+      before do
+        allow(config.plugin).to receive_messages(
+          polling?: true, polling_verb: 'GET',
+          polling_urls: ['https://example.com/api'], polling_headers: {}
+        )
+        allow(oauth_session).to receive(:liquid_variables).and_return('oauth_access_token' => 'AT')
+        allow(faraday_connection).to receive(:get).and_return(headerless_response)
+      end
+
+      it 'threads the oauth variables into the polling headers render' do
+        poller.poll_data
+
+        expect(config.plugin).to have_received(:polling_headers)
+          .with(extra_variables: { 'oauth_access_token' => 'AT' })
+      end
+
+      it 'threads the oauth variables into the polling urls render' do
+        poller.poll_data
+
+        expect(config.plugin).to have_received(:polling_urls)
+          .with(extra_variables: { 'oauth_access_token' => 'AT' })
       end
     end
 

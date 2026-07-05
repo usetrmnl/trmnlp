@@ -42,6 +42,25 @@ RSpec.describe TRMNLP::Config::Plugin do
     end
   end
 
+  describe 'oauth variable injection' do
+    it 'injects extra variables into polling_headers' do
+      plugin.instance_variable_set(:@config, { 'polling_headers' => 'Authorization=Bearer {{ oauth_access_token }}' })
+      expect(plugin.polling_headers(extra_variables: { 'oauth_access_token' => 'AT' }))
+        .to eq({ 'Authorization' => 'Bearer AT' })
+    end
+
+    it 'injects extra variables into polling_urls' do
+      plugin.instance_variable_set(:@config, { 'polling_url' => 'https://api.test/?t={{ oauth_access_token }}' })
+      expect(plugin.polling_urls(extra_variables: { 'oauth_access_token' => 'AT' }))
+        .to eq(['https://api.test/?t=AT'])
+    end
+
+    it 'injects extra variables into polling_body' do
+      plugin.instance_variable_set(:@config, { 'polling_body' => 'token={{ oauth_access_token }}' })
+      expect(plugin.polling_body(extra_variables: { 'oauth_access_token' => 'AT' })).to eq('token=AT')
+    end
+  end
+
   describe '#framework_version' do
     context 'when settings.yml pins a version' do
       let(:pinned) { TRMNLP::FrameworkVersion.version_numbers.first }

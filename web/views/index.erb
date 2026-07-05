@@ -60,6 +60,12 @@
             </div>
         </menu>
 
+        <% if @oauth_session&.connected? %>
+          <div class="oauth-banner" style="padding: 0.5em 0.75em; margin: 0.5em 0; background: #efe; border: 1px solid #3a3; border-radius: 4px; color: #060;">OAuth account connected (beta). <a href="/oauth/disconnect">Disconnect</a> · <a href="https://github.com/usetrmnl/trmnlp/issues" target="_blank" rel="noopener">Report an issue</a></div>
+        <% elsif @oauth_session&.configured? %>
+          <div class="oauth-banner" style="padding: 0.5em 0.75em; margin: 0.5em 0; background: #eef; border: 1px solid #66c; border-radius: 4px; color: #234;"><a href="/oauth/connect">Connect account</a> to authorize this plugin's OAuth requests. OAuth is in beta. <a href="https://github.com/usetrmnl/trmnlp/issues" target="_blank" rel="noopener">Report an issue</a>.</div>
+        <% end %>
+
         <% if @transform_error %>
           <div class="transform-error" style="padding: 0.5em 0.75em; margin: 0.5em 0; background: #fee; border: 1px solid #c33; border-radius: 4px; color: #900; font-family: monospace; white-space: pre-wrap;">Transform error: <%= h @transform_error %></div>
         <% end %>

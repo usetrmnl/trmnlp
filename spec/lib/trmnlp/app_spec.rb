@@ -95,6 +95,40 @@ RSpec.describe TRMNLP::App do
     end
   end
 
+  describe 'GET /:view oauth banner' do
+    it 'invites connection when configured but not connected' do
+      allow(context.oauth_session).to receive_messages(configured?: true, connected?: false)
+
+      get '/full'
+
+      expect(last_response.body).to include('/oauth/connect')
+    end
+
+    it 'offers disconnect when connected' do
+      allow(context.oauth_session).to receive_messages(configured?: true, connected?: true)
+
+      get '/full'
+
+      expect(last_response.body).to include('/oauth/disconnect')
+    end
+
+    it 'shows no oauth banner when unconfigured' do
+      allow(context.oauth_session).to receive(:configured?).and_return(false)
+
+      get '/full'
+
+      expect(last_response.body).not_to include('/oauth/connect')
+    end
+
+    it 'links to the issue tracker for bug reports' do
+      allow(context.oauth_session).to receive_messages(configured?: true, connected?: false)
+
+      get '/full'
+
+      expect(last_response.body).to include('github.com/usetrmnl/trmnlp/issues')
+    end
+  end
+
   describe 'GET /:view payload-size badge (#67)' do
     it 'marks a payload under 75 KB green' do
       allow(context.user_data_assembler).to receive(:call).and_return({ 'k' => 'small' })
@@ -127,6 +161,99 @@ RSpec.describe TRMNLP::App do
 
       expect(last_response.status).to eq(302)
       expect(context.poller).to have_received(:poll_data).at_least(:once)
+    end
+  end
+
+  describe 'GET /oauth/connect' do
+    context 'when oauth is configured' do
+      before do
+        allow(context.oauth_session).to receive_messages(configured?: true, pkce?: false)
+        allow(context.oauth_session).to receive(:authorize_url)
+          .and_return('https://provider.test/authorize?state=x')
+      end
+
+      it 'redirects to the provider authorize url' do
+        get '/oauth/connect'
+
+        expect(last_response.headers['Location']).to eq('https://provider.test/authorize?state=x')
+      end
+
+      it 'derives the callback redirect_uri from the request' do
+        get '/oauth/connect'
+
+        expect(context.oauth_session).to have_received(:authorize_url)
+          .with(hash_including(redirect_uri: 'http://example.org/oauth/callback'))
+      end
+    end
+
+    context 'with a PKCE provider' do
+      before do
+        allow(context.oauth_session).to receive_messages(configured?: true, pkce?: true)
+        allow(context.oauth_session).to receive(:authorize_url).and_return('https://provider.test/authorize')
+      end
+
+      it 'sends a code challenge' do
+        get '/oauth/connect'
+
+        expect(context.oauth_session).to have_received(:authorize_url)
+          .with(hash_including(code_challenge: an_instance_of(String)))
+      end
+    end
+
+    context 'when oauth is not configured' do
+      before { allow(context.oauth_session).to receive(:configured?).and_return(false) }
+
+      it 'responds 400' do
+        get '/oauth/connect'
+
+        expect(last_response.status).to eq(400)
+      end
+    end
+  end
+
+  describe 'GET /oauth/callback' do
+    before do
+      allow(context.oauth_session).to receive_messages(configured?: true, pkce?: false, complete: nil)
+      allow(context.oauth_session).to receive(:authorize_url) do |state:, **|
+        @state = state
+        'https://provider.test/authorize'
+      end
+    end
+
+    it 'exchanges a valid code and redirects home' do
+      get '/oauth/connect'
+      get "/oauth/callback?code=abc&state=#{@state}"
+
+      expect(last_response.headers['Location']).to eq('http://example.org/')
+    end
+
+    it 'passes the authorization code to the session' do
+      get '/oauth/connect'
+      get "/oauth/callback?code=abc&state=#{@state}"
+
+      expect(context.oauth_session).to have_received(:complete).with(hash_including(code: 'abc'))
+    end
+
+    it 'rejects a mismatched state' do
+      get '/oauth/callback?code=abc&state=forged'
+
+      expect(last_response.status).to eq(400)
+    end
+
+    it 'surfaces a provider error' do
+      get '/oauth/callback?error=access_denied'
+
+      expect(last_response.status).to eq(400)
+    end
+  end
+
+  describe 'GET /oauth/disconnect' do
+    before { allow(context.oauth_session).to receive(:disconnect) }
+
+    it 'clears the connection and redirects home' do
+      get '/oauth/disconnect'
+
+      expect(context.oauth_session).to have_received(:disconnect)
     end
   end
 

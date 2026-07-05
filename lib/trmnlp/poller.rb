@@ -8,9 +8,10 @@ require_relative 'reporter'
 
 module TRMNLP
   class Poller
-    def initialize(config:, paths:, reporter: Reporter.new)
+    def initialize(config:, paths:, oauth_session:, reporter: Reporter.new)
       @config = config
       @paths = paths
+      @oauth_session = oauth_session
       @reporter = reporter
     end
 
@@ -39,25 +40,33 @@ module TRMNLP
 
     private
 
-    attr_reader :config, :paths, :reporter
+    attr_reader :config, :paths, :oauth_session, :reporter
 
     def aggregate_responses
-      responses = config.plugin.polling_urls.map { |url| fetch_one(url) }
+      # Resolve once per poll (it refreshes as a side effect), then share across
+      # every URL, header, and body render.
+      oauth_variables = oauth_session.liquid_variables
+      urls = config.plugin.polling_urls(extra_variables: oauth_variables)
+      responses = urls.map { |url| fetch_one(url, oauth_variables) }
       return responses.first if responses.size == 1
 
       responses.each_with_index.with_object({}) { |(r, i), h| h["IDX_#{i}"] = r }
     end
 
-    def fetch_one(url)
+    def fetch_one(url, oauth_variables)
       verb = config.plugin.polling_verb.upcase
-      response = perform_request(url, verb)
+      response = perform_request(url, verb, oauth_variables)
       reporter.info("#{verb} #{url} — received #{response.body.length} bytes (#{response.status} status)")
       parse_response(response)
     end
 
-    def perform_request(url, verb)
-      conn = Faraday.new(url:, headers: config.plugin.polling_headers)
-      verb == 'POST' ? conn.post { |req| req.body = config.plugin.polling_body } : conn.get
+    def perform_request(url, verb, oauth_variables)
+      conn = Faraday.new(url:, headers: config.plugin.polling_headers(extra_variables: oauth_variables))
+      if verb == 'POST'
+        conn.post { |req| req.body = config.plugin.polling_body(extra_variables: oauth_variables) }
+      else
+        conn.get
+      end
     end
 
     def parse_response(response)
