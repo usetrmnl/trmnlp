@@ -326,6 +326,8 @@ variables:
 
 ## OAuth2
 
+This feature is in beta. Please report incorrect behaviour at https://github.com/usetrmnl/trmnlp/issues.
+
 Some private plugins fetch data from a third-party API that requires the user to authorize access first (the OAuth2 authorization code flow). `trmnlp` can run that flow locally so you can preview the plugin with a real token. It injects the token into your polling request the same way the hosted service does, so a plugin that works locally behaves the same once deployed.
 
 ### 1. Configure the provider

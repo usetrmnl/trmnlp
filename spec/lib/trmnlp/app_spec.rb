@@ -119,6 +119,14 @@ RSpec.describe TRMNLP::App do
 
       expect(last_response.body).not_to include('/oauth/connect')
     end
+
+    it 'links to the issue tracker for bug reports' do
+      allow(context.oauth_session).to receive_messages(configured?: true, connected?: false)
+
+      get '/full'
+
+      expect(last_response.body).to include('github.com/usetrmnl/trmnlp/issues')
+    end
   end
 
   describe 'GET /:view payload-size badge (#67)' do
