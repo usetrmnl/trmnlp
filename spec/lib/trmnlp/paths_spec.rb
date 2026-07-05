@@ -64,6 +64,21 @@ RSpec.describe TRMNLP::Paths do
     end
   end
 
+  describe '#oauth_tokens' do
+    it 'lives under the oauth cache directory' do
+      expect(paths.oauth_tokens.to_s).to start_with(paths.cache_dir.join('oauth').to_s)
+    end
+
+    it 'is a json file' do
+      expect(paths.oauth_tokens.extname).to eq('.json')
+    end
+
+    it 'is keyed per project root' do
+      other = described_class.new(Dir.mktmpdir('trmnlp-other-'))
+      expect(paths.oauth_tokens).not_to eq(other.oauth_tokens)
+    end
+  end
+
   describe '#expand' do
     it 'resolves a relative path against the project root' do
       expect(paths.expand('src').to_s).to eq(File.join(tmp_root, 'src'))

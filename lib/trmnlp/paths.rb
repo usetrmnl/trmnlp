@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'digest'
 require 'xdg'
 
 module TRMNLP
@@ -44,6 +45,10 @@ module TRMNLP
     def app_config = app_config_dir.join('config.yml')
 
     def user_data = cache_dir.join('data.json')
+
+    # OAuth tokens are keyed per project root so working on two OAuth plugins
+    # does not clobber a shared token file.
+    def oauth_tokens = cache_dir.join('oauth', "#{Digest::SHA256.hexdigest(root_dir.to_s)[0, 16]}.json")
 
     def render_template = Pathname.new(__dir__).join('..', '..', 'web', 'views', 'render_html.erb')
 

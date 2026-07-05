@@ -304,6 +304,16 @@ transform_runtime: enabled
 # Optional explicit language for src/transform.* (otherwise inferred from extension)
 # serverless_language: python
 
+# OAuth2 for a private plugin that fetches data with a user's authorization.
+# Non-secret values live here; the client_secret comes from the
+# TRMNL_OAUTH_CLIENT_SECRET environment variable. See the OAuth2 section below.
+# oauth:
+#   authorize_url: https://github.com/login/oauth/authorize
+#   token_url: https://github.com/login/oauth/access_token
+#   scopes: "read:user user:email"
+#   client_id: "your-oauth-app-client-id"
+#   pkce: true
+
 # override variables
 variables:
   trmnl:
@@ -312,6 +322,61 @@ variables:
     plugin_settings:
       instance_name: Kevin Bacon Facts
 
+```
+
+## OAuth2
+
+Some private plugins fetch data from a third-party API that requires the user to authorize access first (the OAuth2 authorization code flow). `trmnlp` can run that flow locally so you can preview the plugin with a real token. It injects the token into your polling request the same way the hosted service does, so a plugin that works locally behaves the same once deployed.
+
+### 1. Configure the provider
+
+Add an `oauth:` block to `.trmnlp.yml`. These values are not secret, so they are safe to commit:
+
+```yaml
+oauth:
+  authorize_url: https://github.com/login/oauth/authorize
+  token_url: https://github.com/login/oauth/access_token
+  scopes: "read:user user:email"
+  client_id: "your-oauth-app-client-id"
+  pkce: true            # optional, default false
+  # scope_separator: " "     # optional; some providers use ","
+  # refresh_url: https://...  # optional; defaults to token_url
+```
+
+The `client_secret` is a secret, so it is never read from the committed `.trmnlp.yml`. Set it in your environment instead:
+
+```sh
+export TRMNL_OAUTH_CLIENT_SECRET=your-oauth-app-client-secret
+```
+
+PKCE-only providers do not need a client secret.
+
+### 2. Register the redirect URI
+
+In your OAuth app on the provider's site, register this redirect URI:
+
+```
+http://localhost:4567/oauth/callback
+```
+
+Match the port if you run `trmnlp serve` on a different one.
+
+### 3. Connect
+
+Run `trmnlp serve` and open the preview. When OAuth is configured but not yet connected, a **Connect account** banner appears. Click it to authorize in your browser. `trmnlp` stores the tokens in its cache directory (never in your project) and refreshes them automatically before they expire. Use the **Disconnect** link to reconnect after changing scopes.
+
+### 4. Use the token
+
+Reference the token in your `src/settings.yml` polling configuration with the same variables the hosted service exposes:
+
+- `{{ oauth_access_token }}`
+- `{{ oauth_token_type }}` (defaults to `Bearer`)
+- `{{ oauth_client_id }}`
+
+For example, as a polling header:
+
+```
+Authorization=Bearer {{ oauth_access_token }}
 ```
 
 ## Serverless Transforms

@@ -13,6 +13,11 @@ end
 
 require File.join(__dir__, '../lib/trmnlp')
 
+require 'webmock/rspec'
+# Block real outbound HTTP in specs, but let rack-test drive the local
+# Sinatra app (OAuth route specs) and any other localhost traffic.
+WebMock.disable_net_connect!(allow_localhost: true)
+
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
   config.color = true

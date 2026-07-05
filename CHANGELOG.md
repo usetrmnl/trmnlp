@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 0.9.0
+
+- Added OAuth2 support for local plugin preview. Configure a provider in the `.trmnlp.yml` `oauth:` block (authorize and token URLs, scopes, `client_id`, optional PKCE), set `TRMNL_OAUTH_CLIENT_SECRET` in your environment, and register `http://localhost:4567/oauth/callback` as the redirect URI in your OAuth app. `trmnlp serve` shows a Connect banner that runs the authorization code flow in the browser, stores the tokens in the cache directory (never in the project), and refreshes them before they expire. The access token is exposed to polling templates as `{{ oauth_access_token }}`, matching the hosted service.
+
 ## 0.8.10
 
 - Fixed Python serverless transforms failing on Windows. The local subprocess backend hardcoded `python3`, which the python.org Windows installer does not put on PATH (it installs `python` and the `py` launcher), so every Python transform raised "interpreter not available". The interpreter is now resolved from a per-language list of command candidates (`python3`, then `python`, then the `py` launcher) using a cross-platform PATH lookup, leaving POSIX behavior unchanged. (#116)

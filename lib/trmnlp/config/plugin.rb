@@ -30,14 +30,14 @@ module TRMNLP
       def webhook? = strategy == 'webhook'
       def static? = strategy == 'static'
 
-      def polling_urls
+      def polling_urls(extra_variables: {})
         # allow project-level config to override
         urls = project_config.user_data_overrides.dig('trmnl', 'plugin_settings',
                                                       'polling_url') || @config['polling_url']
 
         return [] if urls.nil?
 
-        with_custom_fields(urls).strip.split("\n")
+        with_custom_fields(urls, extra_variables:).strip.split("\n")
       end
 
       # for {{ trmnl }}
@@ -45,18 +45,18 @@ module TRMNLP
 
       def polling_verb = @config['polling_verb'] || 'GET'
 
-      def polling_headers
+      def polling_headers(extra_variables: {})
         # NOTE: render Liquid across the full headers string first so {% if %} blocks
         # spanning multiple key=value pairs are preserved. Splitting on
         # '&' or '=' before rendering would shatter tags into multiple values.
-        rendered = with_custom_fields(@config['polling_headers'] || '')
+        rendered = with_custom_fields(@config['polling_headers'] || '', extra_variables:)
         string_to_hash(rendered)
       end
 
       # for {{ trmnl }}
       def polling_headers_encoded = polling_headers.map { |k, v| "#{k}=#{v}" }.join('&')
 
-      def polling_body = with_custom_fields(@config['polling_body'] || '')
+      def polling_body(extra_variables: {}) = with_custom_fields(@config['polling_body'] || '', extra_variables:)
 
       def dark_mode = @config['dark_mode'] || 'no'
 
@@ -107,7 +107,9 @@ module TRMNLP
 
       attr_reader :paths, :project_config
 
-      def with_custom_fields(value) = project_config.with_custom_fields(value)
+      def with_custom_fields(value, extra_variables: {})
+        project_config.with_custom_fields(value, extra_variables:)
+      end
 
       def string_to_hash(str, delimiter: '=')
         str.split('&').map do |k_v|

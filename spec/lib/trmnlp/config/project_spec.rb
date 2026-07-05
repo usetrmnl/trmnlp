@@ -31,6 +31,32 @@ RSpec.describe TRMNLP::Config::Project do
     end
   end
 
+  describe '#oauth' do
+    it 'returns the configured oauth block' do
+      project.instance_variable_set(:@config, { 'oauth' => { 'client_id' => 'cid' } })
+      expect(project.oauth).to eq('client_id' => 'cid')
+    end
+
+    it 'defaults to an empty hash' do
+      project.instance_variable_set(:@config, {})
+      expect(project.oauth).to eq({})
+    end
+  end
+
+  describe '#with_custom_fields' do
+    before { project.instance_variable_set(:@config, { 'custom_fields' => { 'city' => 'Perth' } }) }
+
+    it 'renders custom field values' do
+      expect(project.with_custom_fields('in {{ city }}')).to eq('in Perth')
+    end
+
+    it 'merges extra variables into the render context' do
+      rendered = project.with_custom_fields('Bearer {{ oauth_access_token }}',
+                                            extra_variables: { 'oauth_access_token' => 'AT' })
+      expect(rendered).to eq('Bearer AT')
+    end
+  end
+
   describe '#serverless_daemon_api_key' do
     let(:root_dir) { 'not-a-valid-path' }
 
