@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'tempfile'
 require 'tmpdir'
 require 'trmnlp/commands/push'
 
@@ -16,6 +17,22 @@ RSpec.describe TRMNLP::Commands::Push do
   let(:api_client) { instance_double(TRMNLP::APIClient) }
   let(:archive_response) { { 'data' => { 'settings_yaml' => "---\nname: synced\n" } } }
   let(:zip_path) { described_class::ZIP_PATH }
+
+  # What APIClient#get_plugin_setting_archive returns: a rewound zip Tempfile.
+  def build_server_archive(entries)
+    tempfile = Tempfile.new(['server-archive', '.zip'])
+    buffer = Zip::OutputStream.write_buffer do |zip|
+      entries.each do |name, content|
+        zip.put_next_entry(name)
+        zip.print(content)
+      end
+    end
+    buffer.rewind
+    tempfile.binmode
+    tempfile.write(buffer.read)
+    tempfile.rewind
+    tempfile
+  end
 
   before do
     File.write(File.join(tmp_root, '.trmnlp.yml'), '---')
@@ -86,6 +103,11 @@ RSpec.describe TRMNLP::Commands::Push do
                                                                   force: false, id: '42'))
       end
 
+      before do
+        allow(api_client).to receive(:get_plugin_setting_archive)
+          .and_return(build_server_archive('settings.yml' => "---\nname: remote\n"))
+      end
+
       it 'aborts when the user declines confirmation' do
         allow(command).to receive(:prompt).and_return('n')
 
@@ -126,6 +148,89 @@ RSpec.describe TRMNLP::Commands::Push do
         command.call
 
         expect(captured_zip['transform.py']).to eq('def run(input): return input')
+      end
+    end
+
+    context 'when the server has a transform but the project has no transform file' do
+      subject(:command) do
+        described_class.new(context:,
+                            options: described_class::Options.new(dir: tmp_root, quiet: true,
+                                                                  force: false, id: '42'))
+      end
+
+      let(:captured_zip) { {} }
+      let(:answer) { 'n' }
+      let(:server_entries) { { 'settings.yml' => "---\nname: remote\n", 'transform.js' => 'module.exports = 1' } }
+      let(:server_archive) { build_server_archive(server_entries) }
+
+      before do
+        allow(command).to receive(:prompt).with(/overwritten/).and_return('y')
+        allow(command).to receive(:prompt).with(/Delete it on the server/).and_return(answer)
+        allow(api_client).to receive(:get_plugin_setting_archive).and_return(server_archive)
+        allow(api_client).to receive(:post_plugin_setting_archive) do |_id, path|
+          Zip::File.open(path) do |zip_file|
+            zip_file.each { |entry| captured_zip[entry.name] = entry.get_input_stream.read }
+          end
+          archive_response
+        end
+      end
+
+      context 'when the user confirms removal' do
+        let(:answer) { 'y' }
+
+        it 'pushes settings.yml with the removal request' do
+          command.call
+
+          expect(YAML.safe_load(captured_zip['settings.yml'])).to include('serverless_language' => 'none')
+        end
+      end
+
+      context 'when the user declines removal' do
+        it 'pushes settings.yml untouched' do
+          command.call
+
+          expect(captured_zip['settings.yml']).to eq("---\nname: local\n")
+        end
+      end
+
+      context 'when the project still has a transform file' do
+        before { File.write(File.join(tmp_root, 'src', 'transform.py'), 'code') }
+
+        it 'asks no removal question' do
+          command.call
+
+          expect(api_client).not_to have_received(:get_plugin_setting_archive)
+        end
+      end
+
+      context 'when the server archive has no transform entry' do
+        let(:server_entries) { { 'settings.yml' => "---\nname: remote\n" } }
+
+        it 'asks no removal question' do
+          command.call
+
+          expect(command).not_to have_received(:prompt).with(/Delete it on the server/)
+        end
+      end
+
+      context 'when the server archive cannot be downloaded' do
+        before { allow(api_client).to receive(:get_plugin_setting_archive).and_raise(TRMNLP::Error, 'boom') }
+
+        it 'still pushes' do
+          command.call
+
+          expect(api_client).to have_received(:post_plugin_setting_archive)
+        end
+      end
+    end
+
+    context 'with --force when the server has a transform but the project has no transform file' do
+      before { allow(api_client).to receive(:get_plugin_setting_archive) }
+
+      it 'skips the removal flow entirely' do
+        command.call
+
+        expect(api_client).not_to have_received(:get_plugin_setting_archive)
       end
     end
   end

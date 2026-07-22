@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp push` now offers to delete the server-side transform script when the project has no local `transform.*` file. Previously, deleting the file locally was a silent no-op: the server kept executing its copy and every `trmnlp pull` re-created the file. Answering yes sends `serverless_language: none` in the pushed settings.yml, which the server consumes as an explicit removal request. `--force` pushes skip the question and behave exactly as before; a failed server check never blocks the push.
+
 ## 0.9.0
 
 - Added OAuth2 support for local plugin preview (beta). Configure a provider with the flat `oauth_*` keys in `src/settings.yml` (authorize and token URLs, scopes, optional PKCE), which round-trip through `trmnlp push` and `pull`. Set `TRMNL_OAUTH_CLIENT_ID` and `TRMNL_OAUTH_CLIENT_SECRET` in your environment (credentials stay local and are never synced), and register `http://localhost:4567/oauth/callback` as the redirect URI in your OAuth app. `trmnlp serve` shows a Connect banner that runs the authorization code flow in the browser, stores the tokens in the cache directory (never in the project), and refreshes them before they expire. The access token is exposed to polling templates as `{{ oauth_access_token }}`, matching the hosted service. This is a beta feature; please report incorrect behaviour at https://github.com/usetrmnl/trmnlp/issues.
