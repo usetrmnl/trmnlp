@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- Added support for the `description` plugin setting. `trmnlp init` scaffolds the key in `src/settings.yml`, `trmnlp lint` flags descriptions longer than 35 characters (matching the hosted service's limit), and `trmnlp list` shows a DESCRIPTION column when any plugin has one. The value itself already round-tripped through `trmnlp push` / `pull`, which pass `settings.yml` through untouched. A description is optional — only its length is validated.
 - `trmnlp push` now offers to delete the server-side transform script when the project has no local `transform.*` file. Previously, deleting the file locally was a silent no-op: the server kept executing its copy and every `trmnlp pull` re-created the file. Answering yes sends `serverless_language: none` in the pushed settings.yml, which the server consumes as an explicit removal request. `--force` pushes skip the question and behave exactly as before; a failed server check never blocks the push.
 
 ## 0.9.0
