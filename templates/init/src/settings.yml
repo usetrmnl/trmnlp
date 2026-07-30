@@ -13,4 +13,5 @@ framework_version: latest
 polling_url: ''
 polling_headers: ''
 name: My Plugin
+description: ''
 refresh_interval: 1440
