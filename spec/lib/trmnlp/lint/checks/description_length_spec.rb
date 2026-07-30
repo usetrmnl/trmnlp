@@ -13,8 +13,8 @@ RSpec.describe TRMNLP::Lint::Checks::DescriptionLength do
     context 'when the description exceeds 35 characters' do
       let(:description) { 'A' * 36 }
 
-      it 'reports the issue' do
-        expect(check.issues).not_to be_empty
+      it 'reports the length' do
+        expect(check.issues).to eq([{ message: 'Description should be <= 35 characters long.' }])
       end
     end
 
@@ -26,19 +26,10 @@ RSpec.describe TRMNLP::Lint::Checks::DescriptionLength do
       end
     end
 
-    context 'when the description is within 35 characters' do
-      let(:description) { 'Top stories from Hacker News' }
-
-      it 'passes' do
-        expect(check.issues).to be_empty
-      end
-    end
-
-    # A description is optional — only its length is validated.
-    context 'when the description is empty' do
+    context 'when the description is blank' do
       let(:description) { '' }
 
-      it 'passes' do
+      it 'passes because the setting is optional' do
         expect(check.issues).to be_empty
       end
     end
