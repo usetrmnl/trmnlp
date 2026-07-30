@@ -429,7 +429,7 @@ The `settings.yml` file is part of the plugin definition, and is uploaded and do
 
 `framework_version:` pins the [TRMNL Design System](https://trmnl.com/framework) version this plugin renders against — `latest` (the default) tracks the newest release, or set a specific version for reproducibility. It lives here rather than in `.trmnlp.yml` so the value round-trips with the hosted plugin service.
 
-`description:` is an optional one-line summary of the plugin, shown alongside its name. It is capped at 35 characters — `trmnlp lint` flags anything longer, and `trmnlp list` displays it next to each plugin.
+`description:` is an optional one-line summary of the plugin, up to 35 characters. `trmnlp lint` reports anything longer, and `trmnlp list` shows it next to each plugin name.
 
 See [TRMNL documentation](https://help.trmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0) for details on this file's contents.
 
