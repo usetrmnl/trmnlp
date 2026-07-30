@@ -5,12 +5,9 @@ require_relative '../check'
 module TRMNLP
   module Lint
     module Checks
-      # MAX_LENGTH mirrors Plugin::MAX_DESCRIPTION_LENGTH in the hosted
-      # service. Refresh it by hand when that constant changes, the same
-      # policy db/data/form_fields.yml documents.
-      #
-      # Only the length is checked — a description is optional, so an
-      # absent or empty one passes.
+      # Matches the hosted service's limit. There is no upstream file to sync
+      # from, so update this by hand when that limit changes, the same way
+      # db/data/form_fields.yml is kept current.
       class DescriptionLength < Check
         MAX_LENGTH = 35
         MESSAGE = "Description should be <= #{MAX_LENGTH} characters long.".freeze
