@@ -16,6 +16,7 @@ module TRMNLP
       end
 
       def plugin_name = settings['name'].to_s
+      def plugin_description = settings['description'].to_s
       def settings = config.plugin.settings
       def custom_field_values = config.project.custom_fields
       def custom_field_definitions = config.plugin.custom_field_definitions

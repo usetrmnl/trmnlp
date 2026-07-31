@@ -4,6 +4,7 @@ require_relative 'lint/check'
 require_relative 'lint/source'
 require_relative 'lint/checks/title_casing'
 require_relative 'lint/checks/title_length'
+require_relative 'lint/checks/description_length'
 require_relative 'lint/checks/layouts_have_content'
 require_relative 'lint/checks/no_async_functions'
 require_relative 'lint/checks/waits_for_dom_load'
@@ -23,6 +24,7 @@ module TRMNLP
     CHECKS = [
       Checks::TitleCasing,
       Checks::TitleLength,
+      Checks::DescriptionLength,
       Checks::LayoutsHaveContent,
       Checks::NoAsyncFunctions,
       Checks::WaitsForDomLoad,
