@@ -10,19 +10,23 @@ RuboCop::RakeTask.new
 task default: :spec
 
 namespace :framework do
-  desc 'Sync db/data/framework_versions.yml from a local design-system checkout'
+  desc 'Sync db/data/framework_versions.yml from the published design-system manifest'
   task :sync, [:source_repo] do |_t, args|
+    require 'open-uri'
+    require_relative 'lib/trmnlp/framework_version'
+
     source_repo = args[:source_repo] || ENV.fetch('FRAMEWORK_SOURCE_REPO', nil)
-    if source_repo.nil?
-      abort 'Provide the source checkout: rake framework:sync[/path/to/repo] (or FRAMEWORK_SOURCE_REPO=...)'
+
+    if source_repo
+      source = File.expand_path(File.join(source_repo, 'db', 'data', 'framework_versions.yml'))
+      abort "Source file not found: #{source}" unless File.exist?(source)
+      contents = File.read(source)
+    else
+      source = TRMNLP::FrameworkVersion::MANIFEST_URL
+      contents = URI.parse(source).read
     end
 
-    source = File.expand_path(File.join(source_repo, 'db', 'data', 'framework_versions.yml'))
-
-    abort "Source file not found: #{source}" unless File.exist?(source)
-
     destination = File.expand_path('db/data/framework_versions.yml', __dir__)
-    contents = File.read(source)
     header = <<~HEADER
       # Mirrored from the TRMNL design-system source.
       # Refresh with `rake framework:sync` — do not edit manually.

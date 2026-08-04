@@ -33,6 +33,13 @@ RSpec.configure do |config|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end
 
+  # Serves the bundled copy of the framework manifest, so specs assert
+  # against a fixed version list instead of whatever is published today.
+  config.before do
+    stub_request(:get, TRMNLP::FrameworkVersion::MANIFEST_URL)
+      .to_return(body: File.read(TRMNLP::FrameworkVersion::DATA_PATH))
+  end
+
   config.mock_with :rspec do |mocks|
     mocks.verify_doubled_constant_names = true
     mocks.verify_partial_doubles = true

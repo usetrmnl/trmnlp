@@ -1,6 +1,11 @@
 
 # Changelog
 
+## Unreleased
+
+- `framework_version:` now resolves against the release manifest published by the design system, not only the version list shipped inside the gem, so a framework version released after your trmnlp install can be pinned without upgrading. The manifest is read once per run with a 2 second timeout. If the request fails, or the response is not a version list, the copy bundled in the gem is used and rendering continues. That bundled copy is refreshed here too: `latest` moves from 3.1.1 to 3.2.0.
+- `rake framework:sync` reads the published manifest by default. Pass a local design-system checkout (`rake framework:sync[/path/to/repo]`) for the previous behaviour.
+
 ## 0.10.0
 
 - Added support for the `description` plugin setting, an optional one-line summary of the plugin. `trmnlp init` scaffolds the key in `src/settings.yml`, `trmnlp lint` reports descriptions longer than 35 characters (the hosted service's limit), and `trmnlp list` shows a DESCRIPTION column when any plugin has one. Only the length is checked. Storing the value needs the matching hosted service release; until then `trmnlp push` drops it, because it rewrites the local `settings.yml` from the server's response.
