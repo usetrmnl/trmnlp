@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'date'
 require 'faraday'
 require 'yaml'
 
@@ -29,7 +30,9 @@ module TRMNLP
       end
       return unless response.success?
 
-      manifest = YAML.safe_load(response.body)
+      # Release dates are quoted today, but the manifest is generated
+      # upstream and an unquoted date would otherwise be rejected here.
+      manifest = YAML.safe_load(response.body, permitted_classes: [Date])
       manifest if manifest.is_a?(Hash) && manifest.key?('latest') && manifest.key?('versions')
     rescue StandardError
       nil
