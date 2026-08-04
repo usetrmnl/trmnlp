@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'faraday'
 require 'yaml'
 
 module TRMNLP
@@ -11,10 +12,29 @@ module TRMNLP
 
     DEFAULT_ASSET_HOST = 'https://trmnl.com'
     DATA_PATH = File.expand_path('../../db/data/framework_versions.yml', __dir__)
+    # DATA_PATH holds a copy of this file, refreshed by `rake framework:sync`.
+    MANIFEST_URL = 'https://raw.githubusercontent.com/usetrmnl/trmnl-framework/main/db/data/framework_versions.yml'
+    MANIFEST_TIMEOUT = 2
 
     attr_reader :number
 
-    def self.config = @config ||= YAML.load_file(DATA_PATH).freeze
+    def self.config = @config ||= (remote_config || YAML.load_file(DATA_PATH)).freeze
+
+    # Answers nil on any failure, so rendering never depends on the network.
+    # The shape check rejects error pages, which are also valid YAML.
+    def self.remote_config
+      response = Faraday.get(MANIFEST_URL) do |request|
+        request.options.open_timeout = MANIFEST_TIMEOUT
+        request.options.timeout = MANIFEST_TIMEOUT
+      end
+      return unless response.success?
+
+      manifest = YAML.safe_load(response.body)
+      manifest if manifest.is_a?(Hash) && manifest.key?('latest') && manifest.key?('versions')
+    rescue StandardError
+      nil
+    end
+    private_class_method :remote_config
 
     def self.version_numbers = config.fetch('versions').map { |v| v['number'] }.freeze
 
