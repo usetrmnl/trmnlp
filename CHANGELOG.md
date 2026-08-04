@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.11.0
 
 - `framework_version:` now resolves against the release manifest published by the design system, not only the version list shipped inside the gem, so a framework version released after your trmnlp install can be pinned without upgrading. The manifest is read once per run with a 2 second timeout. If the request fails, or the response is not a version list, the copy bundled in the gem is used and rendering continues. That bundled copy is refreshed here too: `latest` moves from 3.1.1 to 3.2.0.
 - `rake framework:sync` reads the published manifest by default. Pass a local design-system checkout (`rake framework:sync[/path/to/repo]`) for the previous behaviour.
