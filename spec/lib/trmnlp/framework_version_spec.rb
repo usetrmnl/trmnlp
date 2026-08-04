@@ -24,6 +24,13 @@ RSpec.describe TRMNLP::FrameworkVersion do
       expect(described_class.config).to eq(published)
     end
 
+    it 'answers a manifest with unquoted release dates' do
+      body = "latest: 99.1.0\nversions:\n- number: 99.1.0\n  released_at: 2026-08-03\n"
+      stub_request(:get, described_class::MANIFEST_URL).to_return(body:)
+
+      expect(described_class.version_numbers).to eq(['99.1.0'])
+    end
+
     it 'answers the bundled copy when the manifest is unreachable' do
       stub_request(:get, described_class::MANIFEST_URL).to_timeout
 
