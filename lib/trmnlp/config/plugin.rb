@@ -85,8 +85,9 @@ module TRMNLP
       # Lives on the plugin (settings.yml), like serverless_language,
       # because production stores it on the plugin_setting record — so it
       # round-trips through `trmnlp push` / `pull`. Accepts 'latest'
-      # (default), a pinned version, or nil (treated as latest). See
-      # db/data/framework_versions.yml for the supported set.
+      # (default), any well-formed version number, or nil (treated as
+      # latest) — see FrameworkVersion for why a release the bundled
+      # db/data/framework_versions.yml has not heard of is still allowed.
       def framework_version
         FrameworkVersion.new(@config['framework_version'], asset_host: project_config.asset_host)
       rescue ArgumentError => e
