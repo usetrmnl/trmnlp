@@ -94,10 +94,27 @@ RSpec.describe TRMNLP::FrameworkVersion do
       expect(described_class.new(nil).number).to eq(bundled.fetch('latest'))
     end
 
-    it 'raises an argument error when given an unknown version' do
-      expectation = proc { described_class.new('99.99.99') }
+    # A manifest older than the release being pinned must not break rendering:
+    # the bundled copy ages with the gem and stands in whenever the published
+    # one is unreachable.
+    it 'accepts a well-formed version the manifest has not heard of' do
+      expect(described_class.new('99.99.99').number).to eq('99.99.99')
+    end
 
-      expect(&expectation).to raise_error(ArgumentError, /unknown framework version/)
+    it 'raises an argument error when given a malformed version' do
+      expectation = proc { described_class.new('../../etc') }
+
+      expect(&expectation).to raise_error(ArgumentError, /invalid framework version/)
+    end
+  end
+
+  describe '#known?' do
+    it 'answers true for a version in the manifest' do
+      expect(framework).to be_known
+    end
+
+    it 'answers false for a version the manifest has not heard of' do
+      expect(described_class.new('99.99.99')).not_to be_known
     end
   end
 

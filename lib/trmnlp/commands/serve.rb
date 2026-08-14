@@ -13,6 +13,7 @@ module TRMNLP
       def call
         context.validate!
         report_form_field_warnings
+        report_framework_version_warning
 
         # Must come AFTER parsing options
         require_relative '../app'

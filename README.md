@@ -427,7 +427,7 @@ A complete worked example lives at [`examples/hn-stories/`](examples/hn-stories/
 
 The `settings.yml` file is part of the plugin definition, and is uploaded and downloaded by `trmnlp push` / `pull`.
 
-`framework_version:` pins the [TRMNL Design System](https://trmnl.com/framework) version this plugin renders against — `latest` (the default) tracks the newest release, or set a specific version for reproducibility. It lives here rather than in `.trmnlp.yml` so the value round-trips with the hosted plugin service. The list of pinnable versions is read from the [design system's published manifest](https://github.com/usetrmnl/trmnl-framework) once per run, so a newly released version can be pinned without upgrading trmnlp. If that request fails, the copy bundled in the gem is used.
+`framework_version:` pins the [TRMNL Design System](https://trmnl.com/framework) version this plugin renders against — `latest` (the default) tracks the newest release, or set a specific version for reproducibility. It lives here rather than in `.trmnlp.yml` so the value round-trips with the hosted plugin service. The list of known versions is read from the [design system's published manifest](https://github.com/usetrmnl/trmnl-framework) once per run; if that request fails, the copy bundled in the gem is used. Because either list can lag a release, any well-formed version number is accepted — a version the manifest has not heard of still renders against that version's assets rather than failing — `trmnlp serve` and `build` note it with a warning, in case it was a typo.
 
 `description:` is an optional one-line summary of the plugin, up to 35 characters. `trmnlp lint` reports anything longer, and `trmnlp list` shows it next to each plugin name.
 

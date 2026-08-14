@@ -51,21 +51,26 @@ module TRMNLP
         newest_first.map { |number| { "v#{number}" => number } }
     end
 
+    # A release the manifest has not heard of is still served by the CDN, and
+    # the manifest in hand may simply be stale — the bundled copy ages with
+    # the gem, and it is what we fall back to whenever the published one is
+    # unreachable. So any well-formed number is accepted and only nonsense is
+    # rejected; #known? reports whether the manifest lists it.
     def initialize(number, asset_host: DEFAULT_ASSET_HOST)
       @asset_host = asset_host
 
       if number.nil? || number == 'latest'
         @number = self.class.config.fetch('latest')
         @pinned = false
-      elsif self.class.version_numbers.include?(number)
-        @number = number
-        @pinned = true
       else
-        raise ArgumentError, "unknown framework version: #{number}"
+        @number = validated(number)
+        @pinned = true
       end
     end
 
     def pinned? = @pinned
+
+    def known? = self.class.version_numbers.include?(number)
 
     # Both a pinned and an unpinned ("latest") version resolve to a
     # concrete release here — #number is never the literal "latest" — so a
@@ -86,5 +91,18 @@ module TRMNLP
     def as_json(*) = number
 
     def to_s = number
+
+    private
+
+    # Gem::Version is deliberately the only gate: it accepts every number the
+    # framework has shipped, and rejects the path traversal or stray markup an
+    # unvalidated value would otherwise splice into the asset URLs.
+    # Answers a String so an unquoted `framework_version: 3.1` in settings.yml
+    # — which YAML hands over as a Float — still compares against the manifest.
+    def validated(number)
+      Gem::Version.correct?(number) or raise ArgumentError, "invalid framework version: #{number}"
+
+      number.to_s
+    end
   end
 end

@@ -54,6 +54,15 @@ module TRMNLP
         end
       end
 
+      def report_framework_version_warning
+        framework = config.plugin.framework_version
+        return if framework.known?
+
+        warning = "warning: settings.yml framework_version #{framework} — not in the design " \
+                  "system's published version list; its assets may not exist"
+        reporter.info(reporter.yellow(warning))
+      end
+
       def prompt(message)
         print message
         $stdin.gets.chomp

@@ -24,6 +24,12 @@ RSpec.describe TRMNLP::Commands::Build do
 
   after { FileUtils.rm_rf(tmp_root) }
 
+  def write_settings(settings)
+    FileUtils.mkdir_p(File.join(tmp_root, 'src'))
+    File.write(File.join(tmp_root, 'src', 'settings.yml'), settings.to_yaml)
+    context.config.plugin.reload!
+  end
+
   describe '#call' do
     it 'creates the build dir' do
       command.call
@@ -45,16 +51,27 @@ RSpec.describe TRMNLP::Commands::Build do
     end
 
     it 'warns about malformed custom fields declared in settings.yml' do
-      FileUtils.mkdir_p(File.join(tmp_root, 'src'))
-      File.write(
-        File.join(tmp_root, 'src', 'settings.yml'),
-        { 'custom_fields' => [{ 'keyname' => 'broken' }] }.to_yaml
-      )
-      context.config.plugin.reload!
+      write_settings('custom_fields' => [{ 'keyname' => 'broken' }])
 
       command.call
 
       expect(reporter.messages).to include(a_string_matching(/custom_fields/))
+    end
+
+    it 'warns when settings.yml pins a framework version the manifest has not heard of' do
+      write_settings('framework_version' => '99.99.99')
+
+      command.call
+
+      expect(reporter.messages).to include(a_string_matching(/framework_version 99\.99\.99/))
+    end
+
+    it 'stays quiet about a framework version the manifest lists' do
+      write_settings('framework_version' => TRMNLP::FrameworkVersion.version_numbers.last)
+
+      command.call
+
+      expect(reporter.messages).not_to include(a_string_matching(/framework_version/))
     end
 
     it 'raises when the project is not a trmnlp directory' do

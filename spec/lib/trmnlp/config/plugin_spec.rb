@@ -79,11 +79,19 @@ RSpec.describe TRMNLP::Config::Plugin do
       end
     end
 
-    context 'when settings.yml names an unknown version' do
+    context 'when settings.yml names a version newer than the manifest' do
       before { plugin.instance_variable_set(:@config, { 'framework_version' => '9.9.9' }) }
 
+      it 'resolves it rather than failing on a stale manifest' do
+        expect(plugin.framework_version.number).to eq('9.9.9')
+      end
+    end
+
+    context 'when settings.yml names a malformed version' do
+      before { plugin.instance_variable_set(:@config, { 'framework_version' => 'v3-beta!' }) }
+
       it 'raises a typed InvalidConfig error' do
-        expect { plugin.framework_version }.to raise_error(TRMNLP::InvalidConfig, /9\.9\.9/)
+        expect { plugin.framework_version }.to raise_error(TRMNLP::InvalidConfig, /v3-beta!/)
       end
     end
   end
