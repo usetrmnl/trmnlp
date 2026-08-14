@@ -1,4 +1,4 @@
-ARG RUBY_VERSION=4.0.4
+ARG RUBY_VERSION=4.0.6
 # ----- BUILD -----
 
 # Pin the Debian suite explicitly (trixie) rather than letting `-slim` float
