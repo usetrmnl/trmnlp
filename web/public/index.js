@@ -289,5 +289,5 @@ document.addEventListener("DOMContentLoaded", async function () {
   trmnlp.picker = await TRMNLPicker.create('picker-form', { localStorageKey: 'trmnlp-picker' });
 
   // Initialize custom fields editor
-  trmnlp.initCustomFieldsEditor();
+  await trmnlp.initCustomFieldsEditor();
 });

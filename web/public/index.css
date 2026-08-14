@@ -128,9 +128,9 @@ pre > code {
   padding: 0.75em 1em;
   cursor: pointer;
   font-weight: bold;
-  border-bottom: 1px solid var(--border-color);
 }
 
+/* Border only when expanded, so a collapsed editor has no doubled edge. */
 .custom-fields-editor[open] summary {
   border-bottom: 1px solid var(--border-color);
 }
