@@ -196,6 +196,17 @@ pre > code {
   justify-content: flex-end;
 }
 
+/* Matches the transform-error banner styling used above the preview. */
+.custom-fields-error {
+  margin: 0 1em 1em;
+  padding: 0.5em 0.75em;
+  background: #fee;
+  border: 1px solid #c33;
+  border-radius: 4px;
+  color: #900;
+  white-space: pre-wrap;
+}
+
 .btn-primary {
   background: #3b82f6;
   color: white;

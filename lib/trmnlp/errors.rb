@@ -11,5 +11,6 @@ module TRMNLP
   class InvalidApiKey       < Error; end
   class AuthenticationFailed < Error; end
   class InvalidConfig       < Error; end
+  class InvalidCustomFields < Error; end
   class RenderError         < Error; end
 end

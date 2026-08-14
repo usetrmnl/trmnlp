@@ -6,6 +6,7 @@ require 'sinatra/base'
 require 'yaml'
 
 require_relative 'context'
+require_relative 'errors'
 require_relative 'screen_generator'
 require_relative 'screenshot'
 
@@ -148,8 +149,7 @@ module TRMNLP
     post '/api/config' do
       content_type :json
 
-      body = JSON.parse(request.body.read)
-      custom_fields = body['custom_fields'] || {}
+      custom_fields = validate_custom_fields!(request.body.read)
 
       config_path = @context.paths.trmnlp_config
       config = read_project_config(config_path)
@@ -161,6 +161,9 @@ module TRMNLP
       @poller.poll_data
 
       { success: true, custom_fields: @context.config.project.custom_fields }.to_json
+    rescue InvalidCustomFields => e
+      status 400
+      { error: e.message }.to_json
     rescue StandardError => e
       status 500
       { error: e.message }.to_json
@@ -227,6 +230,32 @@ module TRMNLP
     end
 
     private
+
+    # Validates the incoming custom-fields payload, raising InvalidCustomFields
+    # (reported to the user as a 400) on bad input. JSON.parse only yields
+    # strings, numbers, booleans, nil, arrays, and hashes — all of which
+    # Config::Project#custom_fields can stringify — so the meaningful checks
+    # are the payload shape and the field names.
+    def validate_custom_fields!(body)
+      custom_fields = parse_json_object(body).fetch('custom_fields', {})
+
+      unless custom_fields.is_a?(Hash)
+        raise InvalidCustomFields, 'custom_fields must be a JSON object of field name/value pairs'
+      end
+
+      raise InvalidCustomFields, 'custom field names cannot be blank' if custom_fields.keys.any? { |k| k.strip.empty? }
+
+      custom_fields
+    end
+
+    def parse_json_object(body)
+      json = JSON.parse(body)
+      raise InvalidCustomFields, 'request body must be a JSON object' unless json.is_a?(Hash)
+
+      json
+    rescue JSON::ParserError => e
+      raise InvalidCustomFields, "request body is not valid JSON: #{e.message}"
+    end
 
     # Mirrors Config::Project#reload! so a round-trip through the editor
     # preserves whatever else lives in .trmnlp.yml.

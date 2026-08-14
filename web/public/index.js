@@ -64,7 +64,17 @@ trmnlp.loadCustomFields = async function () {
   const container = document.getElementById('custom-fields-container');
   container.innerHTML = ''; // Clear existing fields
 
-  const config = await fetch('/api/config').then(r => r.json());
+  let config;
+  try {
+    const response = await fetch('/api/config');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    config = await response.json();
+  } catch (err) {
+    trmnlp.showCustomFieldsError(`Failed to load custom fields: ${err.message}`);
+    return;
+  }
+
+  trmnlp.clearCustomFieldsError();
   const customFields = config.custom_fields || {};
   const pluginFields = config.plugin_fields || [];
 
@@ -108,19 +118,8 @@ trmnlp.initCustomFieldsEditor = async function () {
 
   // Save button
   saveBtn.addEventListener('click', async () => {
-    const rows = container.querySelectorAll('.custom-field-row');
-    const newCustomFields = {};
-
-    rows.forEach(row => {
-      const key = row.querySelector('input[name="key"]').value.trim();
-      // Value can be either input or select
-      const valueInput = row.querySelector('input[name="value"]');
-      const valueSelect = row.querySelector('select[name="value"]');
-      const value = valueInput ? valueInput.value : (valueSelect ? valueSelect.value : '');
-      if (key) {
-        newCustomFields[key] = value;
-      }
-    });
+    const fields = trmnlp.collectCustomFields(container);
+    if (!fields) return; // validation error already shown
 
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving...';
@@ -129,25 +128,78 @@ trmnlp.initCustomFieldsEditor = async function () {
       const response = await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ custom_fields: newCustomFields })
+        body: JSON.stringify({ custom_fields: fields })
       });
 
-      const result = await response.json();
+      let result = {};
+      try {
+        result = await response.json();
+      } catch {
+        // non-JSON response body; fall through to the status check
+      }
 
-      if (result.error) {
-        alert('Error saving: ' + result.error);
+      if (!response.ok || result.error) {
+        trmnlp.showCustomFieldsError(`Error saving: ${result.error || `HTTP ${response.status}`}`);
       } else {
+        trmnlp.clearCustomFieldsError();
         // Refresh the preview and user data display
         trmnlp.fetchPreview();
         trmnlp.refreshUserData(trmnlp.picker?.state);
       }
     } catch (err) {
-      alert('Error saving: ' + err.message);
+      trmnlp.showCustomFieldsError(`Error saving: ${err.message}`);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save & Reload';
     }
-
-    saveBtn.disabled = false;
-    saveBtn.textContent = 'Save & Reload';
   });
+};
+
+// Gathers field rows into an object, validating before anything is sent to
+// the server. Returns null (with the error banner shown) on invalid input.
+trmnlp.collectCustomFields = function (container) {
+  const rows = container.querySelectorAll('.custom-field-row');
+  // Null prototype so field names like "constructor" behave as plain keys.
+  const fields = Object.create(null);
+  const problems = [];
+
+  rows.forEach((row, index) => {
+    const key = row.querySelector('input[name="key"]').value.trim();
+    // Value can be either input or select
+    const valueInput = row.querySelector('input[name="value"]');
+    const valueSelect = row.querySelector('select[name="value"]');
+    const value = valueInput ? valueInput.value : (valueSelect ? valueSelect.value : '');
+
+    if (!key) {
+      if (value.trim()) problems.push(`row ${index + 1} has a value but no field name`);
+      return;
+    }
+    if (key in fields) {
+      problems.push(`duplicate field name "${key}"`);
+      return;
+    }
+    fields[key] = value;
+  });
+
+  if (problems.length > 0) {
+    trmnlp.showCustomFieldsError(`Not saved: ${problems.join('; ')}`);
+    return null;
+  }
+
+  trmnlp.clearCustomFieldsError();
+  return fields;
+};
+
+trmnlp.showCustomFieldsError = function (message) {
+  const banner = document.getElementById('custom-fields-error');
+  banner.textContent = message;
+  banner.hidden = false;
+};
+
+trmnlp.clearCustomFieldsError = function () {
+  const banner = document.getElementById('custom-fields-error');
+  banner.textContent = '';
+  banner.hidden = true;
 };
 
 trmnlp.addFieldRow = function (container, key, value) {
