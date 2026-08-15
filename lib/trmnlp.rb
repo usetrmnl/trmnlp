@@ -2,13 +2,12 @@
 
 module TRMNLP; end
 require 'oj'
-Oj.mimic_JSON()
-require_relative "trmnlp/config"
-require_relative "trmnlp/context"
-require_relative "trmnlp/version"
-
-module TRMNLP
-  VIEWS = %w{full half_horizontal half_vertical quadrant}
-
-  class Error < StandardError; end
-end
+require 'trmnl/liquid'
+Oj.mimic_JSON
+TRMNL::Liquid::RailsHelpers = Module.new unless defined?(TRMNL::Liquid::RailsHelpers)
+require_relative 'trmnlp/errors'
+require_relative 'trmnlp/oauth'
+require_relative 'trmnlp/config'
+require_relative 'trmnlp/context'
+require_relative 'trmnlp/screen'
+require_relative 'trmnlp/version'

@@ -1,0 +1,14 @@
+---
+watch:
+  - .trmnlp.yml
+  - src
+
+custom_fields: {}
+
+framework_version: latest
+
+# Enable serverless transforms. trmnlp runs them in-process via the
+# bundled python/node/php/ruby interpreters by default. Set
+# serverless_daemon_url to point at a remote transform daemon for
+# production-fidelity testing.
+transform_runtime: enabled

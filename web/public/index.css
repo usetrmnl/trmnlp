@@ -104,6 +104,17 @@ pre > code {
   }
 }
 
+.payload-size {
+  font-size: 0.85em;
+  opacity: 0.6;
+  margin: 0.5em 0 0.2em;
+}
+
+/* A coloured badge is a warning — full opacity so the colour reads true. */
+.payload-size--ok { color: #1a7f37; opacity: 1; }
+.payload-size--warn { color: #bf8700; opacity: 1; }
+.payload-size--over { color: #d1242f; opacity: 1; }
+
 /* Custom Fields Editor */
 .custom-fields-editor {
   margin: 1em 0;
@@ -117,9 +128,9 @@ pre > code {
   padding: 0.75em 1em;
   cursor: pointer;
   font-weight: bold;
-  border-bottom: 1px solid var(--border-color);
 }
 
+/* Border only when expanded, so a collapsed editor has no doubled edge. */
 .custom-fields-editor[open] summary {
   border-bottom: 1px solid var(--border-color);
 }
@@ -183,6 +194,17 @@ pre > code {
   display: flex;
   gap: 0.5em;
   justify-content: flex-end;
+}
+
+/* Matches the transform-error banner styling used above the preview. */
+.custom-fields-error {
+  margin: 0 1em 1em;
+  padding: 0.5em 0.75em;
+  background: #fee;
+  border: 1px solid #c33;
+  border-radius: 4px;
+  color: #900;
+  white-space: pre-wrap;
 }
 
 .btn-primary {

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'config/app'
 require_relative 'config/plugin'
 require_relative 'config/project'

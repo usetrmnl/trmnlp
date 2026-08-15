@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" href="https://trmnl.com/css/latest/plugins.css" />
-    <script src="https://trmnl.com/js/latest/plugins.js"></script>
+    <link rel="stylesheet" href="<%= @framework.css_url %>" />
+    <script src="<%= @framework.js_url %>"></script>
+    <meta name="trmnl-framework-version" content="<%= @framework.number %>" />
+    <meta name="trmnl-framework-pinned" content="<%= @framework.pinned? %>" />
 
     <!-- Begin Inter font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

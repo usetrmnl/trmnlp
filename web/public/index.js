@@ -1,14 +1,15 @@
 const trmnlp = {};
 
 trmnlp.connectLiveRender = function () {
-  const ws = new WebSocket("/live_reload");
+  // EventSource reconnects automatically, so no manual retry loop is needed.
+  const source = new EventSource("/live_reload");
 
-  ws.onopen = function () {
-    console.log("Connected to live reload socket");
+  source.onopen = function () {
+    console.log("Connected to live reload stream");
   };
 
-  ws.onmessage = function (msg) {
-    const payload = JSON.parse(msg.data);
+  source.onmessage = function (event) {
+    const payload = JSON.parse(event.data);
 
     if (payload.type === "reload") {
       trmnlp.fetchPreview();
@@ -16,43 +17,64 @@ trmnlp.connectLiveRender = function () {
       hljs.highlightAll();
     }
   };
-
-  ws.onclose = function () {
-    console.log("Reconnecting to live reload socket...");
-    setTimeout(trmnlp.connectLiveRender, 1000);
-  };
 };
 
 
 trmnlp.fetchPreview = function (pickerState) {
-  const screenClasses = (pickerState?.screenClasses || trmnlp.picker.state.screenClasses).join(" ");
+  const state = pickerState || trmnlp.picker?.state;
+  const screenClasses = (state?.screenClasses || []).join(" ");
   const encodedScreenClasses = encodeURIComponent(screenClasses);
   let src = `/render/${trmnlp.view}.${trmnlp.formatSelect.value}?screen_classes=${encodedScreenClasses}`;
 
-  // If requesting a PNG, also include dimensions, dark mode, and color depth
-  if (trmnlp.formatSelect.value === 'png') {
-    const state = pickerState || trmnlp.picker.state;
+  // Pass dimensions for both HTML and PNG renders so trmnl.device.{width,height}
+  // in the Liquid context tracks the picker model selection.
+  if (state) {
     const width = encodeURIComponent(state.width);
     const height = encodeURIComponent(state.height);
-    const isDarkMode = state.isDarkMode ? 1 : 0;
+    src += `&width=${width}&height=${height}`;
+  }
 
-    // derive numeric color depth from classes like 'screen--1bit'
+  // PNG-only: dark mode + color depth from palette
+  if (trmnlp.formatSelect.value === 'png' && state) {
+    const isDarkMode = state.isDarkMode ? 1 : 0;
     const grays = state.palette.grays || 2;
     const colorDepth = Math.ceil(Math.log2(grays));
-
-    src += `&width=${width}&height=${height}&color_depth=${colorDepth}`;
+    src += `&color_depth=${colorDepth}`;
   }
 
   trmnlp.spinner.style.display = "inline-block";
   trmnlp.iframe.src = src;
 };
 
+trmnlp.refreshUserData = async function (state) {
+  if (!state) return;
+  const params = new URLSearchParams({ width: state.width, height: state.height });
+  try {
+    const response = await fetch(`/data?${params}`);
+    if (!response.ok) return;
+    trmnlp.userData.textContent = await response.text();
+    hljs.highlightAll();
+  } catch (e) {
+    console.warn("Failed to refresh user-data:", e);
+  }
+};
+
 // Load custom fields from API and populate editor
-trmnlp.loadCustomFields = async function() {
+trmnlp.loadCustomFields = async function () {
   const container = document.getElementById('custom-fields-container');
   container.innerHTML = ''; // Clear existing fields
 
-  const config = await fetch('/api/config').then(r => r.json());
+  let config;
+  try {
+    const response = await fetch('/api/config');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    config = await response.json();
+  } catch (err) {
+    trmnlp.showCustomFieldsError(`Failed to load custom fields: ${err.message}`);
+    return;
+  }
+
+  trmnlp.clearCustomFieldsError();
   const customFields = config.custom_fields || {};
   const pluginFields = config.plugin_fields || [];
 
@@ -82,7 +104,7 @@ trmnlp.loadCustomFields = async function() {
 };
 
 // Custom fields editor functionality
-trmnlp.initCustomFieldsEditor = async function() {
+trmnlp.initCustomFieldsEditor = async function () {
   const container = document.getElementById('custom-fields-container');
   const addBtn = document.getElementById('add-field-btn');
   const saveBtn = document.getElementById('save-fields-btn');
@@ -96,19 +118,8 @@ trmnlp.initCustomFieldsEditor = async function() {
 
   // Save button
   saveBtn.addEventListener('click', async () => {
-    const rows = container.querySelectorAll('.custom-field-row');
-    const newCustomFields = {};
-
-    rows.forEach(row => {
-      const key = row.querySelector('input[name="key"]').value.trim();
-      // Value can be either input or select
-      const valueInput = row.querySelector('input[name="value"]');
-      const valueSelect = row.querySelector('select[name="value"]');
-      const value = valueInput ? valueInput.value : (valueSelect ? valueSelect.value : '');
-      if (key) {
-        newCustomFields[key] = value;
-      }
-    });
+    const fields = trmnlp.collectCustomFields(container);
+    if (!fields) return; // validation error already shown
 
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving...';
@@ -117,37 +128,85 @@ trmnlp.initCustomFieldsEditor = async function() {
       const response = await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ custom_fields: newCustomFields })
+        body: JSON.stringify({ custom_fields: fields })
       });
 
-      const result = await response.json();
+      let result = {};
+      try {
+        result = await response.json();
+      } catch {
+        // non-JSON response body; fall through to the status check
+      }
 
-      if (result.error) {
-        alert('Error saving: ' + result.error);
+      if (!response.ok || result.error) {
+        trmnlp.showCustomFieldsError(`Error saving: ${result.error || `HTTP ${response.status}`}`);
       } else {
-        // Refresh the preview
+        trmnlp.clearCustomFieldsError();
+        // Refresh the preview and user data display
         trmnlp.fetchPreview();
-
-        // Update user data display
-        const dataResponse = await fetch('/data');
-        const userData = await dataResponse.json();
-        trmnlp.userData.textContent = JSON.stringify(userData, null, 2);
-        hljs.highlightAll();
+        trmnlp.refreshUserData(trmnlp.picker?.state);
       }
     } catch (err) {
-      alert('Error saving: ' + err.message);
+      trmnlp.showCustomFieldsError(`Error saving: ${err.message}`);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save & Reload';
     }
-
-    saveBtn.disabled = false;
-    saveBtn.textContent = 'Save & Reload';
   });
 };
 
-trmnlp.addFieldRow = function(container, key, value) {
+// Gathers field rows into an object, validating before anything is sent to
+// the server. Returns null (with the error banner shown) on invalid input.
+trmnlp.collectCustomFields = function (container) {
+  const rows = container.querySelectorAll('.custom-field-row');
+  // Null prototype so field names like "constructor" behave as plain keys.
+  const fields = Object.create(null);
+  const problems = [];
+
+  rows.forEach((row, index) => {
+    const key = row.querySelector('input[name="key"]').value.trim();
+    // Value can be either input or select
+    const valueInput = row.querySelector('input[name="value"]');
+    const valueSelect = row.querySelector('select[name="value"]');
+    const value = valueInput ? valueInput.value : (valueSelect ? valueSelect.value : '');
+
+    if (!key) {
+      if (value.trim()) problems.push(`row ${index + 1} has a value but no field name`);
+      return;
+    }
+    if (key in fields) {
+      problems.push(`duplicate field name "${key}"`);
+      return;
+    }
+    fields[key] = value;
+  });
+
+  if (problems.length > 0) {
+    trmnlp.showCustomFieldsError(`Not saved: ${problems.join('; ')}`);
+    return null;
+  }
+
+  trmnlp.clearCustomFieldsError();
+  return fields;
+};
+
+trmnlp.showCustomFieldsError = function (message) {
+  const banner = document.getElementById('custom-fields-error');
+  banner.textContent = message;
+  banner.hidden = false;
+};
+
+trmnlp.clearCustomFieldsError = function () {
+  const banner = document.getElementById('custom-fields-error');
+  banner.textContent = '';
+  banner.hidden = true;
+};
+
+trmnlp.addFieldRow = function (container, key, value) {
   trmnlp.addFieldRowWithHint(container, key, value, 'Value', false);
 };
 
-trmnlp.addSelectFieldRow = function(container, key, selectedValue, options) {
+trmnlp.addSelectFieldRow = function (container, key, selectedValue, options) {
   const row = document.createElement('div');
   row.className = 'custom-field-row';
 
@@ -167,7 +226,7 @@ trmnlp.addSelectFieldRow = function(container, key, selectedValue, options) {
   container.appendChild(row);
 };
 
-trmnlp.addFieldRowWithHint = function(container, key, value, placeholder, isRequired) {
+trmnlp.addFieldRowWithHint = function (container, key, value, placeholder, isRequired) {
   const row = document.createElement('div');
   row.className = 'custom-field-row';
   const keyReadonly = isRequired ? 'readonly' : '';
@@ -188,7 +247,7 @@ trmnlp.addFieldRowWithHint = function(container, key, value, placeholder, isRequ
   container.appendChild(row);
 };
 
-trmnlp.escapeHtml = function(text) {
+trmnlp.escapeHtml = function (text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
@@ -224,10 +283,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     trmnlp.iframe.style.height = `${event.detail.height}px`;
 
     trmnlp.fetchPreview(event.detail);
+    trmnlp.refreshUserData(event.detail);
   });
 
   trmnlp.picker = await TRMNLPicker.create('picker-form', { localStorageKey: 'trmnlp-picker' });
 
   // Initialize custom fields editor
-  trmnlp.initCustomFieldsEditor();
+  await trmnlp.initCustomFieldsEditor();
 });

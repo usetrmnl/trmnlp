@@ -1,4 +1,6 @@
 custom_fields: {
   character_name: 'Bluey',
   character_age: 7,
+  favorite_episodes: ['Sleepytime', 'Camping'],
+  rolls: [1, 2],
 }

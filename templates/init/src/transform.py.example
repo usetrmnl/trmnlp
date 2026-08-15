@@ -1,0 +1,14 @@
+# Optional serverless transform.
+# Rename this file to `transform.py` (or transform.rb / transform.php / transform.js)
+# and it runs automatically — serverless transforms are enabled by default.
+# (Set `transform_runtime: disabled` in .trmnlp.yml to turn them off.)
+#
+# Define a `run(input)` function that takes the polled response (parsed
+# JSON, including the trmnl namespace) and returns any JSON-serialisable
+# value. The bundled transform-runtime wraps this and handles stdin/stdout.
+# This matches the hosted serverless contract — the same code runs in production.
+
+
+def run(input):
+    # Reshape `input` however you like, then return.
+    return input

@@ -1,0 +1,20 @@
+<div class="layout">
+  <div class="grid grid--cols-1 gap--small">
+    {% for story in stories %}
+      <div class="item">
+        <div class="meta">
+          <span class="index">{{ story.rank }}</span>
+        </div>
+        <div class="content">
+          <span class="title title--small" data-clamp="2">{{ story.title }}</span>
+          <span class="description">{{ story.by }}{% if story.score %} &nbsp;·&nbsp; {{ story.score }} pts{% endif %}{% if story.comments %} &nbsp;·&nbsp; {{ story.comments }} comments{% endif %}</span>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="title_bar">
+  <span class="title">Hacker News</span>
+  <span class="instance">Top {{ fetched_count }} stories</span>
+</div>

@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  specs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version-file: .ruby-version
+          bundler-cache: true
+
+      # The transform-backend specs run real node/python/php subprocesses,
+      # so the runtimes are declared here rather than relied on implicitly.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PHP CLI
+        run: sudo apt-get update && sudo apt-get install -y php-cli
+
+      - name: Run specs
+        run: bundle exec rspec
+
+  rubocop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version-file: .ruby-version
+          bundler-cache: true
+
+      - name: Run RuboCop
+        run: bundle exec rubocop
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Get Ruby version
+        run: echo "RUBY_VERSION=$(cat .ruby-version)" >> "$GITHUB_ENV"
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          build-args: RUBY_VERSION=${{ env.RUBY_VERSION }}
+          push: false
+          load: true
+          tags: trmnlp:ci
+
+      - name: Smoke-test the image starts
+        run: docker run --rm trmnlp:ci help
