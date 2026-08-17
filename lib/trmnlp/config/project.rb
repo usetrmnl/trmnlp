@@ -85,8 +85,8 @@ module TRMNLP
       # behavior.
       def stringify_field_value(value)
         case value
-        when Array then value.map(&:to_s)
-        when Hash then value.transform_values { |v| stringify_field_value(v) }
+        when Array then value.map { |item| stringify_field_value(item) }
+        when Hash then value.transform_values { |item| stringify_field_value(item) }
         else value.to_s
         end
       end
