@@ -59,6 +59,200 @@ trmnlp.refreshUserData = async function (state) {
   }
 };
 
+// Load custom fields from API and populate editor
+trmnlp.loadCustomFields = async function () {
+  const container = document.getElementById('custom-fields-container');
+  container.innerHTML = ''; // Clear existing fields
+
+  let config;
+  try {
+    const response = await fetch('/api/config');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    config = await response.json();
+  } catch (err) {
+    trmnlp.showCustomFieldsError(`Failed to load custom fields: ${err.message}`);
+    return;
+  }
+
+  trmnlp.clearCustomFieldsError();
+  const customFields = config.custom_fields || {};
+  const pluginFields = config.plugin_fields || [];
+
+  // Create a set of existing field keys
+  const existingKeys = new Set(Object.keys(customFields));
+
+  // First, add rows for plugin-defined fields (with or without values)
+  pluginFields.forEach(field => {
+    const keyname = field.keyname;
+    const value = customFields[keyname] || field.default || '';
+
+    if (field.field_type === 'select' && field.options) {
+      // Render as dropdown
+      trmnlp.addSelectFieldRow(container, keyname, value, field.options);
+    } else {
+      // Render as text input
+      const placeholder = field.description || 'Value';
+      trmnlp.addFieldRowWithHint(container, keyname, value, placeholder, true);
+    }
+    existingKeys.delete(keyname);
+  });
+
+  // Then add any custom fields that aren't in plugin definition
+  existingKeys.forEach(key => {
+    trmnlp.addFieldRow(container, key, customFields[key]);
+  });
+};
+
+// Custom fields editor functionality
+trmnlp.initCustomFieldsEditor = async function () {
+  const container = document.getElementById('custom-fields-container');
+  const addBtn = document.getElementById('add-field-btn');
+  const saveBtn = document.getElementById('save-fields-btn');
+
+  await trmnlp.loadCustomFields();
+
+  // Add field button
+  addBtn.addEventListener('click', () => {
+    trmnlp.addFieldRow(container, '', '');
+  });
+
+  // Save button
+  saveBtn.addEventListener('click', async () => {
+    const fields = trmnlp.collectCustomFields(container);
+    if (!fields) return; // validation error already shown
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    try {
+      const response = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ custom_fields: fields })
+      });
+
+      let result = {};
+      try {
+        result = await response.json();
+      } catch {
+        // non-JSON response body; fall through to the status check
+      }
+
+      if (!response.ok || result.error) {
+        trmnlp.showCustomFieldsError(`Error saving: ${result.error || `HTTP ${response.status}`}`);
+      } else {
+        trmnlp.clearCustomFieldsError();
+        // Refresh the preview and user data display
+        trmnlp.fetchPreview();
+        trmnlp.refreshUserData(trmnlp.picker?.state);
+      }
+    } catch (err) {
+      trmnlp.showCustomFieldsError(`Error saving: ${err.message}`);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save & Reload';
+    }
+  });
+};
+
+// Gathers field rows into an object, validating before anything is sent to
+// the server. Returns null (with the error banner shown) on invalid input.
+trmnlp.collectCustomFields = function (container) {
+  const rows = container.querySelectorAll('.custom-field-row');
+  // Null prototype so field names like "constructor" behave as plain keys.
+  const fields = Object.create(null);
+  const problems = [];
+
+  rows.forEach((row, index) => {
+    const key = row.querySelector('input[name="key"]').value.trim();
+    // Value can be either input or select
+    const valueInput = row.querySelector('input[name="value"]');
+    const valueSelect = row.querySelector('select[name="value"]');
+    const value = valueInput ? valueInput.value : (valueSelect ? valueSelect.value : '');
+
+    if (!key) {
+      if (value.trim()) problems.push(`row ${index + 1} has a value but no field name`);
+      return;
+    }
+    if (key in fields) {
+      problems.push(`duplicate field name "${key}"`);
+      return;
+    }
+    fields[key] = value;
+  });
+
+  if (problems.length > 0) {
+    trmnlp.showCustomFieldsError(`Not saved: ${problems.join('; ')}`);
+    return null;
+  }
+
+  trmnlp.clearCustomFieldsError();
+  return fields;
+};
+
+trmnlp.showCustomFieldsError = function (message) {
+  const banner = document.getElementById('custom-fields-error');
+  banner.textContent = message;
+  banner.hidden = false;
+};
+
+trmnlp.clearCustomFieldsError = function () {
+  const banner = document.getElementById('custom-fields-error');
+  banner.textContent = '';
+  banner.hidden = true;
+};
+
+trmnlp.addFieldRow = function (container, key, value) {
+  trmnlp.addFieldRowWithHint(container, key, value, 'Value', false);
+};
+
+trmnlp.addSelectFieldRow = function (container, key, selectedValue, options) {
+  const row = document.createElement('div');
+  row.className = 'custom-field-row';
+
+  const optionsHtml = options.map(opt => {
+    const selected = String(opt) === String(selectedValue) ? 'selected' : '';
+    return `<option value="${trmnlp.escapeHtml(String(opt))}" ${selected}>${trmnlp.escapeHtml(String(opt))}</option>`;
+  }).join('');
+
+  row.innerHTML = `
+    <input type="text" name="key" placeholder="Field name" value="${trmnlp.escapeHtml(key)}" readonly class="required-field">
+    <select name="value" class="custom-field-select">
+      ${optionsHtml}
+    </select>
+    <button type="button" class="btn btn-remove" disabled>×</button>
+  `;
+
+  container.appendChild(row);
+};
+
+trmnlp.addFieldRowWithHint = function (container, key, value, placeholder, isRequired) {
+  const row = document.createElement('div');
+  row.className = 'custom-field-row';
+  const keyReadonly = isRequired ? 'readonly' : '';
+  const keyClass = isRequired ? 'required-field' : '';
+  row.innerHTML = `
+    <input type="text" name="key" placeholder="Field name" value="${trmnlp.escapeHtml(key)}" ${keyReadonly} class="${keyClass}">
+    <input type="text" name="value" placeholder="${trmnlp.escapeHtml(placeholder)}" value="${trmnlp.escapeHtml(value)}">
+    <button type="button" class="btn btn-remove" ${isRequired ? 'disabled' : ''}>×</button>
+  `;
+
+  const removeBtn = row.querySelector('.btn-remove');
+  if (!isRequired) {
+    removeBtn.addEventListener('click', () => {
+      row.remove();
+    });
+  }
+
+  container.appendChild(row);
+};
+
+trmnlp.escapeHtml = function (text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+};
+
 document.addEventListener("DOMContentLoaded", async function () {
   trmnlp.view = document.querySelector("meta[name='trmnl-view']").content;
   trmnlp.iframe = document.querySelector("iframe");
@@ -93,4 +287,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   });
 
   trmnlp.picker = await TRMNLPicker.create('picker-form', { localStorageKey: 'trmnlp-picker' });
+
+  // Initialize custom fields editor
+  await trmnlp.initCustomFieldsEditor();
 });

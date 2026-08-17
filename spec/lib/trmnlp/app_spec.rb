@@ -8,6 +8,10 @@ require 'rack/test'
 require 'trmnlp/app'
 require 'trmnlp/browser_pool'
 
+require 'fileutils'
+require 'tmpdir'
+require 'yaml'
+
 RSpec.describe TRMNLP::App do
   include Rack::Test::Methods
 
@@ -254,6 +258,116 @@ RSpec.describe TRMNLP::App do
       get '/oauth/disconnect'
 
       expect(context.oauth_session).to have_received(:disconnect)
+    end
+  end
+
+  describe 'GET /api/config' do
+    it 'returns the custom field values from .trmnlp.yml' do
+      get '/api/config'
+
+      expect(last_response.status).to eq(200)
+      body = JSON.parse(last_response.body)
+      expect(body['custom_fields']).to include('character_name' => 'Bluey')
+    end
+
+    it 'returns plugin field definitions, excluding author_bio' do
+      definitions = [
+        { 'keyname' => 'city', 'field_type' => 'string', 'name' => 'City' },
+        { 'keyname' => 'bio', 'field_type' => 'author_bio', 'name' => 'Bio' }
+      ]
+      allow(context.config.plugin).to receive(:custom_field_definitions).and_return(definitions)
+
+      get '/api/config'
+
+      body = JSON.parse(last_response.body)
+      expect(body['plugin_fields'].map { |f| f['keyname'] }).to eq(['city'])
+    end
+  end
+
+  describe 'POST /api/config' do
+    let(:tmp_root) { Dir.mktmpdir }
+    let(:config_file) { File.join(tmp_root, '.trmnlp.yml') }
+    let(:initial_config) do
+      { 'time_zone' => 'America/New_York', 'custom_fields' => { 'character_name' => 'Bluey' } }
+    end
+    let(:context) do
+      File.write(config_file, YAML.dump(initial_config))
+      ctx = TRMNLP::Context.new(tmp_root)
+      allow(ctx.poller).to receive(:poll_data)
+      allow(ctx.config.project).to receive(:live_render?).and_return(false)
+      ctx
+    end
+
+    after { FileUtils.remove_entry(tmp_root) }
+
+    def post_config(payload)
+      post '/api/config', payload, { 'CONTENT_TYPE' => 'application/json' }
+    end
+
+    it 'saves the custom fields to .trmnlp.yml and reports them back stringified' do
+      post_config({ custom_fields: { character_name: 'Bingo', character_age: 6 } }.to_json)
+
+      expect(last_response.status).to eq(200)
+      body = JSON.parse(last_response.body)
+      expect(body['success']).to be(true)
+      expect(body['custom_fields']).to eq('character_name' => 'Bingo', 'character_age' => '6')
+      expect(YAML.safe_load_file(config_file)['custom_fields']).to eq('character_name' => 'Bingo',
+                                                                      'character_age' => 6)
+    end
+
+    it 'preserves unrelated keys in .trmnlp.yml' do
+      post_config({ custom_fields: { character_name: 'Bingo' } }.to_json)
+
+      expect(YAML.safe_load_file(config_file)['time_zone']).to eq('America/New_York')
+    end
+
+    it 're-polls so the new values reach polling URLs and headers' do
+      post_config({ custom_fields: {} }.to_json)
+
+      expect(context.poller).to have_received(:poll_data).at_least(:twice)
+    end
+
+    it 'rejects a body that is not valid JSON' do
+      post_config('{nope')
+
+      expect(last_response.status).to eq(400)
+      expect(JSON.parse(last_response.body)['error']).to include('not valid JSON')
+    end
+
+    it 'rejects a body that is not a JSON object' do
+      post_config('[1, 2, 3]')
+
+      expect(last_response.status).to eq(400)
+      expect(JSON.parse(last_response.body)['error']).to include('must be a JSON object')
+    end
+
+    it 'rejects custom_fields that is not a JSON object' do
+      post_config({ custom_fields: 'nope' }.to_json)
+
+      expect(last_response.status).to eq(400)
+      expect(JSON.parse(last_response.body)['error']).to include('custom_fields must be a JSON object')
+    end
+
+    it 'rejects blank field names' do
+      post_config({ custom_fields: { '  ' => 'value' } }.to_json)
+
+      expect(last_response.status).to eq(400)
+      expect(JSON.parse(last_response.body)['error']).to include('cannot be blank')
+    end
+
+    it 'leaves .trmnlp.yml untouched when validation fails' do
+      post_config({ custom_fields: 'nope' }.to_json)
+
+      expect(YAML.safe_load_file(config_file)).to eq(initial_config)
+    end
+
+    it 'reports unexpected failures as a 500 error' do
+      allow(context.config.project).to receive(:reload!).and_raise(TRMNLP::InvalidConfig, 'boom')
+
+      post_config({ custom_fields: {} }.to_json)
+
+      expect(last_response.status).to eq(500)
+      expect(JSON.parse(last_response.body)['error']).to eq('boom')
     end
   end
 
