@@ -29,7 +29,8 @@ module TRMNLP
     end
 
     def device_from_params(params)
-      { 'width' => params[:width]&.to_i, 'height' => params[:height]&.to_i }.compact
+      { 'width' => params[:width]&.to_i, 'height' => params[:height]&.to_i,
+        'model' => params[:model], 'bit_depth' => params[:bit_depth]&.to_i }.compact
     end
 
     private
@@ -87,7 +88,8 @@ module TRMNLP
         'friendly_id' => 'ABC123', 'percent_charged' => 85.0, 'wifi_strength' => 90,
         'height' => device['height'] || DEFAULT_DEVICE_HEIGHT,
         'width' => device['width'] || DEFAULT_DEVICE_WIDTH,
-        'model' => 'og_plus', 'bit_depth' => 2, 'firmware_version' => '1.6.3', 'refresh_interval_seconds' => 900,
+        'model' => device['model'] || 'og_plus', 'bit_depth' => device['bit_depth'] || 2,
+        'firmware_version' => '1.6.3', 'refresh_interval_seconds' => 900,
         'sleep_mode_enabled' => false, 'sleep_start_time' => 1320, 'sleep_end_time' => 480
       }
     end

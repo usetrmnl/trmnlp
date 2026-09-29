@@ -44,6 +44,12 @@ RSpec.describe TRMNLP::UserDataAssembler do
         expect(data.dig('trmnl', 'device', 'width')).to eq(400)
         expect(data.dig('trmnl', 'device', 'height')).to eq(240)
       end
+
+      it 'uses the picked model and bit depth' do
+        data = assembler.call(device: { 'model' => 'v2', 'bit_depth' => 4 })
+
+        expect(data['trmnl']['device']).to include('model' => 'v2', 'bit_depth' => 4)
+      end
     end
 
     context 'with trmnl namespace overrides in .trmnlp variables' do
@@ -84,6 +90,10 @@ RSpec.describe TRMNLP::UserDataAssembler do
     it 'extracts width and height from string params' do
       expect(assembler.device_from_params(width: '400', height: '240'))
         .to eq('width' => 400, 'height' => 240)
+    end
+
+    it 'extracts the model and bit depth' do
+      expect(assembler.device_from_params(model: 'v2', bit_depth: '4')).to eq('model' => 'v2', 'bit_depth' => 4)
     end
 
     it 'returns an empty hash when neither param is present' do

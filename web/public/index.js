@@ -20,18 +20,22 @@ trmnlp.connectLiveRender = function () {
 };
 
 
+// trmnl.device values the picked model and palette decide.
+trmnlp.deviceParams = function (state) {
+  const bitDepth = Math.ceil(Math.log2(state.palette?.grays || 2));
+  return new URLSearchParams({ width: state.width, height: state.height, model: state.model.name, bit_depth: bitDepth });
+};
+
 trmnlp.fetchPreview = function (pickerState) {
   const state = pickerState || trmnlp.picker?.state;
   const screenClasses = (state?.screenClasses || []).join(" ");
   const encodedScreenClasses = encodeURIComponent(screenClasses);
   let src = `/render/${trmnlp.view}.${trmnlp.formatSelect.value}?screen_classes=${encodedScreenClasses}`;
 
-  // Pass dimensions for both HTML and PNG renders so trmnl.device.{width,height}
+  // Pass the device for both HTML and PNG renders so trmnl.device.{width,height,model,bit_depth}
   // in the Liquid context tracks the picker model selection.
   if (state) {
-    const width = encodeURIComponent(state.width);
-    const height = encodeURIComponent(state.height);
-    src += `&width=${width}&height=${height}`;
+    src += `&${trmnlp.deviceParams(state)}`;
   }
 
   // PNG-only: dark mode + color depth from palette
@@ -48,7 +52,7 @@ trmnlp.fetchPreview = function (pickerState) {
 
 trmnlp.refreshUserData = async function (state) {
   if (!state) return;
-  const params = new URLSearchParams({ width: state.width, height: state.height });
+  const params = trmnlp.deviceParams(state);
   try {
     const response = await fetch(`/data?${params}`);
     if (!response.ok) return;
