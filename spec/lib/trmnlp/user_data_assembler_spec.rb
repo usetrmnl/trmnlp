@@ -24,12 +24,31 @@ RSpec.describe TRMNLP::UserDataAssembler do
       end
     end
 
+    it 'fills the device status and schedule the hosted service sends' do
+      expect(assembler.call['trmnl']['device']).to include(
+        'model' => 'og_plus', 'bit_depth' => 2, 'firmware_version' => '1.6.3', 'refresh_interval_seconds' => 900,
+        'sleep_mode_enabled' => false, 'sleep_start_time' => 1320, 'sleep_end_time' => 480
+      )
+    end
+
+    it 'reads the refresh interval from the plugin settings' do
+      allow(config.plugin).to receive(:refresh_interval).and_return(60)
+
+      expect(assembler.call.dig('trmnl', 'plugin_settings', 'refresh_interval_minutes')).to eq(60)
+    end
+
     context 'with device overrides from the picker' do
       it 'uses the supplied dimensions (issue #94)' do
         data = assembler.call(device: { 'width' => 400, 'height' => 240 })
 
         expect(data.dig('trmnl', 'device', 'width')).to eq(400)
         expect(data.dig('trmnl', 'device', 'height')).to eq(240)
+      end
+
+      it 'uses the picked model and bit depth' do
+        data = assembler.call(device: { 'model' => 'v2', 'bit_depth' => 4 })
+
+        expect(data['trmnl']['device']).to include('model' => 'v2', 'bit_depth' => 4)
       end
     end
 
@@ -71,6 +90,10 @@ RSpec.describe TRMNLP::UserDataAssembler do
     it 'extracts width and height from string params' do
       expect(assembler.device_from_params(width: '400', height: '240'))
         .to eq('width' => 400, 'height' => 240)
+    end
+
+    it 'extracts the model and bit depth' do
+      expect(assembler.device_from_params(model: 'v2', bit_depth: '4')).to eq('model' => 'v2', 'bit_depth' => 4)
     end
 
     it 'returns an empty hash when neither param is present' do

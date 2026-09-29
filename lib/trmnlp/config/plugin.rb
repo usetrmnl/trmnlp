@@ -26,6 +26,7 @@ module TRMNLP
       end
 
       def strategy = @config['strategy']
+      def refresh_interval = @config['refresh_interval']
       def polling? = strategy == 'polling'
       def webhook? = strategy == 'webhook'
       def static? = strategy == 'static'
