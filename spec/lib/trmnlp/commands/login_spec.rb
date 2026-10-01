@@ -27,7 +27,16 @@ RSpec.describe TRMNLP::Commands::Login do
       expect { command.call }.to raise_error(TRMNLP::InvalidApiKey, /cannot be empty/)
     end
 
-    it 'rejects a trmnl.com key that is not user_-prefixed' do
+    it 'saves a trmnl_-prefixed API key' do
+      allow(command).to receive(:prompt).and_return('trmnl_abc123')
+      allow(api_client).to receive(:get_me).and_return('name' => 'Bluey', 'email' => 'b@example.com')
+
+      command.call
+
+      expect(app_config).to have_received(:save)
+    end
+
+    it 'rejects a trmnl.com key with neither prefix' do
       allow(command).to receive(:prompt).and_return('not_a_user_key')
       expect { command.call }.to raise_error(TRMNLP::InvalidApiKey, /Invalid API key/)
     end
