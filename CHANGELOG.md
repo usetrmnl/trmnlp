@@ -1,6 +1,11 @@
 
 # Changelog
 
+## 0.13.0
+
+- `trmnlp login` now accepts the scoped API keys trmnl.com issues with a `trmnl_` prefix, as well as `user_` account keys. It used to refuse them with "Invalid API key; did you copy it from the right place?" before checking them with the server. A scoped key needs the profile capability to log in, read to list and pull, and content to push. With delete as well, a failed first push removes the plugin it created. (#132)
+- The local preview now fills the `trmnl` fields the hosted service added: `trmnl.device.model`, `bit_depth`, `firmware_version`, `refresh_interval_seconds`, `sleep_mode_enabled`, `sleep_start_time` and `sleep_end_time`, and `trmnl.plugin_settings.refresh_interval_minutes`. The model and bit depth follow the device picker, with `og_plus` and 2 when nothing is picked. (#131)
+
 ## 0.12.0
 
 - `required_ruby_version` is now `>= 4.0`, matching the Ruby version trmnlp actually needs. It has understated the real floor since 0.4.0: both `xdg` (Ruby 4.0 in the 10.x series pinned since 0.8.0) and `trmnl-liquid` (Ruby 4.0 since 0.5.0) require more than the gemspec claimed. RubyGems resolves against the declared value, so `gem install trmnl_preview` on an older Ruby did not fail. It quietly walked backwards to the newest version whose dependency tree resolved, reporting "Successfully installed" for a build up to twenty months old. On Ruby 3.4 that was 0.7.1, and on Ruby 3.3 and below it was 0.3.2, which predates the Thor CLI and offers only `serve`, `build` and `version`. Asking for the current version explicitly (`gem install trmnl_preview -v 0.11.0`) crashed RubyGems inside its own conflict reporting rather than explaining the problem. Installing on an unsupported Ruby now stops with "requires Ruby version >= 4.0".
