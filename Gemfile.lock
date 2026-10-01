@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    trmnl_preview (0.12.0)
+    trmnl_preview (0.13.0)
       activesupport (~> 8.0)
       cgi (~> 0.5)
       faraday (~> 2.1)
@@ -215,6 +215,7 @@ GEM
     xdg (10.3.0)
 
 PLATFORMS
+  arm64-darwin-23
   arm64-darwin-24
   arm64-darwin-25
   x86_64-linux
