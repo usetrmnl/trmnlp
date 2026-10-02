@@ -3,7 +3,8 @@
 
 ## Unreleased
 
-- `google_photos_picker`, `json`, `modal_trigger` and `oauth_provider_select` are known form field types, so `trmnlp lint`, `build` and `serve` no longer warn "unknown field_type" for them. The hosted service renders all four.
+- `google_photos_picker`, `json`, `modal_trigger` and `oauth_provider_select` are known form field types, so `trmnlp lint`, `build` and `serve` no longer warn "unknown field_type" for them. The hosted service renders all four. (#137)
+- The README documents `recipe_overview:` in `src/settings.yml`, the recipe page text that `trmnlp push` and `pull` already carry. (#138)
 
 ## 0.13.1
 
