@@ -89,6 +89,13 @@ RSpec.describe TRMNLP::TransformPipeline do
 
         expect(reporter.messages).to include(a_string_matching(/transform failed/))
       end
+
+      it 'prints the stderr of a failure once' do
+        allow(client).to receive(:execute).and_return(failure_result)
+        pipeline.call('n' => 2)
+
+        expect(reporter.messages.grep(/boom/)).to eq(['transform stderr: boom'])
+      end
     end
   end
 end

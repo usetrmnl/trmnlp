@@ -103,6 +103,35 @@ RSpec.describe TRMNLP::Poller do
           expect(poller.poll_data).to eq({})
         end
       end
+
+      context 'when the response is not a 200' do
+        subject(:poller) { described_class.new(config:, paths:, oauth_session:, reporter:) }
+
+        let(:reporter) { TRMNLP::Reporter.new(quiet: true) }
+        let(:json_headers) { { 'content-type' => 'application/json' } }
+
+        it 'parses the body of a 202, like the hosted service' do
+          response = instance_double(Faraday::Response, body: '{"step": "pending"}', status: 202, headers: json_headers)
+          allow(faraday_connection).to receive(:get).and_return(response)
+
+          expect(poller.poll_data).to eq({ 'step' => 'pending' })
+        end
+
+        it 'still parses the body of an error status' do
+          response = instance_double(Faraday::Response, body: '{"error": "nope"}', status: 500, headers: json_headers)
+          allow(faraday_connection).to receive(:get).and_return(response)
+
+          expect(poller.poll_data).to eq({ 'error' => 'nope' })
+        end
+
+        it 'warns about an error status' do
+          response = instance_double(Faraday::Response, body: '{}', status: 500, headers: json_headers)
+          allow(faraday_connection).to receive(:get).and_return(response)
+          poller.poll_data
+
+          expect(reporter.messages).to include(a_string_matching(/HTTP 500 from/))
+        end
+      end
     end
 
     context 'when the plugin polls with a POST request' do
@@ -157,6 +186,45 @@ RSpec.describe TRMNLP::Poller do
 
         expect(config.plugin).to have_received(:polling_urls)
           .with(extra_variables: { 'oauth_access_token' => 'AT' })
+      end
+
+      context 'when the provider rejects the token with a 401' do
+        let(:unauthorized) { instance_double(Faraday::Response, body: '', status: 401, headers: {}) }
+        let(:authorized) do
+          instance_double(Faraday::Response, body: '{"ok": 1}', status: 200,
+                                             headers: { 'content-type' => 'application/json' })
+        end
+
+        before do
+          allow(oauth_session).to receive(:liquid_variables)
+            .and_return({ 'oauth_access_token' => 'AT' }, { 'oauth_access_token' => 'AT2' })
+          allow(faraday_connection).to receive(:get).and_return(unauthorized, authorized)
+        end
+
+        context 'and the token refreshes' do
+          before { allow(oauth_session).to receive(:force_refresh!).and_return(instance_double(TRMNLP::OAuth::TokenBundle)) }
+
+          it 'polls again with the refreshed token' do
+            poller.poll_data
+
+            expect(config.plugin).to have_received(:polling_urls)
+              .with(extra_variables: { 'oauth_access_token' => 'AT2' })
+          end
+
+          it 'answers the retried response' do
+            expect(poller.poll_data).to eq({ 'ok' => 1 })
+          end
+        end
+
+        context 'and there is nothing to refresh' do
+          before { allow(oauth_session).to receive(:force_refresh!).and_return(nil) }
+
+          it 'polls once' do
+            poller.poll_data
+
+            expect(faraday_connection).to have_received(:get).once
+          end
+        end
       end
     end
 
