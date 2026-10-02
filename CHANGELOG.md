@@ -1,9 +1,9 @@
 
 # Changelog
 
-## Unreleased
+## 0.14.1
 
-- `trmnlp lint` reports a `recipe_overview` under 100 words. Below that, TRMNL serves the public recipe page with `robots: noindex`, so the recipe never appears in Google or other search engines, and nothing said so: the page looked fine, and only its HTML gave it away. A blank overview still passes, since private plugins have none.
+- `trmnlp lint` reports a `recipe_overview` under 100 words. Below that, TRMNL serves the public recipe page with `robots: noindex`, so the recipe never appears in Google or other search engines, and nothing said so: the page looked fine, and only its HTML gave it away. A blank overview still passes, since private plugins have none. (#144)
 
 ## 0.14.0
 
