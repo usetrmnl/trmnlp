@@ -39,9 +39,8 @@ module TRMNLP
         )
       end
 
-      # A PKCE public client has no secret, so its client_id must travel in the
-      # request body; a confidential client authenticates with HTTP Basic.
-      def auth_scheme = provider.client_secret ? :basic_auth : :request_body
+      # Same rule as the hosted service: HTTP Basic only when asked for, otherwise the body.
+      def auth_scheme = provider.token_request_auth_method == 'header' ? :basic_auth : :request_body
 
       # oauth2 posts tokens through a connection built from the site, so give it
       # the endpoint's origin even though the full URL is absolute.

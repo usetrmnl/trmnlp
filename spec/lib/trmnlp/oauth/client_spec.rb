@@ -66,6 +66,36 @@ RSpec.describe TRMNLP::OAuth::Client do
       end
     end
 
+    context 'without oauth_token_request_auth_method, like the hosted default' do
+      it 'sends the client credentials in the request body' do
+        client.exchange_code(code: 'thecode', redirect_uri:)
+
+        expect(a_request(:post, 'https://provider.test/token')
+          .with(body: hash_including('client_id' => 'cid', 'client_secret' => 'secret'))).to have_been_made
+      end
+    end
+
+    context 'with a blank oauth_token_request_auth_method' do
+      let(:config) { super().merge('oauth_token_request_auth_method' => '') }
+
+      it 'sends the client credentials in the request body' do
+        client.exchange_code(code: 'thecode', redirect_uri:)
+
+        expect(a_request(:post, 'https://provider.test/token')
+          .with(body: hash_including('client_id' => 'cid'))).to have_been_made
+      end
+    end
+
+    context 'with oauth_token_request_auth_method header' do
+      let(:config) { super().merge('oauth_token_request_auth_method' => 'header') }
+
+      it 'authenticates with HTTP Basic' do
+        client.exchange_code(code: 'thecode', redirect_uri:)
+
+        expect(a_request(:post, 'https://provider.test/token').with(basic_auth: %w[cid secret])).to have_been_made
+      end
+    end
+
     context 'as a public client without a secret' do
       let(:config) { super().except('oauth_client_secret').merge('oauth_pkce_enabled' => 'true') }
 
