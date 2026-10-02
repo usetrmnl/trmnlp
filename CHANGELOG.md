@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `lat_lon` is a known form field type, so `trmnlp lint`, `build` and `serve` no longer warn "unknown field_type: lat_lon" for a location field. The vendored list in `db/data/form_fields.yml` predated the hosted service adding it. (#129)
+
 ## 0.13.0
 
 - `trmnlp login` now accepts the scoped API keys trmnl.com issues with a `trmnl_` prefix, as well as `user_` account keys. It used to refuse them with "Invalid API key; did you copy it from the right place?" before checking them with the server. A scoped key needs the profile capability to log in, read to list and pull, and content to push. With delete as well, a failed first push removes the plugin it created. (#132)
