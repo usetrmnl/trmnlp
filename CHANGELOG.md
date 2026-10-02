@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- `trmnlp serve` and `build` print what the transform writes to stdout and stderr (`console.log`, `print`, `puts`), one `transform stdout:` / `transform stderr:` line each, so a transform can be debugged without returning its logs in the data. (#128)
 - The OAuth token exchange and refresh honor `oauth_token_request_auth_method` the way the hosted service does: HTTP Basic only for `header`, otherwise the client credentials go in the request body. trmnlp used HTTP Basic whenever a client secret was set, so a provider that wants the credentials in the body rejected the callback with `invalid_client: client_id is required`. A plugin that relied on HTTP Basic locally sets `oauth_token_request_auth_method: header`, which the hosted service already needs. (#121)
 - `polling_headers` are parsed the way the hosted service parses them: one header per line, `Name: Value` as well as `Name=Value`, a JSON object, and values that contain `=`. Before, trmnlp split only on `&`, so headers saved one per line made the whole poll fail with "cannot include CR/LF" and the markup and transform got no polled data (no `IDX_0`/`IDX_1`). (#127)
 - `trmnlp lint` no longer reports a custom field as unused when only the serverless transform (`src/transform.{py,rb,php,js}`) reads it. Plugins that move their data handling into the transform, reading fields from `input["trmnl"]["plugin_settings"]["custom_fields_values"]`, got one "is not used in form fields or markup" warning per field. The check now searches the transform as well, and its message names it. (#136)

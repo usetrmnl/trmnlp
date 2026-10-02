@@ -40,9 +40,17 @@ module TRMNLP
     def run(path, inferred_language, data)
       language = config.plugin.serverless_language || inferred_language
       result = client.execute(code: path.read, stdin: JSON.generate(data), language:)
+      report_printed_output(result)
       return record_failure(result, data) unless result.success?
 
       parse_output(result.output, data)
+    end
+
+    # The transform's return value travels separately, so stdout holds only what it printed.
+    def report_printed_output(result)
+      { 'stdout' => result.stdout, 'stderr' => result.stderr }.each do |stream, text|
+        reporter.info("transform #{stream}: #{text.strip}") unless text.strip.empty?
+      end
     end
 
     def record_failure(result, fallback)

@@ -49,6 +49,20 @@ RSpec.describe TRMNLP::TransformPipeline do
         expect(pipeline.call('n' => 2)).to eq('doubled' => 4)
       end
 
+      it 'reports what the transform printed' do
+        allow(client).to receive(:execute).and_return(success_result.with(stdout: "a log\n", stderr: "a warning\n"))
+        pipeline.call('n' => 2)
+
+        expect(reporter.messages).to eq(['transform stdout: a log', 'transform stderr: a warning'])
+      end
+
+      it 'reports nothing when the transform printed nothing' do
+        allow(client).to receive(:execute).and_return(success_result)
+        pipeline.call('n' => 2)
+
+        expect(reporter.messages).to be_empty
+      end
+
       it 'falls back to the input data on failure' do
         allow(client).to receive(:execute).and_return(failure_result)
 
