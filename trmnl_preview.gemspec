@@ -47,6 +47,8 @@ Gem::Specification.new do |spec|
 
   # HTML rendering
   spec.add_dependency 'activesupport', '~> 8.0'
+  spec.add_dependency 'crass', '~> 1.0'
+  spec.add_dependency 'nokogiri', '~> 1.18'
   spec.add_dependency 'trmnl-liquid', '~> 0.8.2'
 
   # PNG rendering

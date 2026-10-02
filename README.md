@@ -113,6 +113,12 @@ has `path`, `line`, `column` and `snippet`. A clean report has `passed: true` an
 `issues: []`. All existing checks retain severity `error` and the same exit status:
 zero when clean, nonzero when findings exist. `--quiet` suppresses either format.
 
+The inline-style check counts CSS declarations in actual HTML `style` attributes,
+with a limit of six across the view templates and Shared. All property names count,
+including custom properties. HTML/Liquid comments, script strings, text,
+`data-*` attributes and `<style>` blocks are excluded from this inline check.
+Liquid in declaration values is counted without rendering the plugin, every branch included.
+
 ## Building Static Files
 
 `trmnlp build` renders every view to a static file under `_build/` — handy for exporting a snapshot or feeding the output into another pipeline. Run it from inside a plugin project:
