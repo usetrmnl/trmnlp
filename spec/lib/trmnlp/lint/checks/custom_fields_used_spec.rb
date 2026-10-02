@@ -8,8 +8,11 @@ RSpec.describe TRMNLP::Lint::Checks::CustomFieldsUsed do
   subject(:check) { described_class.new(source) }
 
   let(:source) do
-    instance_double(TRMNLP::Lint::Source, custom_field_values: field_values, settings: {}, all_markup: markup)
+    instance_double(TRMNLP::Lint::Source, custom_field_values: field_values, settings: {}, all_markup: markup,
+                                          transform_code: transform)
   end
+
+  let(:transform) { '' }
 
   describe '#issues' do
     context 'when a custom field never appears in the markup or settings' do
@@ -18,6 +21,26 @@ RSpec.describe TRMNLP::Lint::Checks::CustomFieldsUsed do
 
       it 'reports the unused field' do
         expect(check.issues).not_to be_empty
+      end
+    end
+
+    context 'when a custom field is read only by the serverless transform' do
+      let(:field_values) { { 'epc_iban' => 'value' } }
+      let(:markup) { '<p>{{ qr.payload }}</p>' }
+      let(:transform) { 'const iban = input.trmnl.plugin_settings.custom_fields_values.epc_iban;' }
+
+      it 'passes' do
+        expect(check.issues).to be_empty
+      end
+    end
+
+    context 'when a custom field appears in neither the markup nor the transform' do
+      let(:field_values) { { 'ghost' => 'value' } }
+      let(:markup) { '<p>{{ qr.payload }}</p>' }
+      let(:transform) { 'function run(input) { return {}; }' }
+
+      it 'names the transform in the message' do
+        expect(check.issues.first[:message]).to include('transform')
       end
     end
 

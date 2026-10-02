@@ -33,6 +33,15 @@ module TRMNLP
         @all_markup ||= view_markup.values.join + shared_markup
       end
 
+      # The serverless transform (src/transform.{py,rb,php,js}), or '' without one.
+      # It reads custom fields from its input, so a field may be used only there.
+      def transform_code
+        @transform_code ||= begin
+          path, = paths.transform_file
+          path ? read(path) : ''
+        end
+      end
+
       private
 
       attr_reader :config, :paths
