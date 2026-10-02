@@ -18,9 +18,13 @@ field_types:
   - copyable
   - copyable_webhook_url
   - date
+  - google_photos_picker
+  - json
   - lat_lon
+  - modal_trigger
   - multi_string
   - number
+  - oauth_provider_select
   - password
   - plugin_instance_select
   - select
