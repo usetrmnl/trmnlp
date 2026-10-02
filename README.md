@@ -99,6 +99,20 @@ trmnlp push                    # upload
 
 `trmnlp lint` exits non-zero when it finds issues, so you can gate CI on it. Run `trmnlp help` for all flags.
 
+Lint findings include a stable snake_case rule ID, severity and source locations.
+Locations use project-relative paths and one-based line/column numbers, followed
+by a source excerpt (up to 240 characters). Aggregate checks show their contributing
+locations; checks for a missing chart setting show the related Highcharts usage.
+Unused project custom-field values are omitted from excerpts because they can
+contain credentials.
+
+For CI integrations, use `trmnlp lint --format json`. It writes one JSON object
+with `version: 1`, `passed` and an `issues` array. Each issue has `rule_id`,
+`severity`, `message`, `locations` and, when available, `learn_more`. Each location
+has `path`, `line`, `column` and `snippet`. A clean report has `passed: true` and
+`issues: []`. All existing checks retain severity `error` and the same exit status:
+zero when clean, nonzero when findings exist. `--quiet` suppresses either format.
+
 ## Building Static Files
 
 `trmnlp build` renders every view to a static file under `_build/` — handy for exporting a snapshot or feeding the output into another pipeline. Run it from inside a plugin project:

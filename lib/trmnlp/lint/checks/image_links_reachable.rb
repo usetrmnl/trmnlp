@@ -19,9 +19,14 @@ module TRMNLP
         UNREACHABLE = [SocketError, Net::OpenTimeout, Net::ReadTimeout,
                        Errno::ECONNREFUSED, Errno::EHOSTUNREACH, OpenSSL::SSL::SSLError].freeze
 
+        attr_reader :unreachable_urls
+
         private
 
-        def pass? = static_image_urls.all? { |url| reachable?(url) }
+        def pass?
+          @unreachable_urls = static_image_urls.reject { |url| reachable?(url) }
+          unreachable_urls.empty?
+        end
 
         def static_image_urls
           source.all_markup
