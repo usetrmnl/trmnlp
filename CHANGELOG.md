@@ -5,6 +5,11 @@
 
 - `trmnlp lint` no longer reports a custom field as unused when only the serverless transform (`src/transform.{py,rb,php,js}`) reads it. Plugins that move their data handling into the transform, reading fields from `input["trmnl"]["plugin_settings"]["custom_fields_values"]`, got one "is not used in form fields or markup" warning per field. The check now searches the transform as well, and its message names it. (#136)
 
+## 0.13.2
+
+- `google_photos_picker`, `json`, `modal_trigger` and `oauth_provider_select` are known form field types, so `trmnlp lint`, `build` and `serve` no longer warn "unknown field_type" for them. The hosted service renders all four. (#137)
+- The README documents `recipe_overview:` in `src/settings.yml`, the recipe page text that `trmnlp push` and `pull` already carry. (#138)
+
 ## 0.13.1
 
 - `lat_lon` is a known form field type, so `trmnlp lint`, `build` and `serve` no longer warn "unknown field_type: lat_lon" for a location field. The vendored list in `db/data/form_fields.yml` predated the hosted service adding it. (#129)
