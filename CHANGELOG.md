@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `google_photos_picker`, `json`, `modal_trigger` and `oauth_provider_select` are known form field types, so `trmnlp lint`, `build` and `serve` no longer warn "unknown field_type" for them. The hosted service renders all four.
+
 ## 0.13.1
 
 - `lat_lon` is a known form field type, so `trmnlp lint`, `build` and `serve` no longer warn "unknown field_type: lat_lon" for a location field. The vendored list in `db/data/form_fields.yml` predated the hosted service adding it. (#129)
