@@ -434,7 +434,7 @@ The `settings.yml` file is part of the plugin definition, and is uploaded and do
 
 `description:` is an optional one-line summary of the plugin, up to 35 characters. `trmnlp lint` reports anything longer, and `trmnlp list` shows it next to each plugin name.
 
-`recipe_overview:` is optional free text for a published recipe, with no length limit. TRMNL shows it on the public recipe page with its line breaks kept, and its first 120 characters feed the page's link preview. An overview of at least 100 words lets the recipe appear in Google and other search engines. Put credits and links in an About This Plugin field instead. Leave the key out to keep the overview already on TRMNL; an empty value clears it.
+`recipe_overview:` is optional free text for a published recipe, with no length limit. TRMNL shows it on the public recipe page with its line breaks kept, and its first 120 characters feed the page's link preview. An overview of at least 100 words lets the recipe appear in Google and other search engines; `trmnlp lint` reports one that is shorter. Put credits and links in an About This Plugin field instead. Leave the key out to keep the overview already on TRMNL; an empty value clears it.
 
 See [TRMNL documentation](https://help.trmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0) for details on this file's contents.
 

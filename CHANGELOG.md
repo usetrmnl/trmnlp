@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp lint` reports a `recipe_overview` under 100 words. Below that, TRMNL serves the public recipe page with `robots: noindex`, so the recipe never appears in Google or other search engines, and nothing said so: the page looked fine, and only its HTML gave it away. A blank overview still passes, since private plugins have none.
+
 ## 0.14.0
 
 - `trmnlp serve` and `build` print what the transform writes to stdout and stderr (`console.log`, `print`, `puts`), one `transform stdout:` / `transform stderr:` line each, so a transform can be debugged without returning its logs in the data. (#128)

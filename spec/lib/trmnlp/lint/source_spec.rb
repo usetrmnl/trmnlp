@@ -35,6 +35,24 @@ RSpec.describe TRMNLP::Lint::Source do
     end
   end
 
+  describe '#recipe_overview' do
+    context 'when settings.yml sets an overview' do
+      let(:settings) { { 'recipe_overview' => "Top stories.\n\nRefreshed hourly." } }
+
+      it 'answers the value with its line breaks' do
+        expect(source.recipe_overview).to eq("Top stories.\n\nRefreshed hourly.")
+      end
+    end
+
+    context 'when settings.yml omits the key' do
+      let(:settings) { { 'name' => 'Hacker News' } }
+
+      it 'answers an empty string' do
+        expect(source.recipe_overview).to eq('')
+      end
+    end
+  end
+
   describe '#transform_code' do
     subject(:source) { described_class.new(config: nil, paths:) }
 
