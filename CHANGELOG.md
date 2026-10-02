@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp lint` no longer reports a custom field as unused when only the serverless transform (`src/transform.{py,rb,php,js}`) reads it. Plugins that move their data handling into the transform, reading fields from `input["trmnl"]["plugin_settings"]["custom_fields_values"]`, got one "is not used in form fields or markup" warning per field. The check now searches the transform as well, and its message names it.
+
 ## 0.13.0
 
 - `trmnlp login` now accepts the scoped API keys trmnl.com issues with a `trmnl_` prefix, as well as `user_` account keys. It used to refuse them with "Invalid API key; did you copy it from the right place?" before checking them with the server. A scoped key needs the profile capability to log in, read to list and pull, and content to push. With delete as well, a failed first push removes the plugin it created. (#132)

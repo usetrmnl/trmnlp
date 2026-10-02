@@ -34,4 +34,27 @@ RSpec.describe TRMNLP::Lint::Source do
       end
     end
   end
+
+  describe '#transform_code' do
+    subject(:source) { described_class.new(config: nil, paths:) }
+
+    let(:paths) { instance_double(TRMNLP::Paths, transform_file:) }
+
+    context 'when src has a transform file' do
+      let(:file) { instance_double(Pathname, exist?: true, read: "  function run(input) {}\n") }
+      let(:transform_file) { [file, 'node'] }
+
+      it 'answers its stripped contents' do
+        expect(source.transform_code).to eq('function run(input) {}')
+      end
+    end
+
+    context 'when src has no transform file' do
+      let(:transform_file) { [nil, nil] }
+
+      it 'answers an empty string' do
+        expect(source.transform_code).to eq('')
+      end
+    end
+  end
 end

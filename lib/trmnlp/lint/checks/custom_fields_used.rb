@@ -6,13 +6,14 @@ module TRMNLP
   module Lint
     module Checks
       # Reports custom fields declared in .trmnlp.yml that never appear in the
-      # polling settings or the markup — one finding per unused field.
+      # polling settings, the markup or the serverless transform — one finding
+      # per unused field.
       class CustomFieldsUsed < Check
         SETTINGS_KEYS = %w[polling_url polling_headers polling_body].freeze
 
         def issues
           source.custom_field_values.keys.reject { |keyname| used?(keyname) }.map do |keyname|
-            { message: "Custom field '#{keyname}' is not used in form fields or markup." }
+            { message: "Custom field '#{keyname}' is not used in form fields, markup or the transform." }
           end
         end
 
@@ -20,7 +21,8 @@ module TRMNLP
 
         def used?(keyname)
           pattern = /#{Regexp.escape(keyname)}/
-          searchable_settings.match?(pattern) || source.all_markup.match?(pattern)
+          searchable_settings.match?(pattern) || source.all_markup.match?(pattern) ||
+            source.transform_code.match?(pattern)
         end
 
         def searchable_settings
