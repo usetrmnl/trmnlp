@@ -11,6 +11,7 @@ require_relative 'lint/checks/no_async_functions'
 require_relative 'lint/checks/waits_for_dom_load'
 require_relative 'lint/checks/limited_inline_styles'
 require_relative 'lint/checks/no_size_classes'
+require_relative 'lint/checks/arbitrary_values_in_range'
 require_relative 'lint/checks/no_opacity'
 require_relative 'lint/checks/highcharts_animations_disabled'
 require_relative 'lint/checks/highcharts_elements_unique'
@@ -32,6 +33,7 @@ module TRMNLP
       Checks::WaitsForDomLoad,
       Checks::LimitedInlineStyles,
       Checks::NoSizeClasses,
+      Checks::ArbitraryValuesInRange,
       Checks::NoOpacity,
       Checks::HighchartsAnimationsDisabled,
       Checks::HighchartsElementsUnique,

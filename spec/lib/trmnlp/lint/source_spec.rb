@@ -53,6 +53,17 @@ RSpec.describe TRMNLP::Lint::Source do
     end
   end
 
+  describe '#framework_version' do
+    let(:settings) { {} }
+    let(:version) { TRMNLP::FrameworkVersion.new('3.4.0') }
+
+    before { allow(plugin_config).to receive(:framework_version).and_return(version) }
+
+    it "answers the plugin's framework version" do
+      expect(source.framework_version).to eq(version)
+    end
+  end
+
   describe '#transform_code' do
     subject(:source) { described_class.new(config: nil, paths:) }
 

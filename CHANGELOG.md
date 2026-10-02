@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp lint` reports bracketed Framework classes the Framework never generates, such as `w--[192px]` (sizes stop at 128px), `gap--[60px]` and `rounded--[51px]` (both stop at 50px), `h--[6cqw]` (height takes `cqh`) and, from 3.2.0, a screen-prefixed `md:gap--[20px]`. They match no CSS rule, so they do nothing: a flag sized `lg:w--[192px]` stayed at its smaller width on the X with no warning. The ranges are checked against every 3.x `plugins.css`, and plugins on Framework 2 or earlier are skipped, since v2 generated wider sizes.
+
 ## 0.14.1
 
 - `trmnlp lint` reports a `recipe_overview` under 100 words. Below that, TRMNL serves the public recipe page with `robots: noindex`, so the recipe never appears in Google or other search engines, and nothing said so: the page looked fine, and only its HTML gave it away. A blank overview still passes, since private plugins have none. (#144)
