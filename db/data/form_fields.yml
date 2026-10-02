@@ -18,6 +18,7 @@ field_types:
   - copyable
   - copyable_webhook_url
   - date
+  - lat_lon
   - multi_string
   - number
   - password

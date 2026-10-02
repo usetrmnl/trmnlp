@@ -32,6 +32,11 @@ RSpec.describe TRMNLP::FormField do
       expect(described_class.validate(field)).to be_empty
     end
 
+    it 'treats lat_lon as a known field_type' do
+      field = valid_field.merge('field_type' => 'lat_lon')
+      expect(described_class.validate(field)).to be_empty
+    end
+
     it 'flags an unknown field_type' do
       field = valid_field.merge('field_type' => 'rocketship')
       expect(described_class.validate(field).first).to match(/unknown field_type/)
