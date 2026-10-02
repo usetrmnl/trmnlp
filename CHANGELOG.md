@@ -1,12 +1,12 @@
 
 # Changelog
 
-## Unreleased
+## 0.14.2
 
-- A failed transform prints its stderr once. The `transform failed:` line repeated the whole stack trace that the `transform stderr:` line had just printed; it now names only the exit code. The preview page still shows the full error.
-- When a polling URL answers 401 and an OAuth account is connected, trmnlp refreshes the token and polls once more, as the hosted service does. Before, it refreshed only once the stored expiry had passed, so a token the provider revoked early kept failing until you reconnected.
-- A polling response that is not a 200 still reaches the markup and the transform, as on the hosted service, with a warning for a status outside 2xx. trmnlp replaced it with `{}`, so a transform that follows a 202 "pending job" body (`job_id`, `poll`) got nothing locally.
-- `trmnlp lint` reports bracketed Framework classes the Framework never generates, such as `w--[192px]` (sizes stop at 128px), `gap--[60px]` and `rounded--[51px]` (both stop at 50px), `h--[6cqw]` (height takes `cqh`) and, from 3.2.0, a screen-prefixed `md:gap--[20px]`. They match no CSS rule, so they do nothing: a flag sized `lg:w--[192px]` stayed at its smaller width on the X with no warning. The ranges are checked against every 3.x `plugins.css`, and plugins on Framework 2 or earlier are skipped, since v2 generated wider sizes.
+- A failed transform prints its stderr once. The `transform failed:` line repeated the whole stack trace that the `transform stderr:` line had just printed; it now names only the exit code. The preview page still shows the full error. (#148)
+- When a polling URL answers 401 and an OAuth account is connected, trmnlp refreshes the token and polls once more, as the hosted service does. Before, it refreshed only once the stored expiry had passed, so a token the provider revoked early kept failing until you reconnected. (#150)
+- A polling response that is not a 200 still reaches the markup and the transform, as on the hosted service, with a warning for a status outside 2xx. trmnlp replaced it with `{}`, so a transform that follows a 202 "pending job" body (`job_id`, `poll`) got nothing locally. (#146)
+- `trmnlp lint` reports bracketed Framework classes the Framework never generates, such as `w--[192px]` (sizes stop at 128px), `gap--[60px]` and `rounded--[51px]` (both stop at 50px), `h--[6cqw]` (height takes `cqh`) and, from 3.2.0, a screen-prefixed `md:gap--[20px]`. They match no CSS rule, so they do nothing: a flag sized `lg:w--[192px]` stayed at its smaller width on the X with no warning. The ranges are checked against every 3.x `plugins.css`, and plugins on Framework 2 or earlier are skipped, since v2 generated wider sizes. (#149)
 
 ## 0.14.1
 
