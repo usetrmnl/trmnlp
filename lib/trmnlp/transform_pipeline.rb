@@ -55,7 +55,7 @@ module TRMNLP
 
     def record_failure(result, fallback)
       @error = result.error || "transform exited #{result.exit_code}: #{result.stderr.strip}"
-      reporter.info("transform failed: #{@error}")
+      reporter.info("transform failed: #{result.error || "exited #{result.exit_code}"}")
       fallback
     end
 
