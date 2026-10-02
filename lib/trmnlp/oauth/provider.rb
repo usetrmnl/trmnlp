@@ -19,6 +19,7 @@ module TRMNLP
       def refresh_url = settings['oauth_refresh_url'] || token_url
       def scopes = settings['oauth_scopes']
       def scope_separator = settings['oauth_scope_separator'] || ' '
+      def token_request_auth_method = settings['oauth_token_request_auth_method']
       def pkce? = truthy?(settings['oauth_pkce_enabled'])
       def enabled? = truthy?(settings['oauth_enabled'])
       def client_id = env_first(ENV_CLIENT_ID, settings['oauth_client_id'])

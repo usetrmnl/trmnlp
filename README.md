@@ -334,6 +334,7 @@ oauth_scopes: "read:user user:email"
 oauth_pkce_enabled: "true"      # optional, default false
 # oauth_scope_separator: " "      # optional; some providers use ","
 # oauth_refresh_url: https://...  # optional; defaults to oauth_token_url
+# oauth_token_request_auth_method: header  # optional; "header" sends the client credentials as HTTP Basic, otherwise they go in the body
 ```
 
 Your OAuth app credentials stay local and are never synced, so set them in your environment:
