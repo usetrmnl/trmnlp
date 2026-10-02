@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- `polling_headers` are parsed the way the hosted service parses them: one header per line, `Name: Value` as well as `Name=Value`, a JSON object, and values that contain `=`. Before, trmnlp split only on `&`, so headers saved one per line made the whole poll fail with "cannot include CR/LF" and the markup and transform got no polled data (no `IDX_0`/`IDX_1`). (#127)
 - `trmnlp lint` no longer reports a custom field as unused when only the serverless transform (`src/transform.{py,rb,php,js}`) reads it. Plugins that move their data handling into the transform, reading fields from `input["trmnl"]["plugin_settings"]["custom_fields_values"]`, got one "is not used in form fields or markup" warning per field. The check now searches the transform as well, and its message names it. (#136)
 
 ## 0.13.2

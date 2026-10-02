@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'cgi'
+require 'json'
 require 'yaml'
 
 require_relative '../errors'
@@ -113,13 +114,34 @@ module TRMNLP
         project_config.with_custom_fields(value, extra_variables:)
       end
 
-      def string_to_hash(str, delimiter: '=')
-        str.split('&').map do |k_v|
-          key, value = k_v.split(delimiter)
+      # Mirrors the hosted service's Plugins::Helpers::Transformer#string_to_hash.
+      def string_to_hash(str)
+        return json_to_hash(str) if str.strip.start_with?('{')
+
+        str.split(/[\n&]/).filter_map do |pair|
+          pair = pair.strip
+          key, value = pair.split(delimiter_for(pair), 2)
           next if value.nil?
 
-          { key => CGI.unescape_uri_component(value) }
-        end.compact.reduce({}, :merge)
+          [key.strip, CGI.unescape_uri_component(value.strip)]
+        end.to_h
+      end
+
+      # ": " (not ":") so an "https://" URL isn't mistaken for a "Name: Value" header.
+      def delimiter_for(pair)
+        equals = pair.index('=')
+        colon = pair.index(': ')
+        return '=' if colon.nil?
+        return ': ' if equals.nil?
+
+        colon < equals ? ': ' : '='
+      end
+
+      def json_to_hash(str)
+        parsed = JSON.parse(str)
+        parsed.is_a?(Hash) ? parsed.transform_values(&:to_s) : {}
+      rescue JSON::ParserError
+        {}
       end
     end
   end

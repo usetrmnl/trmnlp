@@ -19,6 +19,40 @@ RSpec.describe TRMNLP::Config::Plugin do
       end
     end
 
+    context 'with one header per line, as the hosted form saves them' do
+      before { plugin.instance_variable_set(:@config, { 'polling_headers' => "Accept=*/*\r\nAccept-Language=en-US" }) }
+
+      it 'splits on the line breaks' do
+        expect(plugin.polling_headers).to eq({ 'Accept' => '*/*', 'Accept-Language' => 'en-US' })
+      end
+    end
+
+    context 'with Name: Value headers' do
+      before { plugin.instance_variable_set(:@config, { 'polling_headers' => "Accept: */*\nReferer: https://a.test/?x=1" }) }
+
+      it 'splits each header on the colon' do
+        expect(plugin.polling_headers).to eq({ 'Accept' => '*/*', 'Referer' => 'https://a.test/?x=1' })
+      end
+    end
+
+    context 'with a JSON object' do
+      let(:json) { '{"Notion-Version": "2022-06-28", "X-Retries": 2}' }
+
+      before { plugin.instance_variable_set(:@config, { 'polling_headers' => json }) }
+
+      it 'answers its keys and values as strings' do
+        expect(plugin.polling_headers).to eq({ 'Notion-Version' => '2022-06-28', 'X-Retries' => '2' })
+      end
+    end
+
+    context 'with an = inside the value' do
+      before { plugin.instance_variable_set(:@config, { 'polling_headers' => 'Authorization=Basic dXNlcjpwYXNz==' }) }
+
+      it 'keeps the whole value' do
+        expect(plugin.polling_headers).to eq({ 'Authorization' => 'Basic dXNlcjpwYXNz==' })
+      end
+    end
+
     context 'with a Liquid conditional that spans the whole string' do
       before do
         config = { 'polling_headers' => '{% if character_name %}Greeting=hello {{ character_name }}{% endif %}' }
