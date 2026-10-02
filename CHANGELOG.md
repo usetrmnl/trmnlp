@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.14.0
 
 - `trmnlp serve` and `build` print what the transform writes to stdout and stderr (`console.log`, `print`, `puts`), one `transform stdout:` / `transform stderr:` line each, so a transform can be debugged without returning its logs in the data. (#128)
 - The OAuth token exchange and refresh honor `oauth_token_request_auth_method` the way the hosted service does: HTTP Basic only for `header`, otherwise the client credentials go in the request body. trmnlp used HTTP Basic whenever a client secret was set, so a provider that wants the credentials in the body rejected the callback with `invalid_client: client_id is required`. A plugin that relied on HTTP Basic locally sets `oauth_token_request_auth_method: header`, which the hosted service already needs. (#121)
