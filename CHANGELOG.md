@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- When a polling URL answers 401 and an OAuth account is connected, trmnlp refreshes the token and polls once more, as the hosted service does. Before, it refreshed only once the stored expiry had passed, so a token the provider revoked early kept failing until you reconnected.
 - A polling response that is not a 200 still reaches the markup and the transform, as on the hosted service, with a warning for a status outside 2xx. trmnlp replaced it with `{}`, so a transform that follows a 202 "pending job" body (`job_id`, `poll`) got nothing locally.
 
 ## 0.14.1

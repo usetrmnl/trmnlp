@@ -43,21 +43,28 @@ module TRMNLP
     attr_reader :config, :paths, :oauth_session, :reporter
 
     def aggregate_responses
-      # Resolve once per poll (it refreshes as a side effect), then share across
-      # every URL, header, and body render.
-      oauth_variables = oauth_session.liquid_variables
-      urls = config.plugin.polling_urls(extra_variables: oauth_variables)
-      responses = urls.map { |url| fetch_one(url, oauth_variables) }
+      fetched = fetch_all
+      # Like the hosted service: a token rejected before its expiry gets one refresh and retry.
+      fetched = fetch_all if fetched.any? { |_url, response| response.status == 401 } && oauth_session.force_refresh!
+      responses = fetched.map { |url, response| parse_response(response, url) }
       return responses.first if responses.size == 1
 
       responses.each_with_index.with_object({}) { |(r, i), h| h["IDX_#{i}"] = r }
+    end
+
+    def fetch_all
+      # Resolve once per attempt (it refreshes as a side effect), then share across
+      # every URL, header, and body render.
+      oauth_variables = oauth_session.liquid_variables
+      urls = config.plugin.polling_urls(extra_variables: oauth_variables)
+      urls.map { |url| [url, fetch_one(url, oauth_variables)] }
     end
 
     def fetch_one(url, oauth_variables)
       verb = config.plugin.polling_verb.upcase
       response = perform_request(url, verb, oauth_variables)
       reporter.info("#{verb} #{url} — received #{response.body.length} bytes (#{response.status} status)")
-      parse_response(response, url)
+      response
     end
 
     def perform_request(url, verb, oauth_variables)

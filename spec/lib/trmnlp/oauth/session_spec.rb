@@ -115,6 +115,37 @@ RSpec.describe TRMNLP::OAuth::Session do
     end
   end
 
+  describe '#force_refresh!' do
+    it 'answers nil when nothing is connected' do
+      expect(session.force_refresh!).to be_nil
+    end
+
+    context 'with a valid token the provider rejected' do
+      before do
+        token_store.write(valid_bundle)
+        allow(client).to receive(:refresh).with(refresh_token: 'RT').and_return(refreshed_bundle)
+      end
+
+      it 'refreshes it anyway' do
+        session.force_refresh!
+
+        expect(token_store.read.access_token).to eq('AT2')
+      end
+
+      it 'answers the refreshed bundle' do
+        expect(session.force_refresh!).to have_attributes(access_token: 'AT2')
+      end
+    end
+
+    context 'without a refresh token' do
+      before { token_store.write(valid_bundle.with(refresh_token: nil)) }
+
+      it 'answers nil' do
+        expect(session.force_refresh!).to be_nil
+      end
+    end
+  end
+
   describe '#liquid_variables' do
     it 'returns no variables when not connected' do
       expect(session.liquid_variables).to eq({})

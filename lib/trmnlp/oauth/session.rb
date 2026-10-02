@@ -45,6 +45,12 @@ module TRMNLP
 
       def disconnect = token_store.clear
 
+      # For a token the provider rejected before its expiry. nil when there is nothing to refresh.
+      def force_refresh!
+        stored = token_store.read
+        refreshed(stored) if stored&.access_token && stored.refresh_token
+      end
+
       private
 
       attr_reader :provider, :token_store, :client
