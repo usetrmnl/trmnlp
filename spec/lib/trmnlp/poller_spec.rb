@@ -103,6 +103,35 @@ RSpec.describe TRMNLP::Poller do
           expect(poller.poll_data).to eq({})
         end
       end
+
+      context 'when the response is not a 200' do
+        subject(:poller) { described_class.new(config:, paths:, oauth_session:, reporter:) }
+
+        let(:reporter) { TRMNLP::Reporter.new(quiet: true) }
+        let(:json_headers) { { 'content-type' => 'application/json' } }
+
+        it 'parses the body of a 202, like the hosted service' do
+          response = instance_double(Faraday::Response, body: '{"step": "pending"}', status: 202, headers: json_headers)
+          allow(faraday_connection).to receive(:get).and_return(response)
+
+          expect(poller.poll_data).to eq({ 'step' => 'pending' })
+        end
+
+        it 'still parses the body of an error status' do
+          response = instance_double(Faraday::Response, body: '{"error": "nope"}', status: 500, headers: json_headers)
+          allow(faraday_connection).to receive(:get).and_return(response)
+
+          expect(poller.poll_data).to eq({ 'error' => 'nope' })
+        end
+
+        it 'warns about an error status' do
+          response = instance_double(Faraday::Response, body: '{}', status: 500, headers: json_headers)
+          allow(faraday_connection).to receive(:get).and_return(response)
+          poller.poll_data
+
+          expect(reporter.messages).to include(a_string_matching(/HTTP 500 from/))
+        end
+      end
     end
 
     context 'when the plugin polls with a POST request' do

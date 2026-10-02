@@ -57,7 +57,7 @@ module TRMNLP
       verb = config.plugin.polling_verb.upcase
       response = perform_request(url, verb, oauth_variables)
       reporter.info("#{verb} #{url} — received #{response.body.length} bytes (#{response.status} status)")
-      parse_response(response)
+      parse_response(response, url)
     end
 
     def perform_request(url, verb, oauth_variables)
@@ -69,15 +69,11 @@ module TRMNLP
       end
     end
 
-    def parse_response(response)
-      return parse_failure(response.body) unless response.status == 200
-
+    # Like the hosted service: an error status is reported, but its body still reaches the data.
+    def parse_response(response, url)
+      success = (200..299).cover?(response.status)
+      reporter.info(reporter.yellow("warning: HTTP #{response.status} from #{url}")) unless success
       parse_body(response.body, response.headers['content-type'])
-    end
-
-    def parse_failure(body)
-      reporter.info(body)
-      {}
     end
 
     def parse_body(body, content_type_header)

@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- A polling response that is not a 200 still reaches the markup and the transform, as on the hosted service, with a warning for a status outside 2xx. trmnlp replaced it with `{}`, so a transform that follows a 202 "pending job" body (`job_id`, `poll`) got nothing locally.
+
 ## 0.14.1
 
 - `trmnlp lint` reports a `recipe_overview` under 100 words. Below that, TRMNL serves the public recipe page with `robots: noindex`, so the recipe never appears in Google or other search engines, and nothing said so: the page looked fine, and only its HTML gave it away. A blank overview still passes, since private plugins have none. (#144)
