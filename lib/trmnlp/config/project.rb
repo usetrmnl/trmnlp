@@ -41,6 +41,9 @@ module TRMNLP
 
       def user_data_overrides = @config['variables'] || {}
 
+      # plugin_merge references ("<keyname>_<id>") mapped to the trmnlp project directories that stand in for them.
+      def merged_plugins = @config['merged_plugins'] || {}
+
       # extra_variables lets the poller inject live values (e.g.
       # oauth_access_token) into the same custom-field render.
       def with_custom_fields(value, values:, extra_variables: {})

@@ -311,6 +311,27 @@ RSpec.describe TRMNLP::UserDataAssembler do
       end
     end
 
+    context 'with a plugin_merge plugin' do
+      let(:merged) { { 'private_plugin_1' => { 'merge_variables' => { 'temp' => 21 } } } }
+
+      before do
+        allow(config.plugin).to receive_messages(static?: false, strategy: 'plugin_merge')
+        allow(TRMNLP::MergedPluginLocals).to receive(:new).and_return(instance_double(TRMNLP::MergedPluginLocals,
+                                                                                      call: merged))
+        allow(transform_client).to receive(:execute)
+      end
+
+      it 'renders the merged plugin locals' do
+        expect(assembler.call['private_plugin_1']).to eq('merge_variables' => { 'temp' => 21 })
+      end
+
+      it 'runs no transform, as TRMNL never does' do
+        assembler.call
+
+        expect(transform_client).not_to have_received(:execute)
+      end
+    end
+
     context 'with a webhook plugin' do
       let(:inputs_received) { [] }
 

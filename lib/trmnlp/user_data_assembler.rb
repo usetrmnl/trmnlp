@@ -4,6 +4,7 @@ require 'active_support'
 require 'active_support/time'
 require 'json'
 
+require_relative 'merged_plugin_locals'
 require_relative 'transform_state'
 
 module TRMNLP
@@ -74,6 +75,8 @@ module TRMNLP
     def source_data
       if config.plugin.static?
         config.plugin.static_data
+      elsif config.plugin.plugin_merge?
+        MergedPluginLocals.new(config:, paths:).call
       elsif paths.user_data.exist?
         JSON.parse(paths.user_data.read)
       else
