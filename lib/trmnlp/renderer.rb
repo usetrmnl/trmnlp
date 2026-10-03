@@ -82,10 +82,7 @@ module TRMNLP
 
     def liquid_environment
       @liquid_environment ||= TRMNL::Liquid.new do |env|
-        config.project.user_filters.each do |module_name, relative_path|
-          require paths.root_dir.join(relative_path)
-          env.register_filter(Object.const_get(module_name))
-        end
+        config.project.user_filter_modules.each { |filter_module| env.register_filter(filter_module) }
       end
     end
 

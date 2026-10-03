@@ -26,7 +26,12 @@ module TRMNLP
         raise InvalidConfig, ".trmnlp.yml is not valid YAML: #{e.message}"
       end
 
-      def user_filters = @config['custom_filters'] || []
+      def user_filter_modules
+        (@config['custom_filters'] || []).map do |module_name, relative_path|
+          require paths.root_dir.join(relative_path)
+          Object.const_get(module_name)
+        end
+      end
 
       def live_render? = !watch_paths.empty?
 

@@ -64,6 +64,18 @@ RSpec.describe TRMNLP::Config::Project do
     end
   end
 
+  describe '#user_filter_modules' do
+    it 'loads each module listed under custom_filters' do
+      Dir.mktmpdir('trmnlp-project-') do |dir|
+        File.write(File.join(dir, 'filters.rb'), "module TrmnlpSpecShoutFilter\n  def shout(input) = input\nend\n")
+        File.write(File.join(dir, '.trmnlp.yml'), "custom_filters:\n  TrmnlpSpecShoutFilter: filters.rb\n")
+
+        expect(described_class.new(TRMNLP::Paths.new(dir)).user_filter_modules.map(&:name))
+          .to eq(%w[TrmnlpSpecShoutFilter])
+      end
+    end
+  end
+
   describe '#serverless_daemon_api_key' do
     let(:root_dir) { 'not-a-valid-path' }
 

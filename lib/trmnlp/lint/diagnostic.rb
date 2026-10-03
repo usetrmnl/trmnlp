@@ -46,6 +46,7 @@ module TRMNLP
         when 'layouts_have_content' then empty_view_locations
         when 'form_fields_valid' then form_field_locations
         when 'custom_fields_used' then project_field_locations
+        when 'no_custom_filters' then custom_filter_locations
         when 'image_links_reachable' then source.locations(Regexp.union(check.unreachable_urls))
         else []
         end
@@ -54,6 +55,10 @@ module TRMNLP
       def class_locations
         css_class = finding[:message][/\A'([^']+)'/, 1]
         css_class ? source.locations(Regexp.new(Regexp.escape(css_class))) : []
+      end
+
+      def custom_filter_locations
+        source.locations(Checks::NoCustomFilters.usage_pattern(finding[:message][/Filter '([^']+)'/, 1]))
       end
 
       def empty_view_locations
