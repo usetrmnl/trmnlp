@@ -5,6 +5,7 @@ PATH
       activesupport (~> 8.0)
       cgi (~> 0.5)
       crass (~> 1.0)
+      csv (~> 3.3)
       faraday (~> 2.1)
       faraday-multipart (~> 1.1)
       filewatcher (~> 3.0)
@@ -56,6 +57,7 @@ GEM
       bigdecimal
       rexml
     crass (1.0.7)
+    csv (3.3.6)
     diff-lcs (1.6.2)
     docile (1.4.1)
     drb (2.2.3)

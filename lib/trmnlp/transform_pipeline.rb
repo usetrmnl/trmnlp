@@ -14,6 +14,9 @@ module TRMNLP
   # Failure modes surface via #error (rendered in the preview UI), not
   # raised.
   class TransformPipeline
+    # TRMNL's serverless runtime stops a transform after this long.
+    EXECUTION_TIMEOUT_SECONDS = 5
+
     attr_reader :error
 
     def initialize(config:, paths:, reporter: Reporter.new)
@@ -50,7 +53,8 @@ module TRMNLP
 
     def run(path, inferred_language, data)
       language = config.plugin.serverless_language || inferred_language
-      result = client.execute(code: path.read, stdin: JSON.generate(data), language:)
+      result = client.execute(code: path.read, stdin: JSON.generate(data), language:,
+                              timeout_seconds: EXECUTION_TIMEOUT_SECONDS)
       report_printed_output(result)
       return record_failure(result, data) unless result.success?
 
@@ -67,22 +71,30 @@ module TRMNLP
     def record_failure(result, fallback)
       @error = result.error || "transform exited #{result.exit_code}: #{result.stderr.strip}"
       reporter.info("transform failed: #{result.error || "exited #{result.exit_code}"}")
-      fallback
+      last_good_output(fallback)
     end
+
+    # TRMNL keeps the last good screen when a transform fails.
+    def last_good_output(fallback) = paths.transform_output.exist? ? previous_output : fallback
 
     def parse_output(output, fallback)
       transformed = JSON.parse(output)
-      return wrap_array(transformed) unless transformed.is_a?(Hash)
+      return reject_non_object_output unless transformed.is_a?(Hash)
 
       transform_state.extract!(transformed)
       store_output(without_previous_merge_variables(transformed))
     rescue JSON::ParserError => e
       @error = "transform produced non-JSON output: #{e.message}"
       reporter.info(@error)
-      fallback
+      last_good_output(fallback)
     end
 
-    def wrap_array(json) = json.is_a?(Array) ? { data: json } : json
+    # TRMNL renders nothing from an array or a scalar, and refuses one from a webhook post.
+    def reject_non_object_output
+      @error = 'Transform output must be a JSON object'
+      reporter.info(@error)
+      {}
+    end
 
     def store_output(output)
       paths.transform_output.dirname.mkpath

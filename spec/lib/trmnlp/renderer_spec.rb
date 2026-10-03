@@ -37,6 +37,14 @@ RSpec.describe TRMNLP::Renderer do
   end
 
   describe '#render_liquid_template' do
+    it 'refuses merge variables over 100 kB, as TRMNL does' do
+      allow(paths).to receive(:template).and_return(Pathname.new(__FILE__))
+      allow(user_data_assembler).to receive(:call).and_return('blob' => 'x' * (100 * 1024))
+
+      expect { renderer.send(:render_liquid_template, 'full') }
+        .to raise_error(TRMNLP::RenderError, /Large payload received \(\d+ bytes\), should be less than 100kb/)
+    end
+
     it 'raises RenderError when the template is missing' do
       expect { renderer.send(:render_liquid_template, 'nonexistent') }
         .to raise_error(TRMNLP::RenderError, /Missing template/)

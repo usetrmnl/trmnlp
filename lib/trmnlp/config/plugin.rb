@@ -6,6 +6,7 @@ require 'yaml'
 
 require_relative '../errors'
 require_relative '../framework_version'
+require_relative '../select_field_choices'
 
 module TRMNLP
   class Config
@@ -32,18 +33,18 @@ module TRMNLP
       def webhook? = strategy == 'webhook'
       def static? = strategy == 'static'
 
+      # One url per line, as TRMNL reads them: CR or LF, squished, blank lines dropped.
       def polling_urls(extra_variables: {})
-        # allow project-level config to override
-        urls = project_config.user_data_overrides.dig('trmnl', 'plugin_settings',
-                                                      'polling_url') || @config['polling_url']
+        return [] if polling_url_text.nil?
 
-        return [] if urls.nil?
-
-        with_custom_fields(urls, extra_variables:).strip.split("\n")
+        with_custom_fields(polling_url_text, extra_variables:).tr("\r", "\n").split("\n")
+                                                              .map { it.gsub(/\s+/, ' ').strip }.reject(&:empty?)
       end
 
-      # for {{ trmnl }}
-      def polling_url_text = polling_urls.join("\r\n")
+      # Unrendered, as TRMNL exposes it to markup. A project-level override wins.
+      def polling_url_text
+        project_config.user_data_overrides.dig('trmnl', 'plugin_settings', 'polling_url') || @config['polling_url']
+      end
 
       def polling_verb = @config['polling_verb'] || 'GET'
 
@@ -98,6 +99,23 @@ module TRMNLP
       # Config::Project#custom_fields, which holds the field *values*.
       def custom_field_definitions = @config['custom_fields'] || []
 
+      # What TRMNL renders with: a select's label saved as its value, a blank value as its default.
+      def custom_fields_values
+        values = project_config.custom_fields.to_h { |keyname, value| [keyname, stored_value(keyname, value)] }
+        custom_field_defaults.merge(values) { |_, default, value| value.to_s.strip.empty? ? default : value }
+      end
+
+      # Fields a polling url needs that are still blank. TRMNL skips polling until they are filled in.
+      def missing_required_fields
+        url = polling_url_text.to_s
+        return [] if url.strip.empty?
+
+        values = custom_fields_values
+        custom_field_definitions.reject { it['optional'] || blank_is_a_valid_answer?(it) }
+                                .map { it['keyname'] }
+                                .select { interpolated_without_default?(url, it) && values[it].to_s.strip.empty? }
+      end
+
       # The raw parsed settings.yml hash. Most callers want the semantic
       # readers above; `trmnlp lint` needs the uninterpreted values because
       # it searches the raw {{ }} templates the semantic readers render away.
@@ -108,7 +126,27 @@ module TRMNLP
       attr_reader :paths, :project_config
 
       def with_custom_fields(value, extra_variables: {})
-        project_config.with_custom_fields(value, extra_variables:)
+        project_config.with_custom_fields(value, values: custom_fields_values, extra_variables:)
+      end
+
+      def custom_field_defaults
+        custom_field_definitions.to_h { [it['keyname'], it['default']] }.reject { |_, default| default.to_s.empty? }
+      end
+
+      def stored_value(keyname, value)
+        field = custom_field_definitions.find { it['keyname'] == keyname && it['field_type'] == 'select' }
+        field ? SelectFieldChoices.new(field).stored_value(value) : value
+      end
+
+      def interpolated_without_default?(url, keyname)
+        url.scan(/\{\{-?\s*(?:trmnl\.plugin_settings\.custom_fields_values\.)?#{Regexp.escape(keyname)}\b([^}]*)/)
+           .any? { |(filters)| !filters.match?(/\|\s*default\s*:/) }
+      end
+
+      # A select's empty option is an answer, not a gap.
+      def blank_is_a_valid_answer?(field)
+        field['field_type'] == 'boolean' || !field['default'].to_s.strip.empty? || field['conditional_validation'] ||
+          Array(field['options']).any? { it.is_a?(Hash) ? it.values.first.to_s.strip.empty? : it.to_s.strip.empty? }
       end
 
       # Mirrors the hosted service's Plugins::Helpers::Transformer#string_to_hash.

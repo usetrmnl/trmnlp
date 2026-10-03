@@ -70,6 +70,38 @@ RSpec.describe TRMNLP::TransformPipeline do
         expect(pipeline.previous_output).to eq('data' => { 'n' => 2 })
       end
 
+      it 'stops the transform after 5 seconds, as TRMNL does' do
+        allow(client).to receive(:execute).and_return(success_result)
+        pipeline.call('n' => 2)
+
+        expect(client).to have_received(:execute).with(hash_including(timeout_seconds: 5))
+      end
+
+      it 'renders nothing from an output that is not an object' do
+        allow(client).to receive(:execute).and_return(success_result.with(output: '[1, 2]'))
+
+        expect(pipeline.call('n' => 2)).to eq({})
+      end
+
+      it 'explains an output that is not an object' do
+        allow(client).to receive(:execute).and_return(success_result.with(output: '[1, 2]'))
+        pipeline.call('n' => 2)
+
+        expect(pipeline.error).to eq('Transform output must be a JSON object')
+      end
+
+      context 'when a transform fails after a good run' do
+        before do
+          allow(paths).to receive(:cache_dir).and_return(Pathname.new(tmp_root).join('cache'))
+          allow(client).to receive(:execute).and_return(success_result, failure_result)
+          pipeline.call('n' => 2)
+        end
+
+        it 'keeps the last good output, as TRMNL keeps the last screen' do
+          expect(pipeline.call('n' => 3)).to eq('doubled' => 4)
+        end
+      end
+
       it 'is configured' do
         expect(pipeline).to be_configured
       end

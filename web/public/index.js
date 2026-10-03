@@ -215,9 +215,13 @@ trmnlp.addSelectFieldRow = function (container, key, selectedValue, options) {
   const row = document.createElement('div');
   row.className = 'custom-field-row';
 
-  const optionsHtml = options.map(opt => {
-    const selected = String(opt) === String(selectedValue) ? 'selected' : '';
-    return `<option value="${trmnlp.escapeHtml(String(opt))}" ${selected}>${trmnlp.escapeHtml(String(opt))}</option>`;
+  // Saved as TRMNL saves them: "New York" as new_york, { Label: value } as its value.
+  const choices = options.map(opt => (opt && typeof opt === 'object')
+    ? [String(Object.keys(opt)[0]), String(Object.values(opt)[0])]
+    : [String(opt), String(opt).toLowerCase().replaceAll(' ', '_')]);
+  const optionsHtml = choices.map(([label, value]) => {
+    const selected = [label, value].includes(String(selectedValue)) ? 'selected' : '';
+    return `<option value="${trmnlp.escapeHtml(value)}" ${selected}>${trmnlp.escapeHtml(label)}</option>`;
   }).join('');
 
   row.innerHTML = `

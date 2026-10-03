@@ -23,7 +23,10 @@ module TRMNLP
     # Context is the composition root: it wires and memoizes the runtime
     # object graph. Callers take the collaborator they need and talk to it
     # directly — Context does not forward methods on their behalf.
-    def poller = @poller ||= Poller.new(config:, paths:, oauth_session:, reporter:)
+    def poller
+      @poller ||= Poller.new(config:, paths:, oauth_session:, reporter:,
+                             trmnl_variables: -> { user_data_assembler.polling_variables })
+    end
 
     def oauth_session
       @oauth_session ||= begin
@@ -35,7 +38,11 @@ module TRMNLP
     end
 
     def transform_pipeline = @transform_pipeline ||= TransformPipeline.new(config:, paths:, reporter:)
-    def user_data_assembler = @user_data_assembler ||= UserDataAssembler.new(config:, paths:, transform_pipeline:)
+
+    def user_data_assembler
+      @user_data_assembler ||= UserDataAssembler.new(config:, paths:, transform_pipeline:, oauth_session:)
+    end
+
     def renderer = @renderer ||= Renderer.new(config:, paths:, user_data_assembler:)
     def watcher = @watcher ||= Watcher.new(config:, user_data_assembler:, transform_pipeline:, reporter:)
 
