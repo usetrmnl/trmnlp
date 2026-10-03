@@ -29,6 +29,10 @@ RSpec.describe TRMNLP::Renderer do
       expect(rendered).to include('window.I18n = { andXMore:')
     end
 
+    it 'signals when Highcharts has drawn, which the PNG capture waits for' do
+      expect(rendered).to include('window.TRMNL_HIGHCHARTS_DONE = true')
+    end
+
     it 'links the stylesheet of a picked theme' do
       allow(config.plugin).to receive(:framework_version).and_return(TRMNLP::FrameworkVersion.new('3.4.0'))
 

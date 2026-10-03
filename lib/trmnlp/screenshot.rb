@@ -7,6 +7,26 @@ require_relative 'errors'
 
 module TRMNLP
   class Screenshot
+    # TRMNL's Converter::Html waits for these flags, longer for a map, then captures what is drawn.
+    READINESS_TIMEOUT = 5
+    READINESS_TIMEOUT_WITH_MAPS = 12
+    MAPS_DOCUMENT_PATTERN = %r{TRMNLMaps\.[a-z]|maplibre-gl(?:\.js|\.css|[/@]\d)}
+    READINESS_CHECK_SCRIPT = <<~JS
+      return document.readyState === 'complete' && window.TRMNL_PLUGINS_READY === true &&
+             window.TRMNL_HIGHCHARTS_DONE === true && window.TRMNL_CHILD_DITHER_DONE !== false
+    JS
+    # Stops timers and animation callbacks from changing the page mid-capture.
+    FREEZE_TIMERS = <<~JS
+      const noop = () => 0;
+      window.setTimeout = window.setInterval = noop;
+      window.requestAnimationFrame = noop;
+      if (window.requestIdleCallback) window.requestIdleCallback = noop;
+      for (let i = 100000; i >= 0; i--) { window.clearTimeout(i); window.clearInterval(i); }
+      if (window.ResizeObserver) window.ResizeObserver.prototype.observe = noop;
+      if (window.MutationObserver) window.MutationObserver.prototype.observe = noop;
+      window.onresize = null;
+    JS
+
     def initialize(pool:, viewport_timeout: 5)
       @pool = pool
       @viewport_timeout = viewport_timeout
@@ -87,16 +107,21 @@ module TRMNLP
         document.close();
       JS
 
-      Selenium::WebDriver::Wait.new(timeout: 5).until do
-        driver.execute_script('return document.readyState') == 'complete'
-      end
-
+      wait_until_ready(driver, html)
       driver.execute_script('return document.fonts && document.fonts.ready')
 
       driver.execute_script(<<~JS)
         document.documentElement.style.overflow = 'hidden';
         document.body.style.overflow = 'hidden';
       JS
+      driver.execute_script(FREEZE_TIMERS)
+    end
+
+    def wait_until_ready(driver, html)
+      timeout = html.match?(MAPS_DOCUMENT_PATTERN) ? READINESS_TIMEOUT_WITH_MAPS : READINESS_TIMEOUT
+      Selenium::WebDriver::Wait.new(timeout:, interval: 0.05).until { driver.execute_script(READINESS_CHECK_SCRIPT) }
+    rescue Selenium::WebDriver::Error::TimeoutError
+      nil
     end
 
     def capture(driver)

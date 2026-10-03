@@ -11,7 +11,7 @@ RSpec.describe TRMNLP::Screenshot do
 
   class FakeDriver
     attr_reader :scripts_run, :window_size, :screenshot_path, :navigated_to, :size_set_count
-    attr_accessor :script_errors, :viewport_overrides, :min_window_width
+    attr_accessor :script_errors, :viewport_overrides, :min_window_width, :readiness_answers
 
     def initialize
       @scripts_run = []
@@ -20,6 +20,7 @@ RSpec.describe TRMNLP::Screenshot do
       @viewport_overrides = []
       @size_set_count = 0
       @min_window_width = nil
+      @readiness_answers = []
     end
 
     def execute_script(script, *_args)
@@ -29,7 +30,7 @@ RSpec.describe TRMNLP::Screenshot do
       return { 'width' => 10, 'height' => 20 } if script.include?('outerWidth')
       return next_viewport if script.include?('innerWidth')
 
-      'complete' if script.include?('readyState')
+      @readiness_answers.empty? || @readiness_answers.shift if script.include?('TRMNL_PLUGINS_READY')
     end
 
     def manage = self
@@ -114,6 +115,37 @@ RSpec.describe TRMNLP::Screenshot do
     it 'raises after two failed attempts' do
       pool.raise_on = Array.new(2) { Selenium::WebDriver::Error::WebDriverError.new('flake') }
       expect { result }.to raise_error(Selenium::WebDriver::Error::WebDriverError)
+    end
+
+    it 'polls until the page signals TRMNL readiness' do
+      driver.readiness_answers = [false, false, true]
+      result
+      expect(driver.scripts_run.count { |script| script.include?('TRMNL_PLUGINS_READY') }).to eq(3)
+    end
+
+    it 'freezes timers as the last step before capture' do
+      result
+      expect(driver.scripts_run.last).to include('requestAnimationFrame')
+    end
+
+    context 'when the page never signals readiness' do
+      before do
+        stub_const("#{described_class}::READINESS_TIMEOUT", 0.1)
+        driver.readiness_answers = Array.new(1000, false)
+      end
+
+      it 'captures anyway' do
+        expect(result.path).to eq(driver.screenshot_path)
+      end
+    end
+
+    context 'when the page draws a map' do
+      before { allow(Selenium::WebDriver::Wait).to receive(:new).and_call_original }
+
+      it 'waits up to the longer maps readiness timeout' do
+        screenshot.call(html: '<script>TRMNLMaps.create()</script>', width: 800, height: 480)
+        expect(Selenium::WebDriver::Wait).to have_received(:new).with(hash_including(timeout: 12))
+      end
     end
 
     context 'when the browser clamps the window below the requested width' do

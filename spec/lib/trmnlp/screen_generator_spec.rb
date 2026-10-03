@@ -49,7 +49,7 @@ RSpec.describe TRMNLP::ScreenGenerator do
   describe 'color depth inference' do
     it 'reads screen--Nbit from the HTML when no depth is supplied' do
       generator.process
-      expect(TRMNLP::ImageQuantizer).to have_received(:new).with(depth: 2)
+      expect(TRMNLP::ImageQuantizer).to have_received(:new).with(depth: 2, dither: false)
     end
 
     context 'when an explicit color_depth is supplied' do
@@ -57,7 +57,7 @@ RSpec.describe TRMNLP::ScreenGenerator do
 
       it 'overrides the inferred depth' do
         generator.process
-        expect(TRMNLP::ImageQuantizer).to have_received(:new).with(depth: 4)
+        expect(TRMNLP::ImageQuantizer).to have_received(:new).with(depth: 4, dither: false)
       end
     end
 
@@ -66,8 +66,27 @@ RSpec.describe TRMNLP::ScreenGenerator do
 
       it 'falls back to 1-bit' do
         generator.process
-        expect(TRMNLP::ImageQuantizer).to have_received(:new).with(depth: 1)
+        expect(TRMNLP::ImageQuantizer).to have_received(:new).with(depth: 1, dither: false)
       end
+    end
+  end
+
+  describe 'dithering' do
+    let(:html) { '<img class="image-dither" src="photo.png">' }
+
+    it 'dithers when the page asks for image-dither' do
+      generator.process
+      expect(TRMNLP::ImageQuantizer).to have_received(:new).with(depth: 1, dither: true)
+    end
+  end
+
+  describe 'chart libraries' do
+    let(:html) { '<script src="https://code.highcharts.com/highcharts.js"></script>' }
+
+    it 'renders against the Highcharts release TRMNL serves' do
+      generator.process
+      expect(screenshot).to have_received(:call)
+        .with(hash_including(html: '<script src="https://trmnl.com/js/highcharts/12.3.0/highcharts.js"></script>'))
     end
   end
 end
