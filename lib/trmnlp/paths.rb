@@ -8,7 +8,7 @@ module TRMNLP
     attr_reader :root_dir
 
     def initialize(root_dir)
-      @root_dir = Pathname.new(root_dir)
+      @root_dir = Pathname.new(root_dir).expand_path
       @xdg = XDG.new
     end
 

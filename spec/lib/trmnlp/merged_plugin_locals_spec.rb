@@ -58,6 +58,20 @@ RSpec.describe TRMNLP::MergedPluginLocals do
     end
   end
 
+  context 'when two plugin_merge projects list each other' do
+    before do
+      write_project('weather', { 'merged_plugins' => { 'private_plugin_1' => '../merge' } },
+                    { 'strategy' => 'plugin_merge' })
+    end
+
+    it 'gives the plugin met again empty data instead of recursing forever' do
+      merged = merged_plugin_locals.call.dig('private_plugin_42', 'merge_variables', 'private_plugin_1',
+                                             'merge_variables')
+
+      expect(merged).to eq({})
+    end
+  end
+
   it 'raises when a listed directory is not a trmnlp project' do
     root_dir.join('weather', '.trmnlp.yml').delete
 

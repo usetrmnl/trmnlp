@@ -12,14 +12,27 @@ module TRMNLP
     end
 
     def call
-      locals = config.project.merged_plugins.to_h { |reference, dir| [reference, plugin_locals(paths.expand(dir))] }
-      instance_selections.each { |keyname, selected| locals[keyname] = locals[selected] if locals.key?(selected) }
-      locals
+      # A project met again is a cycle and merges as empty.
+      root_dirs_being_merged = (Thread.current[:trmnlp_merged_plugin_dirs] ||= [])
+      return {} if root_dirs_being_merged.include?(paths.root_dir)
+
+      root_dirs_being_merged.push(paths.root_dir)
+      begin
+        merged_locals
+      ensure
+        root_dirs_being_merged.pop
+      end
     end
 
     private
 
     attr_reader :config, :paths
+
+    def merged_locals
+      locals = config.project.merged_plugins.to_h { |reference, dir| [reference, plugin_locals(paths.expand(dir))] }
+      instance_selections.each { |keyname, selected| locals[keyname] = locals[selected] if locals.key?(selected) }
+      locals
+    end
 
     def plugin_locals(dir)
       context = Context.new(dir)

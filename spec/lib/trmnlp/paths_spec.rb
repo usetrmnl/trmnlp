@@ -79,6 +79,12 @@ RSpec.describe TRMNLP::Paths do
     end
   end
 
+  describe '#root_dir' do
+    it 'expands a relative directory, so the cache key does not depend on how -d was typed' do
+      expect(described_class.new('.').root_dir).to eq(Pathname.pwd)
+    end
+  end
+
   describe '#user_data' do
     it 'is keyed per project root' do
       other = described_class.new(Dir.mktmpdir('trmnlp-other-'))
