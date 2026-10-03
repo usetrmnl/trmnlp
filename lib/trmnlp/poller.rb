@@ -12,15 +12,19 @@ module TRMNLP
     BYTE_ORDER_MARK = "\xEF\xBB\xBF".b
 
     # trmnl_variables answers the trmnl namespace TRMNL renders polling urls, headers and bodies with.
-    def initialize(config:, paths:, oauth_session:, trmnl_variables: -> { {} }, reporter: Reporter.new)
+    # rubocop:disable-next Metrics/ParameterLists -- keyword collaborators Context wires once
+    def initialize(config:, paths:, oauth_session:, trmnl_variables: -> { {} }, reporter: Reporter.new,
+                   async_callback: nil)
       @config = config
       @paths = paths
       @oauth_session = oauth_session
       @trmnl_variables = trmnl_variables
       @reporter = reporter
+      @async_callback = async_callback
     end
 
     def poll_data
+      return request_async_data if config.plugin.async_polling?
       return unless config.plugin.polling?
 
       missing = config.plugin.missing_required_fields
@@ -40,7 +44,30 @@ module TRMNLP
 
     private
 
-    attr_reader :config, :paths, :oauth_session, :trmnl_variables, :reporter
+    attr_reader :config, :paths, :oauth_session, :trmnl_variables, :reporter, :async_callback
+
+    # Like TRMNL: the API answers 202 and posts the data to callback_url later; the last post renders meanwhile.
+    def request_async_data
+      unless async_callback&.server_url
+        return report_warning('async_polling needs `trmnlp serve` to receive the callback')
+      end
+      return report_warning('Waiting for the async callback; the last data posted renders') if async_callback.awaiting?
+      raise InvalidConfig, 'config must specify polling_url' if config.plugin.polling_urls.empty?
+
+      report_warning('Async callback not received within 15 minutes') if async_callback.expired?
+      response, url = send_async_request(async_callback.start)
+      return if response&.status == 202
+
+      async_callback.cancel
+      report_warning("Async polling failed: HTTP #{response.status} from #{without_query(url)}") if response
+    end
+
+    def send_async_request(callback_url)
+      variables = trmnl_variables.call.merge(oauth_session.liquid_variables)
+      url = config.plugin.polling_urls(extra_variables: variables.merge('callback_url' => callback_url)).first
+      headers = config.plugin.polling_headers(extra_variables: variables)
+      [fetch_one(url, headers, config.plugin.polling_body(extra_variables: variables)), url]
+    end
 
     def aggregate_responses
       fetched = fetch_all

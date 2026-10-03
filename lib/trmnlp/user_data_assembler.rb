@@ -26,8 +26,7 @@ module TRMNLP
     # survives even when the transform doesn't pass it through.
     def call(device: {})
       merged = assemble(base_trmnl_data(device:), source_data)
-      # TRMNL transforms a webhook post once, as it arrives, so a render shows the stored result.
-      runs_transform = !config.plugin.webhook? && transform_pipeline.configured?
+      runs_transform = config.plugin.transforms_on_render? && transform_pipeline.configured?
       result = runs_transform ? transform_pipeline.call(transform_input(merged)) : merged.except('trmnl')
       # The markup renders the state this run's transform kept, as on TRMNL.
       result['trmnl'] = merged['trmnl'].merge('state' => transform_state.read)

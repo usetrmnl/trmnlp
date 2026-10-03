@@ -389,4 +389,21 @@ RSpec.describe TRMNLP::App do
       expect(JSON.parse(last_response.body)).to eq('message' => 'nope')
     end
   end
+
+  describe 'POST /callback' do
+    let(:payload) { '{"merge_variables":{"items":[1]}}' }
+
+    before do
+      allow(context.async_callback).to receive(:call).with(payload, '3').and_return([410, { message: 'gone' }])
+      post '/callback?v=3', payload, { 'CONTENT_TYPE' => 'application/json' }
+    end
+
+    it 'answers with the status from the callback' do
+      expect(last_response.status).to eq(410)
+    end
+
+    it 'answers with the JSON body from the callback' do
+      expect(JSON.parse(last_response.body)).to eq('message' => 'gone')
+    end
+  end
 end

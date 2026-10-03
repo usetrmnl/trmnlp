@@ -292,6 +292,25 @@ RSpec.describe TRMNLP::UserDataAssembler do
       end
     end
 
+    context 'with an async_polling plugin' do
+      before do
+        allow(config.plugin).to receive_messages(static?: false, strategy: 'async_polling')
+        paths.user_data.dirname.mkpath
+        paths.user_data.write('{"items":[5]}')
+        allow(transform_client).to receive(:execute)
+      end
+
+      it 'renders the data the callback stored' do
+        expect(assembler.call['items']).to eq([5])
+      end
+
+      it 'runs no transform, as TRMNL never does' do
+        assembler.call
+
+        expect(transform_client).not_to have_received(:execute)
+      end
+    end
+
     context 'with a webhook plugin' do
       let(:inputs_received) { [] }
 

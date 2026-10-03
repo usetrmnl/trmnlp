@@ -336,6 +336,9 @@ variables:
 
 ```
 
+An `async_polling` plugin gets `{{ callback_url }}` in its polling url. It points at
+`trmnlp serve`'s `/callback` route, where the API posts `merge_variables` after answering 202.
+
 ## OAuth2
 
 This feature is in beta. Please report incorrect behaviour at https://github.com/usetrmnl/trmnlp/issues.

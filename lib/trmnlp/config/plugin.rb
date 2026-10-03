@@ -32,6 +32,10 @@ module TRMNLP
       def polling? = strategy == 'polling'
       def webhook? = strategy == 'webhook'
       def static? = strategy == 'static'
+      def async_polling? = strategy == 'async_polling'
+
+      # TRMNL transforms a webhook post as it arrives, and never transforms async_polling data.
+      def transforms_on_render? = !(webhook? || async_polling?)
 
       # One url per line, as TRMNL reads them: CR or LF, squished, blank lines dropped.
       def polling_urls(extra_variables: {})

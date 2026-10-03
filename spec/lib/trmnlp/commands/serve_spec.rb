@@ -37,6 +37,12 @@ RSpec.describe TRMNLP::Commands::Serve do
       expect(TRMNLP::App).to have_received(:set).with(:port, 4567)
     end
 
+    it 'points async callbacks at localhost when bound to every interface' do
+      command.call
+
+      expect(context.async_callback.server_url).to eq('http://localhost:4567')
+    end
+
     it 'starts the Sinatra app' do
       command.call
 

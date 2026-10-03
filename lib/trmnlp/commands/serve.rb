@@ -23,6 +23,7 @@ module TRMNLP
         App.set(:browser_pool, BrowserPool.new(driver_factory: FirefoxDriver.method(:build)))
         App.set(:bind, options.bind)
         App.set(:port, options.port)
+        context.async_callback.server_url = "http://#{callback_host}:#{options.port}"
         # Each live-reload SSE connection holds a Puma thread for the tab's
         # lifetime; the default 0:5 pool runs out fast with multiple tabs open.
         App.set(:server_settings, Threads: '1:16')
@@ -33,6 +34,8 @@ module TRMNLP
       end
 
       private
+
+      def callback_host = options.bind == '0.0.0.0' ? 'localhost' : options.bind
 
       # Codespaces forwards the dev port through a proxy whose Host header Sinatra rejects.
       def codespaces? = ENV['CODESPACES'] == 'true'
