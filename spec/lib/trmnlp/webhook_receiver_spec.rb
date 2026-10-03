@@ -70,6 +70,12 @@ RSpec.describe TRMNLP::WebhookReceiver do
     end
   end
 
+  it 'answers an empty list for merge_variables when nothing is stored and none were posted, as TRMNL does' do
+    paths.user_data.delete
+
+    expect(receiver.call('{"items":[2]}').last[:merge_variables]).to eq([])
+  end
+
   it 'answers 400 to a body that is not JSON' do
     expect(receiver.call('not json').first).to eq(400)
   end

@@ -62,7 +62,8 @@ module TRMNLP
 
     def reject(payload, message)
       report_warning(message)
-      [422, { message:, merge_variables: stored_data.empty? ? payload.merge_variables : stored_data }]
+      posted = payload.merge_variables.nil? ? [] : payload.merge_variables
+      [422, { message:, merge_variables: stored_data.empty? ? posted : stored_data }]
     end
 
     def stored_data
