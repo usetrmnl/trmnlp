@@ -86,6 +86,22 @@ RSpec.describe TRMNLP::UserDataAssembler do
       expect(assembler.call.dig('trmnl', 'plugin_settings', 'instance_name')).to eq('Mine')
     end
 
+    it 'fills custom_fields_values with their defaults' do
+      allow(config.plugin).to receive(:custom_fields_values).and_return('city' => 'Paris')
+
+      expect(assembler.call.dig('trmnl', 'plugin_settings', 'custom_fields_values')).to eq('city' => 'Paris')
+    end
+
+    it 'leaves out custom_fields_values when there are none' do
+      allow(config.plugin).to receive(:custom_fields_values).and_return({})
+
+      expect(assembler.call.dig('trmnl', 'plugin_settings')).not_to have_key('custom_fields_values')
+    end
+
+    it 'gives polling the trmnl namespace' do
+      expect(assembler.polling_variables.dig('trmnl', 'device', 'width')).to eq(800)
+    end
+
     it 'answers an empty trmnl.state before a transform kept one' do
       expect(assembler.call.dig('trmnl', 'state')).to eq({})
     end
@@ -228,6 +244,30 @@ RSpec.describe TRMNLP::UserDataAssembler do
 
       it 'keeps the system namespace in the final result (slice is transform-input only)' do
         expect(assembler.call.dig('trmnl', 'system', 'timestamp_utc')).to be_a(Integer)
+      end
+    end
+
+    context 'with a connected OAuth account' do
+      subject(:assembler) { described_class.new(config:, paths:, transform_pipeline:, oauth_session:) }
+
+      let(:oauth_session) do
+        instance_double(TRMNLP::OAuth::Session,
+                        liquid_variables: { 'oauth_access_token' => 'tok', 'oauth_token_type' => 'Bearer' })
+      end
+      let(:inputs_received) { [] }
+
+      before do
+        allow(transform_client).to receive(:execute) do |kwargs|
+          inputs_received << JSON.parse(kwargs[:stdin])
+          TRMNLP::TransformClient::Result.new(stdout: '', stderr: '', output: '{}', exit_code: 0, duration_ms: 5,
+                                              error: nil)
+        end
+      end
+
+      it 'passes the token to the transform as trmnl.oauth' do
+        assembler.call
+
+        expect(inputs_received.first.dig('trmnl', 'oauth')).to eq('access_token' => 'tok', 'token_type' => 'Bearer')
       end
     end
 

@@ -11,10 +11,11 @@ module TRMNLP
     DEFAULT_DEVICE_WIDTH = 800
     DEFAULT_DEVICE_HEIGHT = 480
 
-    def initialize(config:, paths:, transform_pipeline:)
+    def initialize(config:, paths:, transform_pipeline:, oauth_session: nil)
       @config = config
       @paths = paths
       @transform_pipeline = transform_pipeline
+      @oauth_session = oauth_session
       @transform_state = TransformState.new(paths:)
     end
 
@@ -26,7 +27,8 @@ module TRMNLP
     def call(device: {})
       merged = assemble(base_trmnl_data(device:), source_data)
       # TRMNL transforms a webhook post once, as it arrives, so a render shows the stored result.
-      result = config.plugin.webhook? ? merged.except('trmnl') : transform_pipeline.call(transform_input(merged))
+      runs_transform = !config.plugin.webhook? && transform_pipeline.configured?
+      result = runs_transform ? transform_pipeline.call(transform_input(merged)) : merged.except('trmnl')
       # The markup renders the state this run's transform kept, as on TRMNL.
       result['trmnl'] = merged['trmnl'].merge('state' => transform_state.read)
       result
@@ -36,6 +38,9 @@ module TRMNLP
       transform_pipeline.call(transform_input(assemble(base_trmnl_data(device: {}), merge_variables)))
     end
 
+    # What a polling url, its headers and its body render with on TRMNL.
+    def polling_variables = assemble(base_trmnl_data(device: {}), {}).slice('trmnl')
+
     def device_from_params(params)
       { 'width' => params[:width]&.to_i, 'height' => params[:height]&.to_i, 'model' => params[:model],
         'bit_depth' => params[:bit_depth]&.to_i, 'orientation' => params[:orientation] }.compact
@@ -43,7 +48,7 @@ module TRMNLP
 
     private
 
-    attr_reader :config, :paths, :transform_pipeline, :transform_state
+    attr_reader :config, :paths, :transform_pipeline, :transform_state, :oauth_session
 
     # The trmnl namespace wins over a trmnl key in the fetched data, as on TRMNL; only .trmnlp.yml overrides it.
     def assemble(namespace, source)
@@ -55,8 +60,14 @@ module TRMNLP
     # so transforms behave the same locally as in production.
     def transform_input(merged)
       trmnl = merged['trmnl'].slice('user', 'device', 'plugin_settings', 'state')
-      merged.merge('trmnl' => trmnl.merge('previous_merge_variables' => previous_merge_variables))
+      trmnl['previous_merge_variables'] = previous_merge_variables
+      oauth = oauth_for_transform
+      trmnl['oauth'] = oauth unless oauth.empty?
+      merged.merge('trmnl' => trmnl)
     end
+
+    # The connected account's token, so a transform can make its own authenticated calls.
+    def oauth_for_transform = (oauth_session&.liquid_variables || {}).transform_keys { it.delete_prefix('oauth_') }
 
     # What the last run stored for the markup: a webhook's stored data, otherwise the last transform output.
     def previous_merge_variables = config.plugin.webhook? ? source_data : transform_pipeline.previous_output
@@ -114,9 +125,13 @@ module TRMNLP
         'refresh_interval_minutes' => config.plugin.refresh_interval,
         'strategy' => config.plugin.strategy,
         'dark_mode' => config.plugin.dark_mode,
-        'no_screen_padding' => config.plugin.no_screen_padding,
-        'custom_fields_values' => config.project.custom_fields
-      }.merge(polling_url_setting, data_fetched_setting)
+        'no_screen_padding' => config.plugin.no_screen_padding
+      }.merge(custom_fields_setting, polling_url_setting, data_fetched_setting)
+    end
+
+    def custom_fields_setting
+      values = config.plugin.custom_fields_values
+      values.empty? ? {} : { 'custom_fields_values' => values }
     end
 
     # The polling url can carry the author's API key, so TRMNL exposes it only to a polling plugin.
