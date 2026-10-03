@@ -4,6 +4,37 @@
     <script>
       const [andXMorePrefix, andXMoreSuffix] = <%= @and_x_more.to_json %>;
       window.I18n = { andXMore: (count) => `${andXMorePrefix} ${count} ${andXMoreSuffix}` };
+
+      // Copied from TRMNL's plugin_rendering.js: the PNG capture waits for TRMNL_HIGHCHARTS_DONE.
+      document.addEventListener("DOMContentLoaded", () => {
+        if (!window.Highcharts) {
+          window.TRMNL_HIGHCHARTS_DONE = true;
+          return;
+        }
+
+        let counter = 0;
+        const settle = () => {
+          const allReady = Highcharts.charts.every(c => c && c.renderer && c.renderer.boxWrapper);
+          if (!allReady && counter <= 50) return false; // 5 second timeout
+
+          // A chart drawn before the title bar clamped its slot falls back to a 400px height.
+          Highcharts.charts.forEach(c => {
+            if (!c || !c.renderTo) return;
+            const w = c.renderTo.offsetWidth;
+            const h = c.renderTo.offsetHeight;
+            if (h && Math.round(c.chartHeight) !== Math.round(h)) c.setSize(w, h, false);
+          });
+          window.TRMNL_HIGHCHARTS_DONE = true;
+          return true;
+        };
+
+        if (settle()) return;
+
+        const interval = setInterval(() => {
+          counter++;
+          if (settle()) clearInterval(interval);
+        }, 100);
+      });
     </script>
     <link rel="stylesheet" href="<%= @framework.css_url %>" />
     <% if @theme_css_url %><link rel="stylesheet" href="<%= @theme_css_url %>" /><% end %>

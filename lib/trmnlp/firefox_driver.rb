@@ -18,9 +18,6 @@ module TRMNLP
       Selenium::WebDriver::Firefox::Options.new.tap do |opts|
         opts.add_argument('--headless')
         opts.add_argument('--disable-web-security')
-        # Subpixel antialiasing colour-fringes badly when quantized to 1-bit e-ink.
-        opts.add_preference('gfx.text.disable-aa', true)
-        opts.add_preference('gfx.text.subpixel-position.force-disabled', true)
       end
     end
   end
