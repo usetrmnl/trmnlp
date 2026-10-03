@@ -1,6 +1,11 @@
 
 # Changelog
 
+## 0.15.0
+
+- `trmnlp lint` names where each finding is: a rule ID such as `[no_opacity]`, then the file, line and column with the source line. Before, it printed only the message, so you had to search every view and Shared for the cause. `trmnlp lint --format json` writes the same report as one JSON object (`version`, `passed`, `issues`) for CI. Exit statuses are unchanged, and the values of unused custom fields in `.trmnlp.yml` are never printed. (#153)
+- The inline-style check counts real CSS declarations in `style` attributes, still with a limit of six. It counted eight property names anywhere in the markup, so `font-size` in an HTML comment or a `<style>` block failed while seven `style="color:red"` passed. Comments, scripts, text and `<style>` blocks no longer count, and declarations inside Liquid `{% if %}` branches all count. (#152)
+
 ## 0.14.2
 
 - A failed transform prints its stderr once. The `transform failed:` line repeated the whole stack trace that the `transform stderr:` line had just printed; it now names only the exit code. The preview page still shows the full error. (#148)
