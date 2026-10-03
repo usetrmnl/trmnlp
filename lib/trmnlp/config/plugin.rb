@@ -101,7 +101,7 @@ module TRMNLP
 
       # What TRMNL renders with: a select's label saved as its value, a blank value as its default.
       def custom_fields_values
-        values = project_config.custom_fields.to_h { |keyname, value| [keyname, stored_value(keyname, value)] }
+        values = project_config.custom_fields_with_env.to_h { |keyname, value| [keyname, stored_value(keyname, value)] }
         custom_field_defaults.merge(values) { |_, default, value| value.to_s.strip.empty? ? default : value }
       end
 

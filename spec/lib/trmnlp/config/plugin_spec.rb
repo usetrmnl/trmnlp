@@ -137,6 +137,13 @@ RSpec.describe TRMNLP::Config::Plugin do
       expect(plugin.custom_fields_values['city']).to eq('false')
     end
 
+    it 'fills in an env value, which the markup and the polling url both see' do
+      allow(ENV).to receive(:to_h).and_return('ICAO' => 'KSFO')
+      allow(project_config).to receive(:custom_fields).and_return('station' => '{{ env.ICAO }}')
+
+      expect(plugin.custom_fields_values['station']).to eq('KSFO')
+    end
+
     it "saves a select's label as its value" do
       allow(project_config).to receive(:custom_fields).and_return('units' => 'Metric')
 

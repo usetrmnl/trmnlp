@@ -36,13 +36,15 @@ module TRMNLP
 
       def custom_fields = @config.fetch('custom_fields', {}).transform_values { |v| stringify_field_value(v) }
 
+      # Values with {{ env.X }} filled in, standing in for what a user types into TRMNL's form.
+      def custom_fields_with_env = custom_fields.transform_values { |v| with_env(v) }
+
       def user_data_overrides = @config['variables'] || {}
 
       # extra_variables lets the poller inject live values (e.g.
       # oauth_access_token) into the same custom-field render.
       def with_custom_fields(value, values:, extra_variables: {})
-        custom_fields_with_env = values.transform_values { |v| with_env(v) }
-        parse_liquid(value).render(custom_fields_with_env.merge(extra_variables))
+        parse_liquid(value).render(values.merge(extra_variables))
       end
 
       def time_zone = @config['time_zone'] || 'UTC'
