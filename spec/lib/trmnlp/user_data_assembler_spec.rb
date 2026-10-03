@@ -10,11 +10,14 @@ RSpec.describe TRMNLP::UserDataAssembler do
   let(:paths) { TRMNLP::Paths.new(root_dir) }
   let(:config) { TRMNLP::Config.new(paths) }
   let(:transform_pipeline) { TRMNLP::TransformPipeline.new(config:, paths:) }
+  let(:cache_dir) { Pathname.new(Dir.mktmpdir) }
+
+  before { allow(paths).to receive(:cache_dir).and_return(cache_dir) }
+  after { FileUtils.remove_entry(cache_dir) }
 
   describe '#call' do
     before do
       allow(config.plugin).to receive(:static?).and_return(false)
-      allow(paths.user_data).to receive(:exist?).and_return(false)
     end
 
     context 'without device overrides' do
@@ -26,9 +29,65 @@ RSpec.describe TRMNLP::UserDataAssembler do
 
     it 'fills the device status and schedule the hosted service sends' do
       expect(assembler.call['trmnl']['device']).to include(
-        'model' => 'og_plus', 'bit_depth' => 2, 'firmware_version' => '1.6.3', 'refresh_interval_seconds' => 900,
+        'model' => 'og_plus', 'bit_depth' => 2, 'firmware_version' => '1.8.17', 'refresh_interval_seconds' => 900,
         'sleep_mode_enabled' => false, 'sleep_start_time' => 1320, 'sleep_end_time' => 480
       )
+    end
+
+    it 'defaults the device to landscape' do
+      expect(assembler.call.dig('trmnl', 'device', 'orientation')).to eq('landscape')
+    end
+
+    it 'names the instance after the plugin' do
+      allow(config.plugin).to receive(:settings).and_return('name' => 'Kevin Bacon Facts')
+
+      expect(assembler.call.dig('trmnl', 'plugin_settings', 'instance_name')).to eq('Kevin Bacon Facts')
+    end
+
+    it 'includes no_screen_padding in the plugin settings' do
+      allow(config.plugin).to receive(:no_screen_padding).and_return('yes')
+
+      expect(assembler.call.dig('trmnl', 'plugin_settings', 'no_screen_padding')).to eq('yes')
+    end
+
+    it 'never includes the polling headers' do
+      expect(assembler.call.dig('trmnl', 'plugin_settings')).not_to have_key('polling_headers')
+    end
+
+    it 'leaves out the polling url for a plugin that does not poll' do
+      allow(config.plugin).to receive(:polling?).and_return(false)
+
+      expect(assembler.call.dig('trmnl', 'plugin_settings')).not_to have_key('polling_url')
+    end
+
+    it 'includes the polling url for a polling plugin' do
+      allow(config.plugin).to receive_messages(polling?: true, polling_url_text: 'https://example.com')
+
+      expect(assembler.call.dig('trmnl', 'plugin_settings', 'polling_url')).to eq('https://example.com')
+    end
+
+    it 'leaves out data_fetched_utc before any data was fetched' do
+      expect(assembler.call.dig('trmnl', 'plugin_settings')).not_to have_key('data_fetched_utc')
+    end
+
+    it 'stamps data_fetched_utc with the time the stored data was fetched' do
+      paths.user_data.dirname.mkpath
+      paths.user_data.write('{}')
+      File.utime(Time.at(1_759_000_000), Time.at(1_759_000_000), paths.user_data)
+
+      expect(assembler.call.dig('trmnl', 'plugin_settings', 'data_fetched_utc')).to eq(1_759_000_000)
+    end
+
+    it 'keeps its own trmnl namespace over a trmnl key in the fetched data, as TRMNL does' do
+      paths.user_data.dirname.mkpath
+      paths.user_data.write('{"trmnl":{"plugin_settings":{"instance_name":"Other"}}}')
+      allow(config.plugin).to receive(:settings).and_return('name' => 'Mine')
+
+      expect(assembler.call.dig('trmnl', 'plugin_settings', 'instance_name')).to eq('Mine')
+    end
+
+    it 'answers an empty trmnl.state before a transform kept one' do
+      expect(assembler.call.dig('trmnl', 'state')).to eq({})
     end
 
     it 'reads the refresh interval from the plugin settings' do
@@ -43,6 +102,12 @@ RSpec.describe TRMNLP::UserDataAssembler do
 
         expect(data.dig('trmnl', 'device', 'width')).to eq(400)
         expect(data.dig('trmnl', 'device', 'height')).to eq(240)
+      end
+
+      it 'uses the picked orientation' do
+        data = assembler.call(device: { 'orientation' => 'portrait' })
+
+        expect(data.dig('trmnl', 'device', 'orientation')).to eq('portrait')
       end
 
       it 'uses the picked model and bit depth' do
@@ -94,6 +159,10 @@ RSpec.describe TRMNLP::UserDataAssembler do
 
     it 'extracts the model and bit depth' do
       expect(assembler.device_from_params(model: 'v2', bit_depth: '4')).to eq('model' => 'v2', 'bit_depth' => 4)
+    end
+
+    it 'extracts the orientation' do
+      expect(assembler.device_from_params(orientation: 'portrait')).to eq('orientation' => 'portrait')
     end
 
     it 'returns an empty hash when neither param is present' do
@@ -152,12 +221,103 @@ RSpec.describe TRMNLP::UserDataAssembler do
 
         expect(transform_client).to have_received(:execute) do |kwargs|
           trmnl = JSON.parse(kwargs[:stdin])['trmnl']
-          expect(trmnl.keys).to contain_exactly('user', 'device', 'plugin_settings')
+          expect(trmnl.keys).to contain_exactly('user', 'device', 'plugin_settings', 'state',
+                                                'previous_merge_variables')
         end
       end
 
       it 'keeps the system namespace in the final result (slice is transform-input only)' do
         expect(assembler.call.dig('trmnl', 'system', 'timestamp_utc')).to be_a(Integer)
+      end
+    end
+
+    context 'when the transform has run before' do
+      let(:inputs_received) { [] }
+
+      before do
+        allow(transform_client).to receive(:execute) do |kwargs|
+          inputs_received << JSON.parse(kwargs[:stdin])
+          TRMNLP::TransformClient::Result.new(
+            stdout: '', stderr: '', output: '{"items":[2,4,6]}', exit_code: 0, duration_ms: 5, error: nil
+          )
+        end
+      end
+
+      it 'passes the last output as trmnl.previous_merge_variables' do
+        2.times { assembler.call }
+
+        previous = inputs_received.map { it.dig('trmnl', 'previous_merge_variables') }
+
+        expect(previous).to eq([{}, { 'items' => [2, 4, 6] }])
+      end
+    end
+
+    context 'with a webhook plugin' do
+      let(:inputs_received) { [] }
+
+      before do
+        allow(config.plugin).to receive_messages(static?: false, webhook?: true)
+        paths.user_data.dirname.mkpath
+        paths.user_data.write('{"items":[5]}')
+        allow(transform_client).to receive(:execute) do |kwargs|
+          inputs_received << JSON.parse(kwargs[:stdin])
+          TRMNLP::TransformClient::Result.new(
+            stdout: '', stderr: '', output: '{"items":[70]}', exit_code: 0, duration_ms: 5, error: nil
+          )
+        end
+      end
+
+      it 'renders the stored data without running the transform' do
+        expect(assembler.call['items']).to eq([5])
+      end
+
+      it 'runs no transform on render' do
+        assembler.call
+
+        expect(transform_client).not_to have_received(:execute)
+      end
+
+      it 'transforms a post with the posted merge_variables' do
+        expect(assembler.transform_webhook_post('items' => [7])).to eq('items' => [70])
+      end
+
+      it 'passes the posted merge_variables to the transform' do
+        assembler.transform_webhook_post('items' => [7])
+
+        expect(inputs_received.first['items']).to eq([7])
+      end
+
+      it 'passes the stored data to a post as trmnl.previous_merge_variables' do
+        assembler.transform_webhook_post('items' => [7])
+
+        expect(inputs_received.first.dig('trmnl', 'previous_merge_variables')).to eq('items' => [5])
+      end
+    end
+
+    context 'when the transform returns a trmnl_state' do
+      let(:result) do
+        TRMNLP::TransformClient::Result.new(
+          stdout: '', stderr: '', output: '{"items":[],"trmnl_state":{"etag":"abc"}}', exit_code: 0,
+          duration_ms: 5, error: nil
+        )
+      end
+      let(:states_received) { [] }
+
+      before do
+        allow(transform_client).to receive(:execute) do |kwargs|
+          states_received << JSON.parse(kwargs[:stdin]).dig('trmnl', 'state')
+          result
+        end
+      end
+
+      it 'renders the new state as trmnl.state' do
+        expect(assembler.call.dig('trmnl', 'state')).to eq('etag' => 'abc')
+      end
+
+      it 'passes it to the next run of the transform' do
+        2.times { assembler.call }
+
+        expect(states_received).to eq([{}, { 'etag' => 'abc' }])
       end
     end
 

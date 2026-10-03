@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <script>
+      const [andXMorePrefix, andXMoreSuffix] = <%= @and_x_more.to_json %>;
+      window.I18n = { andXMore: (count) => `${andXMorePrefix} ${count} ${andXMoreSuffix}` };
+    </script>
     <link rel="stylesheet" href="<%= @framework.css_url %>" />
+    <% if @theme_css_url %><link rel="stylesheet" href="<%= @theme_css_url %>" /><% end %>
     <script src="<%= @framework.js_url %>"></script>
     <meta name="trmnl-framework-version" content="<%= @framework.number %>" />
     <meta name="trmnl-framework-pinned" content="<%= @framework.pinned? %>" />

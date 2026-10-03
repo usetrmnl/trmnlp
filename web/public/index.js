@@ -23,7 +23,8 @@ trmnlp.connectLiveRender = function () {
 // trmnl.device values the picked model and palette decide.
 trmnlp.deviceParams = function (state) {
   const bitDepth = Math.ceil(Math.log2(state.palette?.grays || 2));
-  return new URLSearchParams({ width: state.width, height: state.height, model: state.model.name, bit_depth: bitDepth });
+  const orientation = state.isPortrait ? 'portrait' : 'landscape';
+  return new URLSearchParams({ width: state.width, height: state.height, model: state.model.name, bit_depth: bitDepth, orientation });
 };
 
 trmnlp.fetchPreview = function (pickerState) {
@@ -31,6 +32,7 @@ trmnlp.fetchPreview = function (pickerState) {
   const screenClasses = (state?.screenClasses || []).join(" ");
   const encodedScreenClasses = encodeURIComponent(screenClasses);
   let src = `/render/${trmnlp.view}.${trmnlp.formatSelect.value}?screen_classes=${encodedScreenClasses}`;
+  if (trmnlp.themeSelect.value) src += `&theme=${encodeURIComponent(trmnlp.themeSelect.value)}`;
 
   // Pass the device for both HTML and PNG renders so trmnl.device.{width,height,model,bit_depth}
   // in the Liquid context tracks the picker model selection.
@@ -38,9 +40,8 @@ trmnlp.fetchPreview = function (pickerState) {
     src += `&${trmnlp.deviceParams(state)}`;
   }
 
-  // PNG-only: dark mode + color depth from palette
+  // PNG-only: color depth from palette
   if (trmnlp.formatSelect.value === 'png' && state) {
-    const isDarkMode = state.isDarkMode ? 1 : 0;
     const grays = state.palette.grays || 2;
     const colorDepth = Math.ceil(Math.log2(grays));
     src += `&color_depth=${colorDepth}`;
@@ -261,6 +262,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   trmnlp.view = document.querySelector("meta[name='trmnl-view']").content;
   trmnlp.iframe = document.querySelector("iframe");
   trmnlp.formatSelect = document.querySelector(".select-format");
+  trmnlp.themeSelect = document.querySelector("[data-theme-select]");
   trmnlp.userData = document.getElementById("user-data");
   trmnlp.spinner = document.querySelector(".spinner");
   trmnlp.isLiveReloadEnabled =
@@ -275,6 +277,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   trmnlp.formatSelect.value = formatValue;
   trmnlp.formatSelect.addEventListener("change", () => {
     localStorage.setItem("trmnlp-format", trmnlp.formatSelect.value);
+    trmnlp.fetchPreview();
+  });
+
+  trmnlp.themeSelect.value = localStorage.getItem("trmnlp-theme") || "";
+  trmnlp.themeSelect.addEventListener("change", () => {
+    localStorage.setItem("trmnlp-theme", trmnlp.themeSelect.value);
     trmnlp.fetchPreview();
   });
 

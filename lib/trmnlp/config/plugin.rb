@@ -55,9 +55,6 @@ module TRMNLP
         string_to_hash(rendered)
       end
 
-      # for {{ trmnl }}
-      def polling_headers_encoded = polling_headers.map { |k, v| "#{k}=#{v}" }.join('&')
-
       def polling_body(extra_variables: {}) = with_custom_fields(@config['polling_body'] || '', extra_variables:)
 
       def dark_mode = @config['dark_mode'] || 'no'

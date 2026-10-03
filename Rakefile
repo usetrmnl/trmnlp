@@ -38,3 +38,28 @@ namespace :framework do
     puts "Synced #{destination} from #{source}"
   end
 end
+
+namespace :i18n do
+  desc "Sync db/data/and_x_more.yml from a trmnl-i18n checkout's plugin_renders locales"
+  task :sync, [:source_repo] do |_t, args|
+    require 'yaml'
+
+    source_repo = args[:source_repo] || ENV.fetch('TRMNL_I18N_SOURCE_REPO') { abort 'Pass the trmnl-i18n path' }
+    locales_dir = File.join(source_repo, 'lib', 'trmnl', 'i18n', 'locales', 'plugin_renders')
+    phrases = Dir.glob(File.join(locales_dir, '*.yml')).filter_map do |file|
+      locale, translations = YAML.load_file(file).first
+      renders = translations&.dig('renders') || {}
+      next unless renders['and_x_more_prefix']
+
+      [locale, [renders['and_x_more_prefix'], renders['and_x_more_suffix']]]
+    end
+
+    destination = File.expand_path('db/data/and_x_more.yml', __dir__)
+    header = <<~HEADER
+      # Mirrored from trmnl-i18n (renders.and_x_more_prefix and _suffix), what TRMNL's
+      # window.I18n.andXMore prints. Refresh with `rake i18n:sync[path]` — do not edit manually.
+    HEADER
+    File.write(destination, header + phrases.to_h.to_yaml.delete_prefix("---\n"))
+    puts "Synced #{phrases.size} locales to #{destination} from #{locales_dir}"
+  end
+end

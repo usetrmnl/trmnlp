@@ -167,6 +167,20 @@ RSpec.describe TRMNLP::FrameworkVersion do
     end
   end
 
+  describe '#theme_css_url' do
+    it 'answers the theme stylesheet of a version that publishes themes' do
+      expect(described_class.new('3.2.0').theme_css_url('dark')).to eq('https://trmnl.com/css/3.2.0/themes/dark-theme.css')
+    end
+
+    it 'answers nil before 3.2.0, which publishes no themes' do
+      expect(described_class.new('3.1.0').theme_css_url('dark')).to be_nil
+    end
+
+    it 'answers nil for an unknown theme' do
+      expect(described_class.new('3.2.0').theme_css_url('neon')).to be_nil
+    end
+  end
+
   describe '#==' do
     it 'answers true for the same number' do
       expect(framework == described_class.new('1.0.0')).to be(true)

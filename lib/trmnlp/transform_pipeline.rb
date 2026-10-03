@@ -4,6 +4,7 @@ require 'json'
 
 require_relative 'reporter'
 require_relative 'transform_client'
+require_relative 'transform_state'
 
 module TRMNLP
   # Pipes assembled merge_variables through src/transform.{py,rb,php,js}
@@ -19,6 +20,7 @@ module TRMNLP
       @config = config
       @paths = paths
       @reporter = reporter
+      @transform_state = TransformState.new(paths:, reporter:)
     end
 
     def call(data)
@@ -29,11 +31,20 @@ module TRMNLP
       run(transform_path, inferred_language, data)
     end
 
+    def configured? = !paths.transform_file.first.nil? && !client.nil?
+
+    # What the last run stored for the markup, passed to the next run as trmnl.previous_merge_variables.
+    def previous_output
+      paths.transform_output.exist? ? JSON.parse(paths.transform_output.read) : {}
+    rescue JSON::ParserError
+      {}
+    end
+
     def reset! = @client = nil
 
     private
 
-    attr_reader :config, :paths, :reporter
+    attr_reader :config, :paths, :reporter, :transform_state
 
     def client = @client ||= TransformClient.from_config(config.project)
 
@@ -61,7 +72,10 @@ module TRMNLP
 
     def parse_output(output, fallback)
       transformed = JSON.parse(output)
-      transformed.is_a?(Hash) ? transformed : wrap_array(transformed)
+      return wrap_array(transformed) unless transformed.is_a?(Hash)
+
+      transform_state.extract!(transformed)
+      store_output(without_previous_merge_variables(transformed))
     rescue JSON::ParserError => e
       @error = "transform produced non-JSON output: #{e.message}"
       reporter.info(@error)
@@ -69,5 +83,20 @@ module TRMNLP
     end
 
     def wrap_array(json) = json.is_a?(Array) ? { data: json } : json
+
+    def store_output(output)
+      paths.transform_output.dirname.mkpath
+      paths.transform_output.write(JSON.generate(output))
+      output
+    end
+
+    # A transform that echoes its input at any depth (`{ data: input }`) would store its history and double every run.
+    def without_previous_merge_variables(value)
+      case value
+      when Hash then value.except('previous_merge_variables').transform_values { without_previous_merge_variables(it) }
+      when Array then value.map { without_previous_merge_variables(it) }
+      else value
+      end
+    end
   end
 end

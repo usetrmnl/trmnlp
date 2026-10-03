@@ -79,6 +79,13 @@ RSpec.describe TRMNLP::Paths do
     end
   end
 
+  describe '#user_data' do
+    it 'is keyed per project root' do
+      other = described_class.new(Dir.mktmpdir('trmnlp-other-'))
+      expect(paths.user_data).not_to eq(other.user_data)
+    end
+  end
+
   describe '#expand' do
     it 'resolves a relative path against the project root' do
       expect(paths.expand('src').to_s).to eq(File.join(tmp_root, 'src'))

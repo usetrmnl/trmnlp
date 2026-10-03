@@ -28,7 +28,6 @@ module TRMNLP
     def app_config_dir = xdg.config_home.join('trmnlp')
 
     def cache_dir = xdg.cache_home.join('trmnl')
-    def create_cache_dir = cache_dir.mkpath
 
     def valid? = trmnlp_config.exist?
 
@@ -44,11 +43,15 @@ module TRMNLP
 
     def app_config = app_config_dir.join('config.yml')
 
-    def user_data = cache_dir.join('data.json')
+    # Cached files are keyed per project root so working on two plugins does not
+    # clobber a shared file.
+    def user_data = cache_dir.join('data', "#{project_key}.json")
 
-    # OAuth tokens are keyed per project root so working on two OAuth plugins
-    # does not clobber a shared token file.
-    def oauth_tokens = cache_dir.join('oauth', "#{Digest::SHA256.hexdigest(root_dir.to_s)[0, 16]}.json")
+    def oauth_tokens = cache_dir.join('oauth', "#{project_key}.json")
+
+    def transform_state = cache_dir.join('state', "#{project_key}.json")
+
+    def transform_output = cache_dir.join('transform_output', "#{project_key}.json")
 
     def render_template = Pathname.new(__dir__).join('..', '..', 'web', 'views', 'render_html.erb')
 
@@ -79,5 +82,7 @@ module TRMNLP
     private
 
     attr_reader :xdg
+
+    def project_key = Digest::SHA256.hexdigest(root_dir.to_s)[0, 16]
   end
 end
