@@ -1,0 +1,339 @@
+# Mirrored from trmnl-i18n custom_plugins and rails-i18n date, time, number.
+# Refresh with `rake i18n:sync[trmnl_i18n_path,rails_i18n_path]` — do not edit manually.
+cs:
+  custom_plugins:
+    today: dnes
+    tomorrow: zítra
+    updated: Aktualizováno
+    activity: Aktivita
+    done: Hotovo
+    due: Termín
+    deutsche_bahn_departures:
+      departures: Odjezdy
+      time: Čas
+      line: Linka
+      destination: Cíl
+      platform: Nástupiště
+      delay: Zpoždění
+      train: Vlak
+      on_time: Na čas
+      cancelled: Zrušeno
+      minutes: min
+      refreshed: Obnoveno
+    simple_calendar:
+      title: Kalendář
+      ym_format: "%B %Y"
+      chinese_korean:
+        leap_format: Přestupný %{month_label}
+        leap_format_short: PM%{alt_month}
+        ym_format: ", %{leap_month_label} %{heavenly_stem} %{earthly_branch}"
+        month_labels:
+        -
+        - M1
+        - M2
+        - M3
+        - M4
+        - M5
+        - M6
+        - M7
+        - M8
+        - M9
+        - M10
+        - M11
+        - M12
+        date_labels:
+        -
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+        - '6'
+        - '7'
+        - '8'
+        - '9'
+        - '10'
+        - '11'
+        - '12'
+        - '13'
+        - '14'
+        - '15'
+        - '16'
+        - '17'
+        - '18'
+        - '19'
+        - '20'
+        - '21'
+        - '22'
+        - '23'
+        - '24'
+        - '25'
+        - '26'
+        - '27'
+        - '28'
+        - '29'
+        - '30'
+        heavenly_stems:
+        - Dřevo
+        - Dřevo
+        - Oheň
+        - Oheň
+        - Země
+        - Země
+        - Kov
+        - Kov
+        - Voda
+        - Voda
+        earthly_branches:
+        - Krysa
+        - Vůl
+        - Tygr
+        - Králík
+        - Drak
+        - Had
+        - Kůň
+        - Koza
+        - Opice
+        - Kohout
+        - Pes
+        - Vepř
+        zodiac_animals:
+        - Rat
+        - Ox
+        - Tiger
+        - Rabbit
+        - Dragon
+        - Snake
+        - Horse
+        - Goat
+        - Monkey
+        - Rooster
+        - Dog
+        - Pig
+        solar_terms:
+        - Minor Cold
+        - Major Cold
+        - Start of Spring
+        - Rain Water
+        - Awakening of Insects
+        - Spring Equinox
+        - Pure Brightness
+        - Grain Rain
+        - Start of Summer
+        - Grain Buds
+        - Grain in Ear
+        - Summer Solstice
+        - Minor Heat
+        - Major Heat
+        - Start of Autumn
+        - End of Heat
+        - White Dew
+        - Autumn Equinox
+        - Cold Dew
+        - Frost's Descent
+        - Start of Winter
+        - Minor Snow
+        - Major Snow
+        - Winter Solstice
+      japanese:
+        rokuyo_terms:
+        - 先勝
+        - 友引
+        - 先負
+        - 仏滅
+        - 大安
+        - 赤口
+        nengo:
+          reiwa: Reiwa
+        ym_format: "%B %Y (%{nengo} %{alt_year})"
+        year_1: '1'
+      hebrew:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        - Nisan
+        - Ijar
+        - Sivan
+        - Tamuz
+        - Av
+        - Elul
+        - Tišri
+        - Chešvan
+        - Kislev
+        - Tevet
+        - Ševat
+        - Adar
+        - Adar I
+        - Adar II
+        month_labels_abbr:
+        - Nis
+        - Ija
+        - Siv
+        - Tam
+        - Av
+        - Elu
+        - Tiš
+        - Che
+        - Kis
+        - Tev
+        - Šev
+        - Ada
+        - Ad1
+        - Ad2
+      hijri:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - Muharram
+        - Safar
+        - Rabíʻ I
+        - Rabíʻ II
+        - Džumádá I
+        - Džumádá II
+        - Radžab
+        - Šaʻbán
+        - Ramadán
+        - Šawwál
+        - Dhú al-ki'da
+        - Dhú al-hidždža
+      bengali:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - Boishakh
+        - Joishtho
+        - Asharh
+        - Srabon
+        - Bhadro
+        - Ashwin
+        - Kartika
+        - Ogrohayon
+        - Poush
+        - Magh
+        - Falgun
+        - Choitro
+      indian:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - Chaitra
+        - Vaisakha
+        - Jyaistha
+        - Asadha
+        - Sravana
+        - Bhadra
+        - Asvina
+        - Kartika
+        - Agrahayana
+        - Pausa
+        - Magha
+        - Phalguna
+    public_recipe_stats:
+      connections: ".input {$value :number} .match $value zero {{Žádná připojení}}
+        one {{{$value :number} připojení}} * {{{$value :number} připojení}}"
+      forks: ".input {$value :number} .match $value zero {{Žádný fork}} one {{{$value
+        :number} fork}} * {{{$value :number} forků}}"
+      installs: ".input {$value :number} .match $value zero {{Žádná instalace}} one
+        {{{$value :number} instalace}} * {{{$value :number} instalací}}"
+      and_more: a {$value :number} dalších
+      error_keyword_title: "“{$keyword}” neodpovídá žádnému výsledku."
+      error_keyword_subtitle: Zkuste vyhledat něco jiného.
+      error_new_title: Nebyl nalezen žádný nový recept.
+      error_new_subtitle: To by se nemělo stávat.
+      error_self_title: Nepublikovali jste žádný recept.
+      error_self_subtitle: Jak publikovat svůj první recept, se dozvíte na https://help.trmnl.com/en/articles/9510536-private-plugins
+      error_author_id_title: 'Uživatel #{$authorId} nepublikoval žádný recept.'
+      error_author_id_subtitle: S tímto ID nebyl nalezen žádný recept.
+      error_recipe_ids_title: Nebylo nalezeno žádné ID receptu.
+      error_recipe_ids_subtitle: Chcete-li začít, přidejte ID receptu.
+    horizontal_world_clock:
+      name: Světové hodiny
+    language_learning_sentences:
+      from_to: Z jazyka {$from :langName} do {$to :langNameList}
+    custom_next_holiday:
+      next_holiday: Příští svátek
+      today_and_next: ".input {$nextDays :number} .match $nextDays one {{ {#mainLabel}Dnes
+        je{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}{#br/}{#subLabel}Zítra
+        je {$nextName}.{/subLabel} }}* {{ {#mainLabel}Dnes je{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}{#br/}{#subLabel}Příští
+        svátek je {$nextName} za {$nextDays} dní.{/subLabel} }}"
+      today_only: "{#mainLabel}Dnes je{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}"
+      next_only: ".input {$nextDays :number} .match $nextDays one {{ {#mainLabel}Zítra
+        je{/mainLabel}{#br/}{#mainValue}{$nextName}{/mainValue} }}* {{ {#mainValue}{$nextDays}{/mainValue}{#mainLabel}
+        dní do{/mainLabel}{#br/}{#mainValue}{$nextName}{/mainValue} }}"
+      no_holidays: "{#subLabel}Konec přidaných svátků.{/subLabel}"
+    sun_chart: Sun Chart
+  date:
+    abbr_day_names:
+    - Ne
+    - Po
+    - Út
+    - St
+    - Čt
+    - Pá
+    - So
+    abbr_month_names:
+    -
+    - Led
+    - Úno
+    - Bře
+    - Dub
+    - Kvě
+    - Čvn
+    - Čvc
+    - Srp
+    - Zář
+    - Říj
+    - Lis
+    - Pro
+    day_names:
+    - Neděle
+    - Pondělí
+    - Úterý
+    - Středa
+    - Čtvrtek
+    - Pátek
+    - Sobota
+    formats:
+      default: "%d. %m. %Y"
+      long: "%d. %B %Y"
+      short: "%d %b"
+    month_names:
+    -
+    - Leden
+    - Únor
+    - Březen
+    - Duben
+    - Květen
+    - Červen
+    - Červenec
+    - Srpen
+    - Září
+    - Říjen
+    - Listopad
+    - Prosinec
+    order:
+    - :day
+    - :month
+    - :year
+  time:
+    am: dopoledne
+    formats:
+      default: "%a %e. %B %Y %H:%M %z"
+      long: "%A %e. %B %Y %H:%M"
+      short: "%e. %-m. %H:%M"
+    pm: odpoledne
+  number:
+    currency:
+      format:
+        delimiter: " "
+        format: "%n %u"
+        precision: 2
+        separator: ","
+        significant: false
+        strip_insignificant_zeros: false
+        unit: Kč
+    format:
+      delimiter: "."
+      precision: 3
+      separator: ","
+      significant: false
+      strip_insignificant_zeros: false

@@ -1,0 +1,339 @@
+# Mirrored from trmnl-i18n custom_plugins and rails-i18n date, time, number.
+# Refresh with `rake i18n:sync[trmnl_i18n_path,rails_i18n_path]` — do not edit manually.
+fr:
+  custom_plugins:
+    today: aujourd'hui
+    tomorrow: demain
+    updated: Mis à jour
+    activity: Activité
+    done: Terminé
+    due: À faire
+    deutsche_bahn_departures:
+      departures: Départs
+      time: Heure
+      line: Ligne
+      destination: Destination
+      platform: Quai
+      delay: Retard
+      train: Train
+      on_time: À l'heure
+      cancelled: Annulé
+      minutes: min
+      refreshed: Rafraîchi
+    simple_calendar:
+      title: Calendrier
+      ym_format: "%B %Y"
+      chinese_korean:
+        leap_format: Bissextile %{month_label}
+        leap_format_short: MB%{alt_month}
+        ym_format: ", %{leap_month_label} %{heavenly_stem} %{earthly_branch}"
+        month_labels:
+        -
+        - M1
+        - M2
+        - M3
+        - M4
+        - M5
+        - M6
+        - M7
+        - M8
+        - M9
+        - M10
+        - M11
+        - M12
+        date_labels:
+        -
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+        - '6'
+        - '7'
+        - '8'
+        - '9'
+        - '10'
+        - '11'
+        - '12'
+        - '13'
+        - '14'
+        - '15'
+        - '16'
+        - '17'
+        - '18'
+        - '19'
+        - '20'
+        - '21'
+        - '22'
+        - '23'
+        - '24'
+        - '25'
+        - '26'
+        - '27'
+        - '28'
+        - '29'
+        - '30'
+        heavenly_stems:
+        - Bois
+        - Bois
+        - Feu
+        - Feu
+        - Terre
+        - Terre
+        - Métal
+        - Métal
+        - Eau
+        - Eau
+        earthly_branches:
+        - Rat
+        - Bœuf
+        - Tigre
+        - Lapin
+        - Dragon
+        - Serpent
+        - Cheval
+        - Chèvre
+        - Singe
+        - Coq
+        - Chien
+        - Cochon
+        zodiac_animals:
+        - Rat
+        - Ox
+        - Tiger
+        - Rabbit
+        - Dragon
+        - Snake
+        - Horse
+        - Goat
+        - Monkey
+        - Rooster
+        - Dog
+        - Pig
+        solar_terms:
+        - Minor Cold
+        - Major Cold
+        - Start of Spring
+        - Rain Water
+        - Awakening of Insects
+        - Spring Equinox
+        - Pure Brightness
+        - Grain Rain
+        - Start of Summer
+        - Grain Buds
+        - Grain in Ear
+        - Summer Solstice
+        - Minor Heat
+        - Major Heat
+        - Start of Autumn
+        - End of Heat
+        - White Dew
+        - Autumn Equinox
+        - Cold Dew
+        - Frost's Descent
+        - Start of Winter
+        - Minor Snow
+        - Major Snow
+        - Winter Solstice
+      japanese:
+        rokuyo_terms:
+        - 先勝
+        - 友引
+        - 先負
+        - 仏滅
+        - 大安
+        - 赤口
+        nengo:
+          reiwa: Reiwa
+        ym_format: "%B %Y (%{nengo} %{alt_year})"
+        year_1: '1'
+      hebrew:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        - nissan
+        - iyar
+        - sivan
+        - tamouz
+        - av
+        - éloul
+        - tichri
+        - hèchvan
+        - kislev
+        - téveth
+        - chevat
+        - adar
+        - adar I
+        - adar II
+        month_labels_abbr:
+        - nis
+        - iyar
+        - siv
+        - tam
+        - av
+        - él
+        - tich
+        - hèch
+        - kis
+        - tév
+        - chev
+        - adar
+        - ad1
+        - ad2
+      hijri:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - mouharram
+        - safar
+        - rabia al awal
+        - rabia ath-thani
+        - joumada al oula
+        - joumada ath-thania
+        - rajab
+        - chaabane
+        - ramadan
+        - chawwal
+        - dhou al qi`da
+        - dhou al-hijja
+      bengali:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - boishakh
+        - joishtho
+        - asharh
+        - srabon
+        - bhadro
+        - ashwin
+        - kartika
+        - ogrohayon
+        - poush
+        - magh
+        - falgun
+        - choitro
+      indian:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - chaitra
+        - vaishākh
+        - jyaishtha
+        - āshādha
+        - shrāvana
+        - bhādrapad
+        - āshwin
+        - kārtik
+        - mārgashīrsha
+        - paush - magha
+        - phalguna
+    public_recipe_stats:
+      connections: ".input {$value :number} .match $value one {{{$value :number} connexion}}
+        many {{{$value :number} connexions}} * {{{$value :number} connexions}}"
+      forks: ".input {$value :number} .match $value one {{{$value :number} duplication}}
+        many {{{$value :number} duplications}} * {{{$value :number} duplications}}"
+      installs: ".input {$value :number} .match $value zero {{No install}} one {{{$value
+        :number} install}} * {{{$value :number} installs}}"
+      and_more: et {$value :number} de plus
+      error_keyword_title: "“{$keyword}” did not match any result."
+      error_keyword_subtitle: Try searching for something else.
+      error_new_title: No new recipe is found.
+      error_new_subtitle: This shouldn’t happen.
+      error_self_title: You did not publish any recipe.
+      error_self_subtitle: Learn how to publish your first one at https://help.trmnl.com/en/articles/9510536-private-plugins
+      error_author_id_title: 'User #{$authorId} did not publish any recipe.'
+      error_author_id_subtitle: No recipe is found associated with this ID.
+      error_recipe_ids_title: No recipe ID is found.
+      error_recipe_ids_subtitle: Add a recipe ID to get started.
+    horizontal_world_clock:
+      name: World clock
+    language_learning_sentences:
+      from_to: "{$from :langName} to {$to :langNameList}"
+    custom_next_holiday:
+      next_holiday: Next holiday
+      today_and_next: ".input {$nextDays :number} .match $nextDays one {{ {#mainLabel}Today
+        is{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}{#br/}{#subLabel}Tomorrow
+        is {$nextName}.{/subLabel} }}* {{ {#mainLabel}Today is{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}{#br/}{#subLabel}Next
+        holiday is {$nextName} in {$nextDays} days.{/subLabel} }}"
+      today_only: "{#mainLabel}Today is{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}"
+      next_only: ".input {$nextDays :number} .match $nextDays one {{ {#mainLabel}Tomorrow
+        is{/mainLabel}{#br/}{#mainValue}{$nextName}{/mainValue} }}* {{ {#mainValue}{$nextDays}{/mainValue}{#mainLabel}
+        days until{/mainLabel}{#br/}{#mainValue}{$nextName}{/mainValue} }}"
+      no_holidays: "{#subLabel}End of added holidays.{/subLabel}"
+    sun_chart: Sun Chart
+  date:
+    abbr_day_names:
+    - dim
+    - lun
+    - mar
+    - mer
+    - jeu
+    - ven
+    - sam
+    abbr_month_names:
+    -
+    - jan.
+    - fév.
+    - mars
+    - avr.
+    - mai
+    - juin
+    - juil.
+    - août
+    - sept.
+    - oct.
+    - nov.
+    - déc.
+    day_names:
+    - dimanche
+    - lundi
+    - mardi
+    - mercredi
+    - jeudi
+    - vendredi
+    - samedi
+    formats:
+      default: "%d/%m/%Y"
+      long: "%-d %B %Y"
+      short: "%-d %b"
+    month_names:
+    -
+    - janvier
+    - février
+    - mars
+    - avril
+    - mai
+    - juin
+    - juillet
+    - août
+    - septembre
+    - octobre
+    - novembre
+    - décembre
+    order:
+    - :day
+    - :month
+    - :year
+  time:
+    am: am
+    formats:
+      default: "%d %B %Y %Hh %Mmin %Ss"
+      long: "%A %d %B %Y %Hh%M"
+      short: "%d %b %Hh%M"
+    pm: pm
+  number:
+    currency:
+      format:
+        delimiter: " "
+        format: "%n %u"
+        precision: 2
+        separator: ","
+        significant: false
+        strip_insignificant_zeros: false
+        unit: "€"
+    format:
+      delimiter: " "
+      precision: 3
+      round_mode: default
+      separator: ","
+      significant: false
+      strip_insignificant_zeros: false
