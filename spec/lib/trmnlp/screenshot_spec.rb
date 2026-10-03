@@ -130,7 +130,7 @@ RSpec.describe TRMNLP::Screenshot do
 
     context 'when the page never signals readiness' do
       before do
-        stub_const("#{described_class}::READINESS_TIMEOUT", 0.1)
+        stub_const("#{described_class}::READINESS_TIMEOUT_SECONDS", 0.1)
         driver.readiness_answers = Array.new(1000, false)
       end
 

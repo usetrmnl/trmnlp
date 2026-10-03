@@ -8,8 +8,8 @@ require_relative 'errors'
 module TRMNLP
   class Screenshot
     # TRMNL's Converter::Html waits for these flags, longer for a map, then captures what is drawn.
-    READINESS_TIMEOUT = 5
-    READINESS_TIMEOUT_WITH_MAPS = 12
+    READINESS_TIMEOUT_SECONDS = 5
+    READINESS_TIMEOUT_WITH_MAPS_SECONDS = 12
     MAPS_DOCUMENT_PATTERN = %r{TRMNLMaps\.[a-z]|maplibre-gl(?:\.js|\.css|[/@]\d)}
     READINESS_CHECK_SCRIPT = <<~JS
       return document.readyState === 'complete' && window.TRMNL_PLUGINS_READY === true &&
@@ -118,7 +118,7 @@ module TRMNLP
     end
 
     def wait_until_ready(driver, html)
-      timeout = html.match?(MAPS_DOCUMENT_PATTERN) ? READINESS_TIMEOUT_WITH_MAPS : READINESS_TIMEOUT
+      timeout = html.match?(MAPS_DOCUMENT_PATTERN) ? READINESS_TIMEOUT_WITH_MAPS_SECONDS : READINESS_TIMEOUT_SECONDS
       Selenium::WebDriver::Wait.new(timeout:, interval: 0.05).until { driver.execute_script(READINESS_CHECK_SCRIPT) }
     rescue Selenium::WebDriver::Error::TimeoutError
       nil
