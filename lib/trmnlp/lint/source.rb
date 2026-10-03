@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'yaml'
+
 module TRMNLP
   module Lint
     # The plugin data every lint check examines: markup per view, shared
@@ -44,9 +46,54 @@ module TRMNLP
         end
       end
 
+      # Keep the original whitespace here: stripped templates cannot provide
+      # accurate line/column numbers. All paths in reports are project-relative.
+      def markup_files
+        @markup_files ||= (VIEWS + ['shared']).to_h do |view|
+          ["src/#{view}.liquid", raw_read(paths.template(view))]
+        end
+      end
+
+      def locations(pattern, files: markup_files)
+        files.flat_map do |path, contents|
+          contents.to_enum(:scan, pattern).map do
+            offset = Regexp.last_match.begin(0)
+            prefix = contents[0...offset]
+            line = prefix.count("\n") + 1
+            { path:, line:, column: offset - (prefix.rindex("\n") || -1),
+              snippet: contents.lines[line - 1].to_s.chomp[0, 240] }
+          end
+        end.uniq
+      end
+
+      def yaml_location(file, *keys)
+        path = file == '.trmnlp.yml' ? paths.trmnlp_config : paths.plugin_config
+        contents = raw_read(path)
+        node = Psych.parse_stream(contents).children.first&.root
+        keys.each do |key|
+          node = if key.is_a?(Integer) && node.is_a?(Psych::Nodes::Sequence)
+                   node.children[key]
+                 else
+                   mapping_value(node, key)
+                 end
+        end
+        return [] unless node
+
+        [{ path: file, line: node.start_line + 1, column: node.start_column + 1,
+           snippet: contents.lines[node.start_line].to_s.chomp[0, 240] }]
+      end
+
       private
 
       attr_reader :config, :paths
+
+      def raw_read(path) = path.exist? ? path.read : ''
+
+      def mapping_value(node, key)
+        return unless node.is_a?(Psych::Nodes::Mapping)
+
+        node.children.each_slice(2).to_a.rfind { |name, _| name.value == key.to_s }&.last
+      end
 
       def read(path) = path.exist? ? path.read.strip : ''
     end

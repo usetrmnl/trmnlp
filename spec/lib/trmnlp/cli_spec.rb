@@ -54,12 +54,35 @@ RSpec.describe TRMNLP::CLI do
       it 'exits non-zero so CI can gate on it' do
         expect(&run_lint).to raise_error(SystemExit) { |error| expect(error.status).to eq(1) }
       end
+
+      it 'keeps a nonzero exit status with JSON output' do
+        expect do
+          described_class.start(['lint', '--dir', tmp_root, '--quiet', '--format', 'json'])
+        end.to raise_error(SystemExit) { |error| expect(error.status).to eq(1) }
+      end
     end
 
     context 'when the plugin passes all checks' do
       it 'does not exit non-zero' do
         expect(&run_lint).not_to raise_error
       end
+
+      it 'writes parseable JSON without terminal decorations' do
+        output = capture_stdout do
+          described_class.start(['lint', '--dir', tmp_root, '--format', 'json'])
+        end
+        expect(JSON.parse(output)).to eq('version' => 1, 'passed' => true, 'issues' => [])
+      end
     end
+  end
+
+  def capture_stdout
+    stream = StringIO.new
+    original = $stdout
+    $stdout = stream
+    yield
+    stream.string
+  ensure
+    $stdout = original
   end
 end

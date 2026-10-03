@@ -72,6 +72,8 @@ module TRMNLP
     end
 
     desc 'lint', 'Check plugin code against TRMNL best practices'
+    method_option :format, type: :string, default: 'text', enum: %w[text json],
+                           desc: 'Report format (text or json)'
     def lint
       # Exit non-zero when issues are found so CI pipelines can gate on it.
       exit(1) unless Commands::Lint.run(options)
