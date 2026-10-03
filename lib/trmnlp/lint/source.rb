@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'trmnl/liquid'
 require 'yaml'
 
 module TRMNLP
@@ -24,6 +25,11 @@ module TRMNLP
       def settings = config.plugin.settings
       def custom_field_values = config.project.custom_fields
       def custom_field_definitions = config.plugin.custom_field_definitions
+
+      def local_only_filter_names
+        config.project.user_filter_modules.flat_map(&:public_instance_methods).map(&:to_s).uniq -
+          TRMNL::Liquid.new.filter_method_names
+      end
 
       def view_markup
         @view_markup ||= VIEWS.to_h { |view| [view, read(paths.template(view))] }

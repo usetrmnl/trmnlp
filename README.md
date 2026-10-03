@@ -119,6 +119,10 @@ including custom properties. HTML/Liquid comments, script strings, text,
 `data-*` attributes and `<style>` blocks are excluded from this inline check.
 Liquid in declaration values is counted without rendering the plugin, every branch included.
 
+Filters from `custom_filters` in `.trmnlp.yml` exist only in trmnlp. TRMNL does not load them
+and outputs the value unfiltered, so `no_custom_filters` reports each place the markup uses one.
+Filters that trmnl-liquid also provides are not reported.
+
 ## Building Static Files
 
 `trmnlp build` renders every view to a static file under `_build/` — handy for exporting a snapshot or feeding the output into another pipeline. Run it from inside a plugin project:

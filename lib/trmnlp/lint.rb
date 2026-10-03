@@ -18,6 +18,7 @@ require_relative 'lint/checks/highcharts_elements_unique'
 require_relative 'lint/checks/image_links_reachable'
 require_relative 'lint/checks/custom_fields_used'
 require_relative 'lint/checks/form_fields_valid'
+require_relative 'lint/checks/no_custom_filters'
 
 module TRMNLP
   # Markup best-practice checks behind `trmnlp lint`.
@@ -39,7 +40,8 @@ module TRMNLP
       Checks::HighchartsElementsUnique,
       Checks::ImageLinksReachable,
       Checks::CustomFieldsUsed,
-      Checks::FormFieldsValid
+      Checks::FormFieldsValid,
+      Checks::NoCustomFilters
     ].freeze
   end
 end

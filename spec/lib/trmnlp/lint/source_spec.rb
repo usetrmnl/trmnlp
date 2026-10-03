@@ -64,6 +64,23 @@ RSpec.describe TRMNLP::Lint::Source do
     end
   end
 
+  describe '#local_only_filter_names' do
+    let(:settings) { {} }
+    let(:config) { instance_double(TRMNLP::Config, plugin: plugin_config, project:) }
+    let(:project) { instance_double(TRMNLP::Config::Project, user_filter_modules: [filter_module]) }
+
+    let :filter_module do
+      Module.new do
+        def shout(input) = input
+        def upcase(input) = input
+      end
+    end
+
+    it 'answers the custom filters that trmnl-liquid does not provide' do
+      expect(source.local_only_filter_names).to eq(%w[shout])
+    end
+  end
+
   describe '#transform_code' do
     subject(:source) { described_class.new(config: nil, paths:) }
 

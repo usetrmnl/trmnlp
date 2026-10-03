@@ -93,6 +93,18 @@ RSpec.describe TRMNLP::Commands::Lint do
         expect(broken).to have_been_requested.once
       end
 
+      it 'locates each use of a filter that only custom_filters defines' do
+        File.write(File.join(tmp_root, 'filters.rb'), "module TrmnlpLintSpecFilter\n  def shout(input) = input\nend\n")
+        File.write(File.join(tmp_root, '.trmnlp.yml'), "custom_filters:\n  TrmnlpLintSpecFilter: filters.rb\n")
+        File.write(File.join(tmp_root, 'src', 'shared.liquid'), "<p>Visible text</p>\n<p>{{ name | shout }}</p>\n")
+        command.call
+        issue = JSON.parse(reporter.messages.first)['issues'].find do |finding|
+          finding['rule_id'] == 'no_custom_filters'
+        end
+        expect(issue['locations']).to eq([{ 'path' => 'src/shared.liquid', 'line' => 2, 'column' => 4,
+                                            'snippet' => '<p>{{ name | shout }}</p>' }])
+      end
+
       it 'locates a setting using YAML positions including leading blank lines' do
         File.write(File.join(tmp_root, 'src', 'settings.yml'), "\n\nname: lowercase\n")
         command.call
