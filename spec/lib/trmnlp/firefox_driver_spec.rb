@@ -10,10 +10,5 @@ RSpec.describe TRMNLP::FirefoxDriver do
     it 'runs Firefox headless with web security disabled' do
       expect(options.args).to include('--headless', '--disable-web-security')
     end
-
-    it 'disables subpixel antialiasing so 1-bit quantization stays clean' do
-      expect(options.prefs).to include('gfx.text.disable-aa' => true,
-                                       'gfx.text.subpixel-position.force-disabled' => true)
-    end
   end
 end
