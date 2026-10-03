@@ -100,5 +100,13 @@ RSpec.describe TRMNLP::Lint::Checks::LimitedInlineStyles do
         expect(check.issues).not_to be_empty
       end
     end
+
+    context 'with Liquid tags around declarations' do
+      let(:markup) { '<p style="{% if a %}color:red;padding:1px;{% else %}color:blue;{% endif %}margin:1px"></p>' * 2 }
+
+      it 'counts the declarations in every branch' do
+        expect(check.issues).not_to be_empty
+      end
+    end
   end
 end

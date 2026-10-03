@@ -16,9 +16,9 @@ module TRMNLP
 
         def pass?
           count = Nokogiri::HTML.fragment(markup_without_liquid_comments).css('[style]').sum do |element|
-            # Dynamic values do not change how many declarations an attribute
-            # contains. Substitute a valid CSS value without evaluating Liquid.
-            css = element['style'].gsub(/\{\{.*?\}\}/m, 'var(--trmnlp-liquid)')
+            # Count Liquid output as a CSS value and drop Liquid tags, so every
+            # branch's declarations count without evaluating the template.
+            css = element['style'].gsub(/\{\{.*?\}\}/m, 'var(--trmnlp-liquid)').gsub(/\{%.*?%\}/m, '')
             Crass.parse_properties(css).count { |token| token[:node] == :property }
           end
           count <= MAX_INLINE_STYLES
