@@ -1,0 +1,4 @@
+# Mirrored from trmnl-i18n custom_plugins and rails-i18n date, time, number.
+# Refresh with `rake i18n:sync[trmnl_i18n_path,rails_i18n_path]` — do not edit manually.
+'no':
+  number:

@@ -1,0 +1,256 @@
+# Mirrored from trmnl-i18n custom_plugins and rails-i18n date, time, number.
+# Refresh with `rake i18n:sync[trmnl_i18n_path,rails_i18n_path]` — do not edit manually.
+raw:
+  custom_plugins:
+    today: today
+    tomorrow: tomorrow
+    updated: custom_plugins.updated
+    activity: custom_plugins.activity
+    done: custom_plugins.done
+    due: custom_plugins.due
+    deutsche_bahn_departures:
+      departures: Departures
+      time: Time
+      line: Line
+      destination: Destination
+      platform: Platform
+      delay: Delay
+      train: Train
+      on_time: On time
+      cancelled: Cancelled
+      minutes: m
+      refreshed: Refreshed
+    simple_calendar:
+      title: Calendar
+      ym_format: "%B %Y"
+      chinese_korean:
+        leap_format: Leap %{month_label}
+        leap_format_short: LM%{alt_month}
+        ym_format: ", %{leap_month_label} %{heavenly_stem} %{earthly_branch}"
+        month_labels:
+        -
+        - M1
+        - M2
+        - M3
+        - M4
+        - M5
+        - M6
+        - M7
+        - M8
+        - M9
+        - M10
+        - M11
+        - M12
+        date_labels:
+        -
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+        - '6'
+        - '7'
+        - '8'
+        - '9'
+        - '10'
+        - '11'
+        - '12'
+        - '13'
+        - '14'
+        - '15'
+        - '16'
+        - '17'
+        - '18'
+        - '19'
+        - '20'
+        - '21'
+        - '22'
+        - '23'
+        - '24'
+        - '25'
+        - '26'
+        - '27'
+        - '28'
+        - '29'
+        - '30'
+        heavenly_stems:
+        - Wood
+        - Wood
+        - Fire
+        - Fire
+        - Earth
+        - Earth
+        - Metal
+        - Metal
+        - Water
+        - Water
+        earthly_branches:
+        - Rat
+        - Ox
+        - Tiger
+        - Rabbit
+        - Dragon
+        - Snake
+        - Horse
+        - Goat
+        - Monkey
+        - Rooster
+        - Dog
+        - Pig
+        zodiac_animals:
+        - custom_plugins.simple_calendar.chinese_korean.zodiac_animals[0]
+        - custom_plugins.simple_calendar.chinese_korean.zodiac_animals[1]
+        - custom_plugins.simple_calendar.chinese_korean.zodiac_animals[2]
+        - custom_plugins.simple_calendar.chinese_korean.zodiac_animals[3]
+        - custom_plugins.simple_calendar.chinese_korean.zodiac_animals[4]
+        - custom_plugins.simple_calendar.chinese_korean.zodiac_animals[5]
+        - custom_plugins.simple_calendar.chinese_korean.zodiac_animals[6]
+        - custom_plugins.simple_calendar.chinese_korean.zodiac_animals[7]
+        - custom_plugins.simple_calendar.chinese_korean.zodiac_animals[8]
+        - custom_plugins.simple_calendar.chinese_korean.zodiac_animals[9]
+        - custom_plugins.simple_calendar.chinese_korean.zodiac_animals[10]
+        - custom_plugins.simple_calendar.chinese_korean.zodiac_animals[11]
+        solar_terms:
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[0]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[1]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[2]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[3]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[4]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[5]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[6]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[7]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[8]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[9]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[10]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[11]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[12]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[13]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[14]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[15]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[16]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[17]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[18]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[19]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[20]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[21]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[22]
+        - custom_plugins.simple_calendar.chinese_korean.solar_terms[23]
+      japanese:
+        rokuyo_terms:
+        - 先勝
+        - 友引
+        - 先負
+        - 仏滅
+        - 大安
+        - 赤口
+        nengo:
+          reiwa: Reiwa
+        ym_format: "%B %Y (%{nengo} %{alt_year})"
+        year_1: '1'
+      hebrew:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        - Nisan
+        - Iyar
+        - Sivan
+        - Tamuz
+        - Av
+        - Elul
+        - Tishri
+        - Heshvan
+        - Kislev
+        - Tevet
+        - Shevat
+        - Adar
+        - Adar I
+        - Adar II
+        month_labels_abbr:
+        - Nis
+        - Iya
+        - Siv
+        - Tam
+        - Av
+        - Elu
+        - Tis
+        - Hes
+        - Kis
+        - Tev
+        - Shv
+        - Ada
+        - Ad1
+        - Ad2
+      hijri:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - Muharram
+        - Safar
+        - Rabiʻ I
+        - Rabiʻ II
+        - Jumada I
+        - Jumada II
+        - Rajab
+        - Shaʻban
+        - Ramadan
+        - Shawwal
+        - Dhuʻl-Qiʻdah
+        - Dhuʻl-Hijjah
+      bengali:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - Boishakh
+        - Joishtho
+        - Asharh
+        - Srabon
+        - Bhadro
+        - Ashwin
+        - Kartika
+        - Ogrohayon
+        - Poush
+        - Magh
+        - Falgun
+        - Choitro
+      indian:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - Chaitra
+        - Vaisakha
+        - Jyaistha
+        - Asadha
+        - Sravana
+        - Bhadra
+        - Asvina
+        - Kartika
+        - Agrahayana
+        - Pausa
+        - Magha
+        - Phalguna
+    public_recipe_stats:
+      connections: custom_plugins.public_recipe_stats.connections
+      forks: custom_plugins.public_recipe_stats.forks
+      installs: custom_plugins.public_recipe_stats.installs
+      and_more: custom_plugins.public_recipe_stats.and_more
+      error_keyword_title: custom_plugins.public_recipe_stats.error_keyword_title
+      error_keyword_subtitle: custom_plugins.public_recipe_stats.error_keyword_subtitle
+      error_new_title: custom_plugins.public_recipe_stats.error_new_title
+      error_new_subtitle: custom_plugins.public_recipe_stats.error_new_subtitle
+      error_self_title: custom_plugins.public_recipe_stats.error_self_title
+      error_self_subtitle: custom_plugins.public_recipe_stats.error_self_subtitle
+      error_author_id_title: custom_plugins.public_recipe_stats.error_author_id_title
+      error_author_id_subtitle: custom_plugins.public_recipe_stats.error_author_id_subtitle
+      error_recipe_ids_title: custom_plugins.public_recipe_stats.error_recipe_ids_title
+      error_recipe_ids_subtitle: custom_plugins.public_recipe_stats.error_recipe_ids_subtitle
+    horizontal_world_clock:
+      name: custom_plugins.horizontal_world_clock.name
+    language_learning_sentences:
+      from_to: custom_plugins.language_learning_sentences.from_to
+    custom_next_holiday:
+      next_holiday: custom_plugins.custom_next_holiday.next_holiday
+      today_and_next: custom_plugins.custom_next_holiday.today_and_next
+      today_only: custom_plugins.custom_next_holiday.today_only
+      next_only: custom_plugins.custom_next_holiday.next_only
+      no_holidays: custom_plugins.custom_next_holiday.no_holidays
+    sun_chart: custom_plugins.sun_chart
+  number:

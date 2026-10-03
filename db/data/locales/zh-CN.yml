@@ -1,0 +1,338 @@
+# Mirrored from trmnl-i18n custom_plugins and rails-i18n date, time, number.
+# Refresh with `rake i18n:sync[trmnl_i18n_path,rails_i18n_path]` — do not edit manually.
+zh-CN:
+  custom_plugins:
+    today: 今天
+    tomorrow: 明天
+    updated: 已更新
+    activity: 活动
+    done: 完成
+    due: 到期
+    deutsche_bahn_departures:
+      departures: 出港
+      time: 时间
+      line: 线
+      destination: 目的地
+      platform: 平台
+      delay: 延迟
+      train: 火车
+      on_time: 准时
+      cancelled: 取消
+      minutes: 分
+      refreshed: 已刷新
+    simple_calendar:
+      title: 日历
+      ym_format: "%Y年%-m月"
+      chinese_korean:
+        leap_format: 闰%{month_label}
+        leap_format_short: 闰%{month_label}
+        ym_format: ", %{heavenly_stem}%{earthly_branch}%{zodiac_animal}年%{leap_month_label}"
+        month_labels:
+        -
+        - 正月
+        - 二月
+        - 三月
+        - 四月
+        - 五月
+        - 六月
+        - 七月
+        - 八月
+        - 九月
+        - 十月
+        - 十一月
+        - 腊月
+        date_labels:
+        -
+        - 初一
+        - 初二
+        - 初三
+        - 初四
+        - 初五
+        - 初六
+        - 初七
+        - 初八
+        - 初九
+        - 初十
+        - 十一
+        - 十二
+        - 十三
+        - 十四
+        - 十五
+        - 十六
+        - 十七
+        - 十八
+        - 十九
+        - 二十
+        - 廿一
+        - 廿二
+        - 廿三
+        - 廿四
+        - 廿五
+        - 廿六
+        - 廿七
+        - 廿八
+        - 廿九
+        - 三十
+        heavenly_stems:
+        - 甲
+        - 乙
+        - 丙
+        - 丁
+        - 戊
+        - 己
+        - 庚
+        - 辛
+        - 壬
+        - 癸
+        earthly_branches:
+        - 子
+        - 丑
+        - 寅
+        - 卯
+        - 辰
+        - 巳
+        - 午
+        - 未
+        - 申
+        - 酉
+        - 戌
+        - 亥
+        zodiac_animals:
+        - 鼠
+        - 牛
+        - 虎
+        - 兔
+        - 龙
+        - 蛇
+        - 马
+        - 羊
+        - 猴
+        - 鸡
+        - 狗
+        - 猪
+        solar_terms:
+        - 小寒
+        - 大寒
+        - 立春
+        - 雨水
+        - 惊蛰
+        - 春分
+        - 清明
+        - 谷雨
+        - 立夏
+        - 小满
+        - 芒种
+        - 夏至
+        - 小暑
+        - 大暑
+        - 立秋
+        - 处暑
+        - 白露
+        - 秋分
+        - 寒露
+        - 霜降
+        - 立冬
+        - 小雪
+        - 大雪
+        - 冬至
+      japanese:
+        rokuyo_terms:
+        - 先胜
+        - 友引
+        - 先负
+        - 佛灭
+        - 大安
+        - 赤口
+        nengo:
+          reiwa: 令和
+        ym_format: "%Y年 (%{nengo}%{alt_year}年) %-m月"
+        year_1: 元
+      hebrew:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        - Nisan
+        - Iyar
+        - Sivan
+        - Tamuz
+        - Av
+        - Elul
+        - Tishri
+        - Heshvan
+        - Kislev
+        - Tevet
+        - Shevat
+        - Adar
+        - Adar I
+        - Adar II
+        month_labels_abbr:
+        - Nis
+        - Iya
+        - Siv
+        - Tam
+        - Av
+        - Elu
+        - Tis
+        - Hes
+        - Kis
+        - Tev
+        - Shv
+        - Ada
+        - Ad1
+        - Ad2
+      hijri:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - Muharram
+        - Safar
+        - Rabiʻ I
+        - Rabiʻ II
+        - Jumada I
+        - Jumada II
+        - Rajab
+        - Shaʻban
+        - Ramadan
+        - Shawwal
+        - Dhuʻl-Qiʻdah
+        - Dhuʻl-Hijjah
+      bengali:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - Boishakh
+        - Joishtho
+        - Asharh
+        - Srabon
+        - Bhadro
+        - Ashwin
+        - Kartika
+        - Ogrohayon
+        - Poush
+        - Magh
+        - Falgun
+        - Choitro
+      indian:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - Chaitra
+        - Vaisakha
+        - Jyaistha
+        - Asadha
+        - Sravana
+        - Bhadra
+        - Asvina
+        - Kartika
+        - Agrahayana
+        - Pausa
+        - Magha
+        - Phalguna
+    public_recipe_stats:
+      connections: "{$value :number} 个连接"
+      forks: "{$value :number} 个分支"
+      installs: "{$value :number} 个安装"
+      and_more: 及其他 {$value :number} 项
+      error_keyword_title: "「{$keyword}」未匹配到任何结果。"
+      error_keyword_subtitle: 请尝试搜索其他关键词。
+      error_new_title: 未找到新配方。
+      error_new_subtitle: 这种情况不应该发生。
+      error_self_title: 您尚未发布任何配方。
+      error_self_subtitle: 了解如何发布您的第一个配方：https://help.trmnl.com/en/articles/9510536-private-plugins
+      error_author_id_title: '用户 #{$authorId} 尚未发布任何配方。'
+      error_author_id_subtitle: 未找到与此 ID 关联的配方。
+      error_recipe_ids_title: 未找到配方 ID。
+      error_recipe_ids_subtitle: 添加配方 ID 以开始。
+    horizontal_world_clock:
+      name: 世界时钟
+    language_learning_sentences:
+      from_to: "{$from :langName}到{$to :langNameList}"
+    custom_next_holiday:
+      next_holiday: 下一个节日
+      today_and_next: ".input {$nextDays :number} .match $nextDays 1 {{ {#mainLabel}今天是{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}{#br/}{#subLabel}明天是{$nextName}。{/subLabel}
+        }} 2 {{ {#mainLabel}今天是{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}{#br/}{#subLabel}后天是{$nextName}。{/subLabel}
+        }} * {{ {#mainLabel}今天是{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}{#br/}{#subLabel}距离下一个节日{$nextName}还有
+        {$nextDays} 天。{/subLabel} }}"
+      today_only: "{#mainLabel}今天是{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}"
+      next_only: ".input {$nextDays :number} .match $nextDays 1 {{ {#mainLabel}明天是{/mainLabel}{#br/}{#mainValue}{$nextName}{/mainValue}
+        }} 2 {{ {#mainLabel}后天是{/mainLabel}{#br/}{#mainValue}{$nextName}{/mainValue}
+        }} * {{ {#mainLabel}距离{/mainLabel}{#br/}{#mainValue}{$nextName}{/mainValue}{#br/}{#mainLabel}还有
+        {/mainLabel}{#mainValue}{$nextDays}{/mainValue}{#mainLabel} 天{/mainLabel}
+        }}"
+      no_holidays: "{#subLabel}已添加的节日已全部结束。{/subLabel}"
+    sun_chart: Sun Chart
+  date:
+    abbr_day_names:
+    - 周日
+    - 周一
+    - 周二
+    - 周三
+    - 周四
+    - 周五
+    - 周六
+    abbr_month_names:
+    -
+    - 1月
+    - 2月
+    - 3月
+    - 4月
+    - 5月
+    - 6月
+    - 7月
+    - 8月
+    - 9月
+    - 10月
+    - 11月
+    - 12月
+    day_names:
+    - 星期日
+    - 星期一
+    - 星期二
+    - 星期三
+    - 星期四
+    - 星期五
+    - 星期六
+    formats:
+      default: "%Y-%m-%d"
+      long: "%Y年%m月%d日"
+      short: "%m月%d日"
+    month_names:
+    -
+    - 一月
+    - 二月
+    - 三月
+    - 四月
+    - 五月
+    - 六月
+    - 七月
+    - 八月
+    - 九月
+    - 十月
+    - 十一月
+    - 十二月
+    order:
+    - :year
+    - :month
+    - :day
+  time:
+    am: 上午
+    formats:
+      default: "%Y年%m月%d日 %A %H:%M:%S %Z"
+      long: "%Y年%m月%d日 %H:%M"
+      short: "%m月%d日 %H:%M"
+    pm: 下午
+  number:
+    currency:
+      format:
+        delimiter: ","
+        format: "%u %n"
+        precision: 2
+        separator: "."
+        significant: false
+        strip_insignificant_zeros: false
+        unit: CN¥
+    format:
+      delimiter: ","
+      precision: 3
+      separator: "."
+      significant: false
+      strip_insignificant_zeros: false

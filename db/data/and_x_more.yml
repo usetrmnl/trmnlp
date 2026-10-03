@@ -1,5 +1,5 @@
-# Mirrored from trmnl-i18n (renders.and_x_more_prefix and _suffix), what TRMNL's
-# window.I18n.andXMore prints. Refresh with `rake i18n:sync[path]` — do not edit manually.
+# Mirrored from trmnl-i18n renders.and_x_more_* (window.I18n.andXMore).
+# Refresh with `rake i18n:sync[trmnl_i18n_path,rails_i18n_path]` — do not edit manually.
 cs:
 - A
 - více

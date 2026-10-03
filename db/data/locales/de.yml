@@ -1,0 +1,341 @@
+# Mirrored from trmnl-i18n custom_plugins and rails-i18n date, time, number.
+# Refresh with `rake i18n:sync[trmnl_i18n_path,rails_i18n_path]` — do not edit manually.
+de:
+  custom_plugins:
+    today: Heute
+    tomorrow: Morgen
+    updated: Aktualisiert
+    activity: Aktivität
+    done: Erledigt
+    due: Fällig
+    deutsche_bahn_departures:
+      departures: Abfahrten
+      time: Zeit
+      line: Linie
+      destination: Ziel
+      platform: Gleis
+      delay: Versp.
+      train: Zug
+      on_time: pünktl.
+      cancelled: fällt aus
+      minutes: Min.
+      refreshed: aktualisiert
+    simple_calendar:
+      title: Kalender
+      ym_format: "%B %Y"
+      chinese_korean:
+        leap_format: Schaltmonat %{month_label}
+        leap_format_short: LM%{alt_month}
+        ym_format: ", %{leap_month_label} %{heavenly_stem} %{earthly_branch}"
+        month_labels:
+        -
+        - M1
+        - M2
+        - M3
+        - M4
+        - M5
+        - M6
+        - M7
+        - M8
+        - M9
+        - M10
+        - M11
+        - M12
+        date_labels:
+        -
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+        - '6'
+        - '7'
+        - '8'
+        - '9'
+        - '10'
+        - '11'
+        - '12'
+        - '13'
+        - '14'
+        - '15'
+        - '16'
+        - '17'
+        - '18'
+        - '19'
+        - '20'
+        - '21'
+        - '22'
+        - '23'
+        - '24'
+        - '25'
+        - '26'
+        - '27'
+        - '28'
+        - '29'
+        - '30'
+        heavenly_stems:
+        - Holz
+        - Holz
+        - Feuer
+        - Feuer
+        - Erde
+        - Erde
+        - Metall
+        - Metall
+        - Wasser
+        - Wasser
+        earthly_branches:
+        - Ratte
+        - Ochse
+        - Tiger
+        - Hase
+        - Drache
+        - Schlange
+        - Pferd
+        - Ziege
+        - Affe
+        - Hahn
+        - Huhn
+        - Schwein
+        zodiac_animals:
+        - Rat
+        - Ox
+        - Tiger
+        - Rabbit
+        - Dragon
+        - Snake
+        - Horse
+        - Goat
+        - Monkey
+        - Rooster
+        - Dog
+        - Pig
+        solar_terms:
+        - Minor Cold
+        - Major Cold
+        - Start of Spring
+        - Rain Water
+        - Awakening of Insects
+        - Spring Equinox
+        - Pure Brightness
+        - Grain Rain
+        - Start of Summer
+        - Grain Buds
+        - Grain in Ear
+        - Summer Solstice
+        - Minor Heat
+        - Major Heat
+        - Start of Autumn
+        - End of Heat
+        - White Dew
+        - Autumn Equinox
+        - Cold Dew
+        - Frost's Descent
+        - Start of Winter
+        - Minor Snow
+        - Major Snow
+        - Winter Solstice
+      japanese:
+        rokuyo_terms:
+        - 先勝
+        - 友引
+        - 先負
+        - 仏滅
+        - 大安
+        - 赤口
+        nengo:
+          reiwa: Reiwa
+        ym_format: "%B %Y (%{nengo} %{alt_year})"
+        year_1: '1'
+      hebrew:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        - Nisan
+        - Ijjar
+        - Siwan
+        - Tammus
+        - Aw
+        - Elul
+        - Tischri
+        - Cheschwan
+        - Kislew
+        - Tevet
+        - Schevat
+        - Adar
+        - Adar I
+        - Adar II
+        month_labels_abbr:
+        - Nis
+        - Ija
+        - Siw
+        - Tam
+        - Av
+        - Elu
+        - Tis
+        - Che
+        - Kis
+        - Tev
+        - Schv
+        - Ada
+        - Ad1
+        - Ad2
+      hijri:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - Muharram
+        - Safar
+        - Rabiʻ I
+        - Rabiʻ II
+        - Dschumada I
+        - Dschumada II
+        - Radschab
+        - Shaʻban
+        - Ramadan
+        - Shawwal
+        - Dhu l-qaʻda
+        - Dhu l-Hiddscha
+      bengali:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - Boishakh
+        - Joishtho
+        - Asharh
+        - Srabon
+        - Bhadro
+        - Ashwin
+        - Kartika
+        - Ogrohayon
+        - Poush
+        - Magh
+        - Falgun
+        - Choitro
+      indian:
+        ym_format: ", %{month_label} %{alt_year}"
+        month_labels:
+        -
+        - Chaitra
+        - Vaisakha
+        - Jyaishtha
+        - Ashadha
+        - Sravana
+        - Bhadrapada
+        - Ashvina
+        - Kartika
+        - Margasirsha
+        - Pausha
+        - Magha
+        - Phalguna
+    public_recipe_stats:
+      connections: ".input {$value :number} .match $value one {{{$value :number} Verbindung}}
+        * {{{$value :number} Verbindungen}}"
+      forks: ".input {$value :number} .match $value one {{{$value :number} fork}}
+        * {{{$value :number} forks}}"
+      installs: ".input {$value :number} .match $value zero {{Keine Installationen}}
+        one {{{$value :number} Installation}} * {{{$value :number} Installationen}}"
+      and_more: und {$value :number} weitere
+      error_keyword_title: Kein Ergebnis für “{$keyword}”.
+      error_keyword_subtitle: Versuche es mit einem anderen Suchbegriff.
+      error_new_title: Keine neue Blaupause gefunden.
+      error_new_subtitle: Das sollte nicht passieren.
+      error_self_title: Du hast noch keine Blaupause veröffentlicht.
+      error_self_subtitle: 'Erfahre, wie du deine erste Erweiterung veröffentlichen
+        kannst: https://help.trmnl.com/en/articles/9510536-private-plugins'
+      error_author_id_title: 'Der Benutzer #{$authorId} hat keine Blaupause veröffentlicht.'
+      error_author_id_subtitle: Keine Blaupause mit dieser ID gefunden.
+      error_recipe_ids_title: Keine Blaupausen-ID gefunden.
+      error_recipe_ids_subtitle: Füge eine Blaupausen-ID hinzu, um loszulegen.
+    horizontal_world_clock:
+      name: Weltzeituhr
+    language_learning_sentences:
+      from_to: "{$from :langName} bis {$to :langNameList}"
+    custom_next_holiday:
+      next_holiday: Nächster Feiertag
+      today_and_next: ".input {$nextDays :number} .match $nextDays one {{ {#mainLabel}Heute
+        ist{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}{#br/}{#subLabel}Morgen
+        ist {$nextName}.{/subLabel} }}* {{ {#mainLabel}Heute ist{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}{#br/}{#subLabel}Der
+        nächste Feiertag ist {$nextName} in {$nextDays} Tagen.{/subLabel} }}"
+      today_only: "{#mainLabel}Heute ist{/mainLabel}{#br/}{#mainValue}{$name}{/mainValue}"
+      next_only: ".input {$nextDays :number} .match $nextDays one {{ {#mainLabel}Morgen
+        ist{/mainLabel}{#br/}{#mainValue}{$nextName}{/mainValue} }}* {{ {#mainValue}{$nextDays}{/mainValue}{#mainLabel}
+        Tage bis{/mainLabel}{#br/}{#mainValue}{$nextName}{/mainValue} }}"
+      no_holidays: "{#subLabel}Ende der hinzugefügten Feiertage.{/subLabel}"
+    sun_chart: Sonnendiagramm
+  date:
+    abbr_day_names:
+    - So
+    - Mo
+    - Di
+    - Mi
+    - Do
+    - Fr
+    - Sa
+    abbr_month_names:
+    -
+    - Jan
+    - Feb
+    - Mär
+    - Apr
+    - Mai
+    - Jun
+    - Jul
+    - Aug
+    - Sep
+    - Okt
+    - Nov
+    - Dez
+    day_names:
+    - Sonntag
+    - Montag
+    - Dienstag
+    - Mittwoch
+    - Donnerstag
+    - Freitag
+    - Samstag
+    formats:
+      default: "%d.%m.%Y"
+      long: "%e. %B %Y"
+      short: "%e. %b"
+    month_names:
+    -
+    - Januar
+    - Februar
+    - März
+    - April
+    - Mai
+    - Juni
+    - Juli
+    - August
+    - September
+    - Oktober
+    - November
+    - Dezember
+    order:
+    - :day
+    - :month
+    - :year
+  time:
+    am: vormittags
+    formats:
+      default: "%A, %d. %B %Y, %H:%M Uhr"
+      long: "%A, %d. %B %Y, %H:%M Uhr"
+      short: "%d. %b, %H:%M Uhr"
+    pm: nachmittags
+  number:
+    currency:
+      format:
+        delimiter: "."
+        format: "%n %u"
+        precision: 2
+        separator: ","
+        significant: false
+        strip_insignificant_zeros: false
+        unit: "€"
+    format:
+      delimiter: "."
+      precision: 2
+      round_mode: default
+      separator: ","
+      significant: false
+      strip_insignificant_zeros: false
