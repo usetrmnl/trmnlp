@@ -334,7 +334,14 @@ variables:
     plugin_settings:
       instance_name: Kevin Bacon Facts
 
+# plugin_merge strategy: the plugins this one reads, as "<keyname>_<id>" on TRMNL,
+# each mapped to the trmnlp project whose last fetched data stands in for it
+merged_plugins:
+  private_plugin_42: ../weather
 ```
+
+An `async_polling` plugin gets `{{ callback_url }}` in its polling url. It points at
+`trmnlp serve`'s `/callback` route, where the API posts `merge_variables` after answering 202.
 
 ## OAuth2
 

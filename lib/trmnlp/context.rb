@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative 'async_callback'
 require_relative 'config'
 require_relative 'paths'
 require_relative 'poller'
@@ -24,9 +25,11 @@ module TRMNLP
     # object graph. Callers take the collaborator they need and talk to it
     # directly — Context does not forward methods on their behalf.
     def poller
-      @poller ||= Poller.new(config:, paths:, oauth_session:, reporter:,
+      @poller ||= Poller.new(config:, paths:, oauth_session:, reporter:, async_callback:,
                              trmnl_variables: -> { user_data_assembler.polling_variables })
     end
+
+    def async_callback = @async_callback ||= AsyncCallback.new(config:, paths:, reporter:)
 
     def oauth_session
       @oauth_session ||= begin

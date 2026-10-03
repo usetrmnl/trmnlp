@@ -339,4 +339,93 @@ RSpec.describe TRMNLP::Poller do
       end
     end
   end
+
+  describe '#poll_data for an async_polling plugin' do
+    subject(:poller) { described_class.new(config:, paths:, oauth_session:, reporter:, async_callback:) }
+
+    let(:reporter) { TRMNLP::Reporter.new(quiet: true) }
+    let(:async_callback) { TRMNLP::AsyncCallback.new(config:, paths:, reporter:) }
+    let(:cache_dir) { Pathname.new(Dir.mktmpdir) }
+    let(:callback_url) { 'http://localhost:4567/callback?v=1' }
+
+    before do
+      allow(paths).to receive(:cache_dir).and_return(cache_dir)
+      settings = { 'strategy' => 'async_polling', 'polling_url' => 'https://a.test/?cb={{ callback_url }}' }
+      config.plugin.instance_variable_set(:@config, settings)
+      async_callback.server_url = 'http://localhost:4567'
+    end
+
+    after { FileUtils.remove_entry(cache_dir) }
+
+    it 'renders the callback url into the polling url' do
+      request = stub_request(:get, 'https://a.test/').with(query: { 'cb' => callback_url }).to_return(status: 202)
+      poller.poll_data
+
+      expect(request).to have_been_requested
+    end
+
+    it 'awaits the callback after a 202' do
+      stub_request(:get, /a\.test/).to_return(status: 202)
+      poller.poll_data
+
+      expect(async_callback).to be_awaiting
+    end
+
+    it 'leaves the stored data in place' do
+      stub_request(:get, /a\.test/).to_return(status: 202, body: '{"ignored":true}')
+      poller.poll_data
+
+      expect(paths.user_data).not_to exist
+    end
+
+    it 'sends no second request while the callback is awaited' do
+      request = stub_request(:get, /a\.test/).to_return(status: 202)
+      2.times { poller.poll_data }
+
+      expect(request).to have_been_requested.once
+    end
+
+    it 'sends a new version once the callback is overdue' do
+      stub_request(:get, /a\.test/).to_return(status: 202)
+      poller.poll_data
+      allow(Time).to receive(:now).and_return(Time.now + (16 * 60))
+      later = stub_request(:get, 'https://a.test/').with(query: { 'cb' => 'http://localhost:4567/callback?v=2' })
+      poller.poll_data
+
+      expect(later).to have_been_requested
+    end
+
+    context 'when the API answers other than 202' do
+      before { stub_request(:get, /a\.test/).to_return(status: 200) }
+
+      it 'stops awaiting the callback' do
+        poller.poll_data
+
+        expect(async_callback).not_to be_awaiting
+      end
+
+      it 'warns without the query string' do
+        poller.poll_data
+
+        expect(reporter.messages).to include('warning: Async polling failed: HTTP 200 from https://a.test/')
+      end
+    end
+
+    context 'without a server to receive the callback' do
+      before { async_callback.server_url = nil }
+
+      it 'sends no request' do
+        request = stub_request(:get, /a\.test/)
+        poller.poll_data
+
+        expect(request).not_to have_been_requested
+      end
+
+      it 'says the callback needs trmnlp serve' do
+        poller.poll_data
+
+        expect(reporter.messages).to include(a_string_matching(/needs `trmnlp serve`/))
+      end
+    end
+  end
 end
