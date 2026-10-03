@@ -51,15 +51,13 @@ RSpec.describe TRMNLP::Config::Project do
   end
 
   describe '#with_custom_fields' do
-    before { project.instance_variable_set(:@config, { 'custom_fields' => { 'city' => 'Perth' } }) }
-
     it 'renders custom field values' do
-      expect(project.with_custom_fields('in {{ city }}')).to eq('in Perth')
+      expect(project.with_custom_fields('in {{ city }}', values: { 'city' => 'Perth' })).to eq('in Perth')
     end
 
     it 'merges extra variables into the render context' do
       rendered = project.with_custom_fields('Bearer {{ oauth_access_token }}',
-                                            extra_variables: { 'oauth_access_token' => 'AT' })
+                                            values: {}, extra_variables: { 'oauth_access_token' => 'AT' })
       expect(rendered).to eq('Bearer AT')
     end
   end

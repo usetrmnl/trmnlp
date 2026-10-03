@@ -324,6 +324,13 @@ RSpec.describe TRMNLP::Poller do
           .to eq(['warning: Unable to fetch data from url: https://a.test/ — the host replied 500'])
       end
 
+      it 'leaves the query string out of the request log' do
+        stub_request(:get, /a\.test/).to_return(body: '{}')
+        poller.poll_data
+
+        expect(reporter.messages.grep(/received/)).to eq(['GET https://a.test/ — received 2 bytes (200 status)'])
+      end
+
       it 'warns about malformed JSON' do
         stub_request(:get, /a\.test/).to_return(body: 'nope', headers: { 'Content-Type' => 'application/json' })
         poller.poll_data

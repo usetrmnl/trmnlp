@@ -10,7 +10,7 @@ require_relative 'screen'
 module TRMNLP
   class Renderer
     # TRMNL refuses to render merge variables past this size.
-    MAX_MERGE_VARIABLES_BYTES = 100 * 1024
+    MAX_MERGE_VARIABLES_KB = 100
     AND_X_MORE = YAML.load_file(File.expand_path('../../db/data/and_x_more.yml', __dir__)).freeze
 
     def initialize(config:, paths:, user_data_assembler:)
@@ -68,8 +68,8 @@ module TRMNLP
     def parse_and_render(template_path, device:)
       data = user_data_assembler.call(device:)
       size = JSON.generate(data.except('trmnl')).bytesize
-      if size > MAX_MERGE_VARIABLES_BYTES
-        raise RenderError, "Large payload received (#{size} bytes), should be less than 100kb."
+      if size > MAX_MERGE_VARIABLES_KB * 1024
+        raise RenderError, "Large payload received (#{size} bytes), should be less than #{MAX_MERGE_VARIABLES_KB}kb."
       end
 
       Liquid::Template.parse(full_markup(template_path), environment: liquid_environment).render(data)

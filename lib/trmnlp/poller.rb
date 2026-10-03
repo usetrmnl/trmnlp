@@ -66,7 +66,8 @@ module TRMNLP
       response, failure = outbound_request.call(verb, url, headers:, body:)
       return report_warning("Unable to fetch data from url: #{without_query(url)} — #{failure}") if failure
 
-      reporter.info("#{verb} #{url} — received #{response.body.length} bytes (#{response.status} status)")
+      size = response.body.length
+      reporter.info("#{verb} #{without_query(url)} — received #{size} bytes (#{response.status} status)")
       response
     end
 

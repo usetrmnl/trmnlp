@@ -13,7 +13,7 @@ module TRMNLP
     MAX_REDIRECTS = 5
     REDIRECT_STATUSES = (301..308)
     METHOD_PRESERVING_REDIRECTS = [307, 308].freeze
-    PRIVATE_RANGES = [
+    PRIVATE_ADDRESS_RANGES = [
       '0.0.0.0/8', '10.0.0.0/8', '100.64.0.0/10', '127.0.0.0/8', '169.254.0.0/16',
       '172.16.0.0/12', '192.0.0.0/24', '192.168.0.0/16', '198.18.0.0/15',
       '::1/128', 'fc00::/7', 'fe80::/10'
@@ -27,7 +27,7 @@ module TRMNLP
       rescue IPAddr::InvalidAddressError
         Socket.getaddrinfo(host, nil).map { it[3] }.uniq
       end
-      addresses.any? { |ip| PRIVATE_RANGES.any? { it.include?(IPAddr.new(ip)) } }
+      addresses.any? { |ip| PRIVATE_ADDRESS_RANGES.any? { it.include?(IPAddr.new(ip)) } }
     rescue URI::Error, SocketError, ArgumentError
       false
     end
