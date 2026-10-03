@@ -8,6 +8,7 @@ require_relative 'reporter'
 require_relative 'transform_pipeline'
 require_relative 'user_data_assembler'
 require_relative 'watcher'
+require_relative 'webhook_receiver'
 
 module TRMNLP
   class Context
@@ -37,6 +38,10 @@ module TRMNLP
     def user_data_assembler = @user_data_assembler ||= UserDataAssembler.new(config:, paths:, transform_pipeline:)
     def renderer = @renderer ||= Renderer.new(config:, paths:, user_data_assembler:)
     def watcher = @watcher ||= Watcher.new(config:, user_data_assembler:, transform_pipeline:, reporter:)
+
+    def webhook_receiver
+      @webhook_receiver ||= WebhookReceiver.new(paths:, transform_pipeline:, user_data_assembler:, reporter:)
+    end
 
     def validate!
       raise NotAPlugin, "not a plugin directory (did not find #{paths.trmnlp_config})" unless paths.valid?

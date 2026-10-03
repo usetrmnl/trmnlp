@@ -30,14 +30,6 @@ module TRMNLP
       {}
     end
 
-    def put_webhook(payload)
-      write_user_data(wrap_array(JSON.parse(payload)))
-    # NOTE: Same rationale as #poll_data — a bad webhook payload shouldn't take
-    # down the dev server. Report a warning and keep serving.
-    rescue StandardError => e
-      reporter.info(reporter.yellow("webhook warning: #{e.message}"))
-    end
-
     private
 
     attr_reader :config, :paths, :oauth_session, :reporter
@@ -110,7 +102,7 @@ module TRMNLP
     end
 
     def write_user_data(data)
-      paths.create_cache_dir
+      paths.user_data.dirname.mkpath
       paths.user_data.write(JSON.generate(data))
     end
   end

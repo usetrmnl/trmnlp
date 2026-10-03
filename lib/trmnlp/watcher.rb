@@ -67,7 +67,8 @@ module TRMNLP
     # NOTE: transform.* changes don't trigger a re-poll — the transform
     # runs inside user_data on every render against the cached polled
     # response (or static_data), so editing the transform updates the
-    # preview without re-fetching the API.
+    # preview without re-fetching the API. A webhook plugin's transform
+    # runs only when a post arrives, as on TRMNL.
     def notify(changes)
       data = user_data_assembler.call
       return unless @view_change_callback

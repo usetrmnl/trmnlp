@@ -12,6 +12,8 @@ module TRMNLP
     include Comparable
 
     DEFAULT_ASSET_HOST = 'https://trmnl.com'
+    # Framework::Themes::NAMES_BY_ID in trmnl-framework.
+    THEMES = { 'black-and-yellow' => 'Black and Yellow', 'dark' => 'Dark', 'white-and-red' => 'White and Red' }.freeze
     DATA_PATH = File.expand_path('../../db/data/framework_versions.yml', __dir__)
     # DATA_PATH holds a copy of this file, refreshed by `rake framework:sync`.
     MANIFEST_URL = 'https://raw.githubusercontent.com/usetrmnl/trmnl-framework/main/db/data/framework_versions.yml'
@@ -79,6 +81,13 @@ module TRMNLP
     def css_url = "#{@asset_host}/css/#{number}/plugins.css"
 
     def js_url = "#{@asset_host}/js/#{number}/plugins.js"
+
+    # Versions before 3.2.0 publish no themes, so the theme class stays inert there, as on TRMNL.
+    def theme_css_url(theme)
+      return unless THEMES.include?(theme) && Gem::Version.new(number) >= Gem::Version.new('3.2.0')
+
+      "#{@asset_host}/css/#{number}/themes/#{theme}-theme.css"
+    end
 
     def ==(other) = other.is_a?(self.class) && number == other.number
 

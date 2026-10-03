@@ -1,0 +1,86 @@
+# Mirrored from trmnl-i18n (renders.and_x_more_prefix and _suffix), what TRMNL's
+# window.I18n.andXMore prints. Refresh with `rake i18n:sync[path]` — do not edit manually.
+cs:
+- A
+- více
+da:
+- Og
+- mere
+de-AT:
+- und
+- weitere
+de:
+- und
+- weitere
+en:
+- And
+- more
+es-ES:
+- "y"
+- más
+fr:
+- Et
+- de plus
+he:
+- And
+- more
+hu:
+- És
+- további
+id:
+- And
+- more
+is:
+- Og
+- fleiri
+it:
+- e
+- più
+ja:
+- And
+- more
+ko:
+- And
+- 개 더
+lt:
+- Ir dar
+- daugiau
+nl:
+- En nog
+- more
+'no':
+- And
+- more
+pl:
+- i
+- więcej
+pt-BR:
+- E
+- mais
+raw:
+- renders.and_x_more_prefix
+- renders.and_x_more_suffix
+ro:
+- Și
+- mai mult
+ru:
+- И
+- ещё
+sk:
+- A
+- ďalšie
+sl:
+- in še
+- ''
+sv:
+- And
+- more
+uk:
+- And
+- more
+zh-CN:
+- 及其他
+- 项
+zh-HK:
+- 還有
+- 個

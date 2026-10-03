@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
 require 'erb'
+require 'yaml'
 require 'trmnl/liquid'
 
 require_relative 'screen'
 
 module TRMNLP
   class Renderer
+    AND_X_MORE = YAML.load_file(File.expand_path('../../db/data/and_x_more.yml', __dir__)).freeze
+
     def initialize(config:, paths:, user_data_assembler:)
       @config = config
       @paths = paths
@@ -23,10 +26,24 @@ module TRMNLP
 
     def framework = config.plugin.framework_version
 
-    def screen_classes(classes = 'screen')
-      classes ||= 'screen' # an explicit nil (omitted screen_classes param) still needs a base
-      classes += ' screen--no-bleed' if config.plugin.no_screen_padding == 'yes'
-      classes
+    def screen_classes(classes = 'screen', theme: nil)
+      classes = (classes || 'screen').split # an explicit nil (omitted screen_classes param) still needs a base
+      # The picker marks every render 1x, which sets the dither ratio; TRMNL's device render has no such class.
+      classes.delete('screen--1x')
+      classes << 'screen--no-bleed' if config.plugin.no_screen_padding == 'yes'
+      classes << 'screen--dark-mode' if config.plugin.dark_mode == 'yes'
+      # Framework 1.x inverts only on the bare dark-mode class.
+      classes << 'dark-mode' if classes.include?('screen--dark-mode')
+      # A new device renders in the TRMNL font unless its owner picks another.
+      classes << 'screen--fonts-trmnl' if classes.none? { it.start_with?('screen--fonts-') }
+      classes << "screen--theme-#{theme}" if FrameworkVersion::THEMES.key?(theme)
+      classes.uniq.join(' ')
+    end
+
+    # TRMNL's window.I18n.andXMore phrase for the user's locale, as [prefix, suffix].
+    def and_x_more
+      locale = config.project.user_data_overrides.dig('trmnl', 'user', 'locale').to_s
+      AND_X_MORE[locale] || AND_X_MORE[locale.split('-').first] || AND_X_MORE['en']
     end
 
     private
@@ -76,8 +93,10 @@ module TRMNLP
     class TemplateBinding
       def initialize(renderer, view, params)
         @view = view
-        @screen_classes = renderer.screen_classes(params[:screen_classes])
+        @screen_classes = renderer.screen_classes(params[:screen_classes], theme: params[:theme])
         @framework = renderer.framework
+        @theme_css_url = @framework.theme_css_url(params[:theme])
+        @and_x_more = renderer.and_x_more
         @mashup_classes = Screen.find(view)&.mashup_classes
       end
 

@@ -20,6 +20,10 @@ RSpec.describe TRMNLP::TransformPipeline do
       it 'returns the data untouched' do
         expect(pipeline.call('count' => 1)).to eq('count' => 1)
       end
+
+      it 'is not configured' do
+        expect(pipeline).not_to be_configured
+      end
     end
 
     context 'when a transform file is present' do
@@ -47,6 +51,27 @@ RSpec.describe TRMNLP::TransformPipeline do
         allow(client).to receive(:execute).and_return(success_result)
 
         expect(pipeline.call('n' => 2)).to eq('doubled' => 4)
+      end
+
+      it 'keeps the returned trmnl_state out of the rendered data' do
+        allow(paths).to receive(:cache_dir).and_return(Pathname.new(tmp_root).join('cache'))
+        allow(client).to receive(:execute)
+          .and_return(success_result.with(output: '{"doubled":4,"trmnl_state":{"etag":"a"}}'))
+
+        expect(pipeline.call('n' => 2)).to eq('doubled' => 4)
+      end
+
+      it 'stores the output for the next run without previous_merge_variables' do
+        allow(paths).to receive(:cache_dir).and_return(Pathname.new(tmp_root).join('cache'))
+        allow(client).to receive(:execute)
+          .and_return(success_result.with(output: '{"data":{"n":2,"previous_merge_variables":{"n":1}}}'))
+        pipeline.call('n' => 2)
+
+        expect(pipeline.previous_output).to eq('data' => { 'n' => 2 })
+      end
+
+      it 'is configured' do
+        expect(pipeline).to be_configured
       end
 
       it 'reports what the transform printed' do

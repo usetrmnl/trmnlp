@@ -46,6 +46,13 @@
                     <span data-dark-mode-text>Light Mode</span>
                 </button>
 
+                <select data-theme-select>
+                    <option value="">Default theme</option>
+                    <% TRMNLP::FrameworkVersion::THEMES.each do |id, name| %>
+                    <option value="<%= id %>"><%= name %></option>
+                    <% end %>
+                </select>
+
                 <!-- Optional: Reset button -->
                 <button class="btn" type="button" data-reset-button>Reset</button>
             </form>

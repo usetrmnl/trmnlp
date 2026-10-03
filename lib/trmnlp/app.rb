@@ -74,8 +74,9 @@ module TRMNLP
     end
 
     post '/webhook' do
-      @poller.put_webhook(request.body.read)
-      'OK'
+      status_code, body = @context.webhook_receiver.call(request.body.read, params.to_h)
+      content_type :json
+      halt status_code, body.to_json
     end
 
     get '/' do
