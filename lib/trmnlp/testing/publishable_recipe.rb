@@ -2,9 +2,10 @@
 
 module TRMNLP
   module Testing
-    # The screens a recipe is drawn on: TRMNL's own devices, and a portrait screen.
+    # The screens a recipe is drawn on: TRMNL's own devices, in landscape and portrait.
     PUBLISHABLE_RECIPE_SCREENS = [
-      { device: 'og_png' }, { device: 'og_plus' }, { device: 'v2' }, { device: 'v2', orientation: :portrait }
+      { device: 'og_png' }, { device: 'og_plus' }, { device: 'og_plus', orientation: :portrait },
+      { device: 'v2' }, { device: 'v2', orientation: :portrait }
     ].freeze
     PUBLISHABLE_RECIPE_VIEWS = %w[full half_horizontal half_vertical quadrant].freeze
   end
