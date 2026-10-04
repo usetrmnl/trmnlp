@@ -28,6 +28,7 @@ on:
     branches: [main]
     paths:
       - "lib/trmnlp/version.rb"
+  workflow_dispatch:
 
 # Serialize releases across the WHOLE workflow: a second run queues
 # behind the first instead of racing it on the tag push. Never cancel
@@ -40,7 +41,12 @@ env:
   IMAGE: trmnl/trmnlp
 
 jobs:
+  # The same specs, runtimes and checks as every pull request, so a release cannot run them differently.
+  ci:
+    uses: ./.github/workflows/ci.yaml
+
   prepare:
+    needs: ci
     runs-on: ubuntu-latest
     permissions:
       contents: write # needed to push the git tag
@@ -65,9 +71,6 @@ jobs:
         with:
           ruby-version-file: .ruby-version
           bundler-cache: true
-
-      - name: Run specs
-        run: bundle exec rspec
 
       # Git tag
       - name: Check if tag already exists
