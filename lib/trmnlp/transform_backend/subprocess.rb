@@ -32,6 +32,10 @@ module TRMNLP
         'php' => { cmds: %w[php],                  ext: 'php' }
       }.freeze
 
+      def initialize(environment: {})
+        @environment = environment
+      end
+
       def execute(code:, language:, stdin: '', timeout_seconds: DEFAULT_TIMEOUT)
         spec = INTERPRETERS[language.to_s]
         return failure("unsupported language: #{language}") unless spec
@@ -55,7 +59,7 @@ module TRMNLP
       def run_process(cmd, src_path, stdin, timeout_seconds, output_path)
         started = monotonic_ms
 
-        Open3.popen3(cmd, src_path) do |stdin_io, stdout_io, stderr_io, wait_thr|
+        Open3.popen3(@environment, cmd, src_path) do |stdin_io, stdout_io, stderr_io, wait_thr|
           stdin_io.write(stdin)
           stdin_io.close
 

@@ -92,6 +92,12 @@ RSpec.describe TRMNLP::Paths do
     end
   end
 
+  describe '#cache_dir' do
+    it 'can be pointed elsewhere, so a run keeps its data apart' do
+      expect(described_class.new(tmp_root, cache_dir: '/tmp/run-1').user_data.to_s).to start_with('/tmp/run-1/')
+    end
+  end
+
   describe '#expand' do
     it 'resolves a relative path against the project root' do
       expect(paths.expand('src').to_s).to eq(File.join(tmp_root, 'src'))

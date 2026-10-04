@@ -8,9 +8,9 @@ module TRMNLP
   class Config
     attr_reader :app, :project, :plugin
 
-    def initialize(path)
+    def initialize(path, project_overrides: {})
       @app = App.new(path)
-      @project = Project.new(path)
+      @project = Project.new(path, overrides: project_overrides)
       @plugin = Plugin.new(path, @project)
     end
   end

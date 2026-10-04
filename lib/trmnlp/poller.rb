@@ -14,8 +14,9 @@ module TRMNLP
     # trmnl_variables answers the trmnl namespace TRMNL renders polling urls, headers and bodies with.
     # rubocop:disable-next Metrics/ParameterLists -- keyword collaborators Context wires once
     def initialize(config:, paths:, oauth_session:, trmnl_variables: -> { {} }, reporter: Reporter.new,
-                   async_callback: nil)
+                   async_callback: nil, outbound_request: nil)
       @config = config
+      @given_outbound_request = outbound_request
       @paths = paths
       @oauth_session = oauth_session
       @trmnl_variables = trmnl_variables
@@ -99,7 +100,7 @@ module TRMNLP
     end
 
     def outbound_request
-      OutboundRequest.new(on_private_address: lambda { |url|
+      @given_outbound_request || OutboundRequest.new(on_private_address: lambda { |url|
         report_warning("TRMNL refuses #{without_query(url)}: the url resolves to a private address")
       })
     end

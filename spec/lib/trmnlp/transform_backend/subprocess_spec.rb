@@ -62,6 +62,17 @@ RSpec.describe TRMNLP::TransformBackend::Subprocess do
       expect(JSON.parse(result.output)).to eq('echoed' => 'hello')
     end
 
+    context 'with an environment' do
+      subject(:backend) { described_class.new(environment: { 'TRMNLP_PROBE' => 'set' }) }
+
+      it 'gives it to the transform process' do
+        code = "def run(input) = { 'probe' => ENV['TRMNLP_PROBE'] }"
+        result = backend.execute(code:, language: 'ruby', stdin: '{}')
+
+        expect(JSON.parse(result.output)).to eq('probe' => 'set')
+      end
+    end
+
     it 'returns a failure Result for unsupported languages' do
       result = backend.execute(code: 'noop', language: 'cobol', stdin: '')
 
