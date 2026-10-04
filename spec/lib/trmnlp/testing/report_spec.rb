@@ -9,7 +9,7 @@ RSpec.describe TRMNLP::Testing::Report do
   subject(:report) { described_class.new(dir) }
 
   let(:dir) { Dir.mktmpdir('trmnlp-report-') }
-  let(:png) { File.join(Dir.mktmpdir, 'screen.png').tap { File.binwrite(it, 'png') } }
+  let(:png) { File.join(Dir.mktmpdir, 'screen.png').tap { File.binwrite(it, 'png', perm: 0o600) } }
   let(:device) { Struct.new(:name, :width, :height).new('og_png', 800, 480) }
   let(:screen) do
     double('screen', png_path: png, device:, view: 'full', problems: ['failed to load https://x.test/a.png'],
@@ -55,6 +55,10 @@ RSpec.describe TRMNLP::Testing::Report do
 
     it "keeps a failure's message" do
       expect(json['examples'].last['message']).to eq('expected 5, got 4')
+    end
+
+    it "copies a screen's PNG others can read, though the screen is private to its run" do
+      expect(File.stat(File.join(dir, 'images/1.png')).mode & 0o044).to eq(0o044)
     end
 
     it "copies a screen's PNG beside the report, with its outlines and problems" do

@@ -33,7 +33,7 @@ module TRMNLP
 
       def store
         FileUtils.mkdir_p(File.dirname(path))
-        FileUtils.cp(screen.png_path, path)
+        File.binwrite(path, File.binread(screen.png_path)) # not cp, which keeps the screen's private 0600 mode
         nil
       end
 
