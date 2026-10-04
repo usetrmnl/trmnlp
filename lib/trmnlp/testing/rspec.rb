@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 # Loaded by `trmnlp test`: gives each example `trmnl`, Capybara's matchers and trmnlp's own.
-require 'capybara/rspec/matchers'
 require 'rspec/core'
 require 'rspec/expectations'
+require 'capybara/rspec/matchers' # after rspec/expectations, or its matchers lose .and and .or
 
 require_relative '../../trmnlp'
 require_relative '../browser_pool'

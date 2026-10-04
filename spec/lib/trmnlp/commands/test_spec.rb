@@ -21,8 +21,7 @@ RSpec.describe 'trmnlp test' do
 
         it 'shows it on the screen' do
           screen = trmnl.render(device:, mocks: { 'https://api.test/*' => { json: { name: 'Ada' } } })
-          expect(screen).to have_css('.title', text: 'Hello Ada')
-          expect(screen).to have_no_overflow
+          expect(screen).to have_css('.title', text: 'Hello Ada').and have_no_overflow
           expect(screen).to match_snapshot
         end
 
