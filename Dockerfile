@@ -31,7 +31,7 @@ RUN bundle install
 FROM ruby:${RUBY_VERSION}-slim-trixie AS runner
 
 # Install runtime dependencies.
-# python3, nodejs, and php-cli are bundled so serverless transforms
+# python3, node and php-cli are bundled so serverless transforms
 # (lib/trmnlp/transform_backend/subprocess.rb) can shell out to the
 # author's chosen runtime without a sidecar container. imagemagick on
 # trixie ships IM7 (the `magick` binary trmnlp's PNG quantizer needs).
@@ -41,9 +41,13 @@ RUN apt-get update && \
     imagemagick \
     firefox-esr \
     python3 \
-    nodejs \
     php-cli \
+    libfaketime \
     && rm -rf /var/lib/apt/lists/*
+
+# Node from its own image: Debian's is 20, and only Node 24 sends fetch through HTTPS_PROXY, which
+# `trmnlp test` mocks a transform's requests with.
+COPY --from=node:24-trixie-slim /usr/local/bin/node /usr/local/bin/node
 
 WORKDIR /app
 

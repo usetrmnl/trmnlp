@@ -86,6 +86,12 @@ module TRMNLP
       Commands::Serve.run(options)
     end
 
+    desc 'test [PATHS]', "Run the plugin's tests in tests/ (RSpec, with `trmnl` and screen matchers)"
+    method_option :update, type: :boolean, default: false, desc: 'Rewrite the stored snapshots'
+    def test(*paths)
+      exit(1) unless Commands::Test.run(options, paths)
+    end
+
     desc 'version', 'Show version'
     def version
       puts VERSION

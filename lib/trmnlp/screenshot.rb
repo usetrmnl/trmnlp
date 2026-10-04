@@ -45,11 +45,25 @@ module TRMNLP
       end
     end
 
+    # Loads html into driver at width x height and waits until TRMNL would capture it, and until wait_for
+    # (a JavaScript expression) is true when given: a page still drawing would be stopped by the frozen timers.
+    # rubocop:disable-next Metrics/ParameterLists -- the page, its size, and what to wait for
+    def show(driver, html, width, height, wait_for: nil, wait_for_timeout: READINESS_TIMEOUT_SECONDS)
+      resize(driver, width, height)
+      load_page(driver, html) { wait_for_expression(driver, wait_for, wait_for_timeout) if wait_for }
+    end
+
+    def capture(driver)
+      file = Tempfile.new(['screenshot', '.png'])
+      driver.save_screenshot(file.path)
+      file.close
+      file
+    end
+
     private
 
     def render(driver, html, width, height)
-      resize(driver, width, height)
-      load_page(driver, html)
+      show(driver, html, width, height)
       capture(driver)
     end
 
@@ -108,6 +122,7 @@ module TRMNLP
       JS
 
       wait_until_ready(driver, html)
+      yield if block_given?
       driver.execute_script('return document.fonts && document.fonts.ready')
 
       driver.execute_script(<<~JS)
@@ -117,18 +132,17 @@ module TRMNLP
       driver.execute_script(FREEZE_TIMERS)
     end
 
+    def wait_for_expression(driver, expression, timeout)
+      Selenium::WebDriver::Wait.new(timeout:, interval: 0.05).until { driver.execute_script("return !!(#{expression});") }
+    rescue Selenium::WebDriver::Error::TimeoutError
+      raise RenderError, "The page did not reach #{expression} within #{timeout}s"
+    end
+
     def wait_until_ready(driver, html)
       timeout = html.match?(MAPS_DOCUMENT_PATTERN) ? READINESS_TIMEOUT_WITH_MAPS_SECONDS : READINESS_TIMEOUT_SECONDS
       Selenium::WebDriver::Wait.new(timeout:, interval: 0.05).until { driver.execute_script(READINESS_CHECK_SCRIPT) }
     rescue Selenium::WebDriver::Error::TimeoutError
       nil
-    end
-
-    def capture(driver)
-      file = Tempfile.new(['screenshot', '.png'])
-      driver.save_screenshot(file.path)
-      file.close
-      file
     end
   end
 end

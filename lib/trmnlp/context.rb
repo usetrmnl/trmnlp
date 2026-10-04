@@ -15,10 +15,15 @@ module TRMNLP
   class Context
     attr_reader :config, :paths, :reporter
 
-    def initialize(root_dir, reporter: Reporter.new)
-      @paths = Paths.new(root_dir)
-      @config = Config.new(paths)
+    # The keywords after reporter let `trmnlp test` run the real pipeline with a test's inputs.
+    # rubocop:disable-next Metrics/ParameterLists -- the composition root takes what it wires
+    def initialize(root_dir, reporter: Reporter.new, cache_dir: nil, project_overrides: {}, outbound_request: nil,
+                   transform_client: nil)
+      @paths = Paths.new(root_dir, cache_dir:)
+      @config = Config.new(paths, project_overrides:)
       @reporter = reporter
+      @outbound_request = outbound_request
+      @transform_client = transform_client
     end
 
     # Context is the composition root: it wires and memoizes the runtime
@@ -26,6 +31,7 @@ module TRMNLP
     # directly — Context does not forward methods on their behalf.
     def poller
       @poller ||= Poller.new(config:, paths:, oauth_session:, reporter:, async_callback:,
+                             outbound_request: @outbound_request,
                              trmnl_variables: -> { user_data_assembler.polling_variables })
     end
 
@@ -40,7 +46,9 @@ module TRMNLP
       end
     end
 
-    def transform_pipeline = @transform_pipeline ||= TransformPipeline.new(config:, paths:, reporter:)
+    def transform_pipeline
+      @transform_pipeline ||= TransformPipeline.new(config:, paths:, reporter:, client: @transform_client)
+    end
 
     def user_data_assembler
       @user_data_assembler ||= UserDataAssembler.new(config:, paths:, transform_pipeline:, oauth_session:)

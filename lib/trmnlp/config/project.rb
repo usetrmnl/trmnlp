@@ -18,7 +18,7 @@ module TRMNLP
       end
 
       def reload!
-        @config = deep_merge(read_config, @overrides)
+        @config = read_config.merge(@overrides)
       rescue Psych::SyntaxError => e
         raise InvalidConfig, ".trmnlp.yml is not valid YAML: #{e.message}"
       end
@@ -91,10 +91,6 @@ module TRMNLP
         return {} unless paths.trmnlp_config.exist?
 
         YAML.safe_load_file(paths.trmnlp_config, permitted_classes: [Date, Time]) || {}
-      end
-
-      def deep_merge(base, overrides)
-        base.merge(overrides) { |_key, old, new| old.is_a?(Hash) && new.is_a?(Hash) ? deep_merge(old, new) : new }
       end
 
       # NOTE: arrays (multi-select fields) and hashes are preserved as-is;

@@ -34,12 +34,18 @@ module TRMNLP
       end
     end
 
-    private
-
     def checkout
       driver = acquire
       healthy?(driver) ? driver : recycle(driver)
     end
+
+    def checkin(driver)
+      return if @shutdown
+
+      @available.push(driver)
+    end
+
+    private
 
     def acquire
       pop_available || build_new || @available.pop
@@ -71,12 +77,6 @@ module TRMNLP
         @drivers.delete(driver)
         @driver_factory.call.tap { |d| @drivers << d }
       end
-    end
-
-    def checkin(driver)
-      return if @shutdown
-
-      @available.push(driver)
     end
   end
 end

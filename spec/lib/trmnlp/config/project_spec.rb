@@ -15,8 +15,16 @@ RSpec.describe TRMNLP::Config::Project do
 
       let(:overrides) { { 'custom_fields' => { 'character_name' => 'Bingo' } } }
 
-      it 'lays them over .trmnlp.yml' do
-        expect(project.custom_fields).to include('character_name' => 'Bingo', 'character_age' => '7')
+      it 'replaces those keys of .trmnlp.yml, so a test sees none of its development values' do
+        expect(project.custom_fields).to eq('character_name' => 'Bingo')
+      end
+
+      context 'when they name another key' do
+        let(:overrides) { { 'variables' => { 'greeting' => 'hi' } } }
+
+        it 'keeps the keys they do not name' do
+          expect(project.custom_fields).to include('character_name' => 'Bluey')
+        end
       end
 
       it 'keeps them across a reload' do

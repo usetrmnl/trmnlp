@@ -4,6 +4,7 @@
 ## Unreleased
 
 - A polling plugin with no polling url runs its transform on empty data, as TRMNL does, instead of warning "config must specify polling_url" and counting it as a failed fetch, which stopped the transform's state being saved. A plugin whose transform fetches everything itself has no polling url.
+- `trmnlp test` runs a plugin's RSpec files in `tests/` through trmnlp's own pipeline: `trmnl.transform` and `trmnl.render` with fake APIs (the transform's own HTTPS requests included, in any language), a fixed clock (libfaketime, macOS and Linux), saved state, any TRMNL device, Capybara's matchers on what Firefox drew, layout boxes, overflow checks and PNG snapshots. See the README's Testing Plugins section.
 - A responsive `qr_code` keeps its own size, as on TRMNL. The hosted service gives the SVG a width, a height and `max-width:100%;height:auto` (core's `trmnl_liquid_qr_code_intrinsic_size` initializer), and trmnlp now does the same. Without it, a code in a shrink-to-fit container such as a `flex flex--col` column shrank to the width of its neighbors, or to nothing.
 - The Framework script loads as a module, as on TRMNL. A module runs after the page is parsed, so a plugin script that calls the Framework straight away now fails locally the way it fails on the device, instead of only on the device.
 - A transform's `trmnl_state` is not saved when the poll before it failed, as on TRMNL: a state built from an error or an empty response would replace the last good one. The key is still kept out of the rendered data.

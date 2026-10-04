@@ -57,6 +57,11 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'mini_magick', '~> 5.3'
   spec.add_dependency 'selenium-webdriver', '~> 4.44'
 
+  # Plugin tests (`trmnlp test`)
+  spec.add_dependency 'capybara', '~> 3.40'
+  spec.add_dependency 'rspec-core', '~> 3.13'
+  spec.add_dependency 'rspec-expectations', '~> 3.13'
+
   # OAuth2 (local plugin preview auth flow)
   spec.add_dependency 'oauth2', '~> 2.0'
 
