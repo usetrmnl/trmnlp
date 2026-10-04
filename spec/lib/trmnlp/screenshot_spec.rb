@@ -10,16 +10,15 @@ RSpec.describe TRMNLP::Screenshot do
   let(:pool) { FakePool.new(driver) }
 
   class FakeDriver
-    attr_reader :scripts_run, :window_size, :screenshot_path, :navigated_to, :size_set_count
-    attr_accessor :script_errors, :viewport_overrides, :min_window_width, :readiness_answers
+    attr_reader :scripts_run, :viewport_set, :screenshot_path, :navigated_to, :viewport_set_count
+    attr_accessor :script_errors, :viewport_overrides, :readiness_answers
 
     def initialize
       @scripts_run = []
       @navigated_to = []
       @script_errors = []
       @viewport_overrides = []
-      @size_set_count = 0
-      @min_window_width = nil
+      @viewport_set_count = 0
       @readiness_answers = []
     end
 
@@ -27,18 +26,19 @@ RSpec.describe TRMNLP::Screenshot do
       raise @script_errors.shift if @script_errors.any?
 
       @scripts_run << script
-      return { 'width' => 10, 'height' => 20 } if script.include?('outerWidth')
       return next_viewport if script.include?('innerWidth')
 
       @readiness_answers.empty? || @readiness_answers.shift if script.include?('TRMNL_PLUGINS_READY')
     end
 
-    def manage = self
-    def window = self
+    def bidi = self
+    def window_handle = 'context-1'
 
-    def size=(dim)
-      @size_set_count += 1
-      @window_size = dim
+    def send_cmd(command, context:, viewport:)
+      raise ArgumentError, command unless command == 'browsingContext.setViewport' && context == 'context-1'
+
+      @viewport_set_count += 1
+      @viewport_set = viewport
     end
 
     def navigate = NavigateFake.new(self)
@@ -46,16 +46,11 @@ RSpec.describe TRMNLP::Screenshot do
 
     private
 
-    # A real browser's viewport is the window minus the chrome borders
-    # (10x20 above). Queue `viewport_overrides` to simulate a cold Firefox
-    # reporting a not-yet-settled size before the resize lands. Set
-    # `min_window_width` to simulate Firefox refusing to shrink its window
-    # below a minimum (clamping the viewport wider than requested).
+    # Queue `viewport_overrides` for a cold Firefox reporting a size before the new viewport lands.
     def next_viewport
       return @viewport_overrides.shift if @viewport_overrides.any?
 
-      effective_width = [@window_size.width, @min_window_width || 0].max
-      [effective_width - 10, @window_size.height - 20]
+      @viewport_set.values_at(:width, :height)
     end
   end
 
@@ -89,16 +84,15 @@ RSpec.describe TRMNLP::Screenshot do
       expect(driver.screenshot_path).to eq(result.path)
     end
 
-    it 'resizes the driver window to width+borders by height+borders' do
+    it 'sets the viewport to the requested size through WebDriver BiDi' do
       result
-      expect(driver.window_size.width).to eq(810)
-      expect(driver.window_size.height).to eq(500)
+      expect(driver.viewport_set).to eq(width: 800, height: 480)
     end
 
-    it 're-applies the window size until the viewport reports the requested dimensions' do
+    it 're-applies the viewport until the page reports the requested dimensions' do
       driver.viewport_overrides = [[800, 433], [800, 433]]
       result
-      expect(driver.size_set_count).to eq(3)
+      expect(driver.viewport_set_count).to eq(3)
     end
 
     it 'navigates to about:blank before loading the page' do
@@ -148,12 +142,12 @@ RSpec.describe TRMNLP::Screenshot do
       end
     end
 
-    context 'when the browser clamps the window below the requested width' do
+    context 'when the viewport never reaches the requested size' do
       subject(:screenshot) { described_class.new(pool:, viewport_timeout: 0.1) }
 
-      before { driver.min_window_width = 510 }
+      before { driver.viewport_overrides = Array.new(1000, [500, 240]) }
 
-      it 'raises a RenderError naming the requested and clamped sizes' do
+      it 'raises a RenderError naming the requested and actual sizes' do
         expect { screenshot.call(html: '<p>hi</p>', width: 400, height: 240) }
           .to raise_error(TRMNLP::RenderError, /400x240.+500x240/)
       end

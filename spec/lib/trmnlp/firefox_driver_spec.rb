@@ -10,5 +10,9 @@ RSpec.describe TRMNLP::FirefoxDriver do
     it 'runs Firefox headless with web security disabled' do
       expect(options.args).to include('--headless', '--disable-web-security')
     end
+
+    it 'opens a WebDriver BiDi connection, which sets viewports narrower than a window can be' do
+      expect(options.web_socket_url).to be(true)
+    end
   end
 end
