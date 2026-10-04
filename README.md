@@ -473,7 +473,7 @@ See [TRMNL documentation](https://help.trmnl.com/en/articles/10542599-importing-
 
 ## Testing Plugins
 
-`trmnlp test` runs the RSpec files in your plugin's `tests/` folder, through the same pipeline `serve` and `build` use, with fake APIs and a fixed clock:
+`trmnlp init` starts a plugin with `tests/plugin_spec.rb` (each view draws without overflow or page errors, and the transform stays within TRMNL's limits) and a GitHub workflow that runs it in the `trmnl/trmnlp` image, uploads the report, can rewrite the snapshots on a manual run, and pushes to TRMNL only once lint and tests pass. `trmnlp test` runs the RSpec files in your plugin's `tests/` folder, through the same pipeline `serve` and `build` use, with fake APIs and a fixed clock:
 
 ```ruby
 # tests/weather_spec.rb

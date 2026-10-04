@@ -3,6 +3,16 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      update_snapshots:
+        description: Rewrite the snapshots in tests/snapshots and upload them
+        type: boolean
+        default: false
+
+env:
+  # The trmnlp image the tests run in. Pin a release (trmnl/trmnlp:v0.17.0) to keep runs repeatable.
+  TRMNLP_IMAGE: trmnl/trmnlp:latest
 
 jobs:
   lint:
@@ -15,9 +25,30 @@ jobs:
       - run: gem install trmnl_preview
       - run: trmnlp lint
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: trmnlp test
+        run: >
+          docker run --rm -e CI=true -e GITHUB_STEP_SUMMARY=/summary.md
+          -v "$PWD":/plugin -v "$GITHUB_STEP_SUMMARY":/summary.md "$TRMNLP_IMAGE"
+          test --report report ${{ inputs.update_snapshots && '--update' || '' }}
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trmnlp-report
+          path: report
+      - if: ${{ inputs.update_snapshots }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshots
+          path: tests/snapshots
+
   push:
-    needs: lint
-    if: github.ref == 'refs/heads/main'
+    # Take test out of needs to push to TRMNL even when the tests fail.
+    needs: [lint, test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
