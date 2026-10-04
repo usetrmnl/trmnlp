@@ -7,7 +7,7 @@ require 'trmnlp/commands/test'
 RSpec.describe TRMNLP::Commands::Test do
   subject(:command) { described_class.new(context:, options:) }
 
-  let(:options) { described_class::Options.new(dir:, quiet: true, update: false) }
+  let(:options) { described_class::Options.new(dir:, quiet: true, update: false, report: nil) }
 
   let(:dir) { File.join(__dir__, '../../../fixtures') }
   let(:context) { TRMNLP::Context.new(dir) }

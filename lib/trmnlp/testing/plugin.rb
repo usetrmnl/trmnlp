@@ -3,6 +3,7 @@
 require 'time'
 
 require_relative 'device_models'
+require_relative 'report'
 require_relative 'run'
 require_relative 'screen'
 
@@ -43,7 +44,7 @@ module TRMNLP
 
       def transform(device: 'og_plus', orientation: :landscape, now: nil, **)
         device = DeviceModels.find(device, orientation:)
-        run(now, **).transform(device: device.render_params)
+        run(now, **).transform(device: device.render_params).tap { Report.current&.record_run(it) }
       end
 
       # A render also takes head: (markup for the page's <head>, before the Framework loads), wait_for: (a
@@ -56,7 +57,9 @@ module TRMNLP
         result = run(now, **).render(view:, device: device.render_params, screen_classes: classes, theme:)
         html = with_problems_trap(with_head(with_page_clock(result.html, now), head))
         browser = fresh_browser ? @browser.fresh : @browser
+        Report.current&.record_run(result)
         Screen.new(html:, device:, view:, browser:, result:, wait_for:, wait_for_timeout:)
+              .tap { Report.current&.record_screen(it) }
       end
 
       private

@@ -11,6 +11,7 @@ require_relative '../firefox_driver'
 require_relative 'browser'
 require_relative 'certificate_authority'
 require_relative 'plugin'
+require_relative 'report'
 require_relative 'snapshot'
 
 module TRMNLP
@@ -76,6 +77,12 @@ RSpec::Matchers.define :match_snapshot do |name = nil|
 end
 
 RSpec.configure do |config|
+  if (report_dir = ENV.fetch('TRMNLP_REPORT_DIR', nil))
+    TRMNLP::Testing::Report.current = TRMNLP::Testing::Report.new(report_dir)
+    config.reporter.register_listener(TRMNLP::Testing::Report.current, :example_passed, :example_failed,
+                                      :example_pending, :close)
+  end
+
   config.include Capybara::RSpecMatchers
   config.include TRMNLP::Testing::Helpers
   config.after { @trmnl_browser&.release }

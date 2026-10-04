@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'json'
 require 'open3'
 require 'tmpdir'
 
@@ -66,8 +67,8 @@ RSpec.describe 'trmnlp test' do
 
   after { FileUtils.remove_entry(plugin_dir) }
 
-  def run_tests
-    Open3.capture2e({ 'CI' => nil }, RbConfig.ruby, trmnlp, 'test', '--dir', plugin_dir)
+  def run_tests(*options)
+    Open3.capture2e({ 'CI' => nil }, RbConfig.ruby, trmnlp, 'test', '--dir', plugin_dir, *options)
   end
 
   it 'passes a plugin whose tests hold' do
@@ -78,6 +79,24 @@ RSpec.describe 'trmnlp test' do
 
   it 'exits cleanly when they hold' do
     expect(run_tests.last).to be_success
+  end
+
+  context 'with --report' do
+    let(:report_dir) { File.join(plugin_dir, 'report') }
+    let(:report) { JSON.parse(File.read(File.join(report_dir, 'report.json'))) }
+
+    before { run_tests('--report', report_dir) }
+
+    it 'writes the page' do
+      expect(File.read(File.join(report_dir, 'index.html'))).to include('shows it on the screen')
+    end
+
+    it 'keeps each screen it rendered, with the boxes it drew' do
+      screen = report['examples'].flat_map { it['screens'] }.first
+
+      expect([File.exist?(File.join(report_dir, screen['image'])), screen['outlines']])
+        .to match([true, include(include('tag' => 'span'))])
+    end
   end
 
   context 'when a test does not hold' do
