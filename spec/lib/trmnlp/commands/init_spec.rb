@@ -39,6 +39,12 @@ RSpec.describe TRMNLP::Commands::Init do
       expect(File).not_to exist(File.join(project, 'src', 'full.liquid'))
     end
 
+    it 'scaffolds a starter test for trmnlp test' do
+      command.call('demo')
+
+      expect(File).to exist(File.join(tmp_root, 'demo', 'tests', 'plugin_spec.rb'))
+    end
+
     it 'scaffolds the GitHub Actions workflow' do
       command.call('demo')
 
