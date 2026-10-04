@@ -1,6 +1,11 @@
 
 # Changelog
 
+## 0.17.1
+
+- `trmnlp test --report` writes its images readable by everyone, and `--update` its snapshots. They kept the 0600 mode of the screen's temp file, so under the `trmnl/trmnlp` image, which runs as root, the init workflow could not upload the report. (#171)
+- Capybara's matchers compose with `.and` and `.or` in a plugin's tests. (#172)
+
 ## 0.17.0
 
 - `trmnlp init` adds a starter `tests/plugin_spec.rb`, and its GitHub workflow gains a `test` job: `trmnlp test --report` in the `trmnl/trmnlp` image (one `TRMNLP_IMAGE` setting picks the tag), the report uploaded, a manual `update_snapshots` run, and the push to TRMNL waiting for lint and tests. (#168)
