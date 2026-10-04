@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- A responsive `qr_code` keeps its own size, as on TRMNL. The hosted service gives the SVG a width, a height and `max-width:100%;height:auto` (core's `trmnl_liquid_qr_code_intrinsic_size` initializer), and trmnlp now does the same. Without it, a code in a shrink-to-fit container such as a `flex flex--col` column shrank to the width of its neighbors, or to nothing.
+
 ## 0.16.0
 
 - Webhook posts must wrap their data in `merge_variables`, as TRMNL requires, and `merge_strategy` (`replace`, `deep_merge`, or `stream` with `stream_limit`) works from the body or the query string. A post without the wrapper is refused with TRMNL's message and a 422; a body that is not JSON gets a 400. Before, trmnlp stored the raw body and always answered 200, so a correct post rendered its data under `merge_variables.*`. A post over 5 kB is stored with a warning, since trmnlp cannot know your plan's limit. (#155)
