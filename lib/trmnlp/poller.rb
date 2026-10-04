@@ -30,10 +30,10 @@ module TRMNLP
 
       missing = config.plugin.missing_required_fields
       return report_warning("Plugin is not configured — fill in: #{missing.join(', ')}") if missing.any?
-      raise InvalidConfig, 'config must specify polling_url or polling_urls' if config.plugin.polling_urls.empty?
 
       @fetch_failed = false
-      data = aggregate_responses
+      # Like TRMNL: no url is nothing to fetch, and the transform runs on {}.
+      data = config.plugin.polling_urls.empty? ? {} : aggregate_responses
       write_user_data(data)
       record_fetch_outcome
       data
@@ -56,7 +56,7 @@ module TRMNLP
         return report_warning('async_polling needs `trmnlp serve` to receive the callback')
       end
       return report_warning('Waiting for the async callback; the last data posted renders') if async_callback.awaiting?
-      raise InvalidConfig, 'config must specify polling_url' if config.plugin.polling_urls.empty?
+      return if config.plugin.polling_urls.empty?
 
       report_warning('Async callback not received within 15 minutes') if async_callback.expired?
       response, url = send_async_request(async_callback.start)

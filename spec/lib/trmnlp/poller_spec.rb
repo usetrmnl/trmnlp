@@ -92,6 +92,38 @@ RSpec.describe TRMNLP::Poller do
     end
   end
 
+  describe '#poll_data without a polling url' do
+    subject(:poller) { described_class.new(config:, paths:, oauth_session:, reporter:) }
+
+    let(:reporter) { TRMNLP::Reporter.new(quiet: true) }
+    let(:cache_dir) { Pathname.new(Dir.mktmpdir) }
+
+    before do
+      allow(paths).to receive(:cache_dir).and_return(cache_dir)
+      allow(config.plugin).to receive_messages(polling?: true, polling_urls: [])
+      paths.fetch_failed_marker.dirname.mkpath
+      paths.fetch_failed_marker.write('')
+    end
+
+    after { FileUtils.remove_entry(cache_dir) }
+
+    it 'answers empty data for the transform, as TRMNL does' do
+      expect(poller.poll_data).to eq({})
+    end
+
+    it 'does not count as a failed fetch, so the transform keeps its state' do
+      poller.poll_data
+
+      expect(paths.fetch_failed_marker).not_to exist
+    end
+
+    it 'does not warn' do
+      poller.poll_data
+
+      expect(reporter.messages).to be_empty
+    end
+  end
+
   describe '#poll_data' do
     let(:faraday_connection) { instance_double(Faraday::Connection) }
 
