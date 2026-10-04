@@ -473,7 +473,7 @@ See [TRMNL documentation](https://help.trmnl.com/en/articles/10542599-importing-
 
 ## Testing Plugins
 
-`trmnlp init` starts a plugin with `tests/plugin_spec.rb` (each view draws without overflow or page errors, and the transform stays within TRMNL's limits) and a GitHub workflow that runs it in the `trmnl/trmnlp` image, uploads the report, can rewrite the snapshots on a manual run, and pushes to TRMNL only once lint and tests pass. `trmnlp test` runs the RSpec files in your plugin's `tests/` folder, through the same pipeline `serve` and `build` use, with fake APIs and a fixed clock:
+`trmnlp init` starts a plugin with `tests/plugin_spec.rb` (`it_behaves_like 'a publishable recipe'`, below) and a GitHub workflow that runs it in the `trmnl/trmnlp` image, uploads the report, can rewrite the snapshots on a manual run, and pushes to TRMNL only once lint and tests pass. `trmnlp test` runs the RSpec files in your plugin's `tests/` folder, through the same pipeline `serve` and `build` use, with fake APIs and a fixed clock:
 
 ```ruby
 # tests/weather_spec.rb
@@ -505,6 +505,7 @@ end
 - `mocks:` answer every request the run makes: polling urls, and the transform's own requests in any language, HTTPS included. Keys are urls, with `*` wildcards, a Regexp, or a method first (`'POST https://...'`). Values are `{ json:, body:, status:, headers:, delay:, body_delay:, advance_clock:, error: :reset }` (times in seconds: `body_delay:` sends the headers first and the body later, `advance_clock:` moves the transform's clock on when it answers), a string body, a lambda that takes the request, or an array of answers used in order. An unmocked request gets a 599. `requests` lists every request with its `status`, and `aborted: true` for one the transform gave up on before its answer arrived; `duration_ms` is how long the transform ran.
 - `now:` starts every clock: Liquid's, the markup's scripts', and the transform's, through libfaketime (`brew install libfaketime` or `apt-get install libfaketime`; already in the Docker image). On macOS the interpreter must come from brew, mise or similar, since macOS will not hand libfaketime to its own `/usr/bin` binaries.
 - `trmnlp test --report report` also writes `report/index.html` and `report/report.json`: every example with each screen it rendered (with a switch that outlines every drawn box, and the page's problems) and each transform it ran (time, memory, requests). Under GitHub Actions the counts and failures go to the run's summary too.
+- `it_behaves_like 'a publishable recipe'` is what a recipe should hold before it is published: every view draws without overflow or page errors on the TRMNL OG (1-bit and 2-bit) and the TRMNL X (landscape and portrait), and the transform runs without error within TRMNL's limits. It uses the group's `mocks` and `custom_fields` when the group defines them; `screens: [{ device: 'kobo_libra_2' }, ...]` draws on other devices.
 - `match_snapshot` stores a missing snapshot under `tests/snapshots/<os>/` and fails one on CI; `trmnlp test --update` rewrites them. Fonts render differently per operating system, so run tests in the Docker image when CI should share your snapshots. `fit_image_size_limit` checks the PNG against the model's limit.
 
 ## Development

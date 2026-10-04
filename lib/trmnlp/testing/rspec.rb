@@ -12,6 +12,7 @@ require_relative 'browser'
 require_relative 'certificate_authority'
 require_relative 'plugin'
 require_relative 'report'
+require_relative 'publishable_recipe'
 require_relative 'snapshot'
 
 module TRMNLP
