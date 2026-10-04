@@ -50,6 +50,7 @@ module TRMNLP
     def oauth_tokens = cache_dir.join('oauth', "#{project_key}.json")
 
     def transform_state = cache_dir.join('state', "#{project_key}.json")
+    def fetch_failed_marker = cache_dir.join('state', "#{project_key}.fetch_failed")
 
     def transform_output = cache_dir.join('transform_output', "#{project_key}.json")
 

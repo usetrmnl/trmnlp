@@ -81,7 +81,7 @@ module TRMNLP
       transformed = JSON.parse(output)
       return reject_non_object_output unless transformed.is_a?(Hash)
 
-      transform_state.extract!(transformed)
+      transform_state.extract!(transformed, fetch_failed: config.plugin.polling? && paths.fetch_failed_marker.exist?)
       store_output(without_previous_merge_variables(transformed))
     rescue JSON::ParserError => e
       @error = "transform produced non-JSON output: #{e.message}"

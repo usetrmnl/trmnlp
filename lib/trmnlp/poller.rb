@@ -31,14 +31,17 @@ module TRMNLP
       return report_warning("Plugin is not configured — fill in: #{missing.join(', ')}") if missing.any?
       raise InvalidConfig, 'config must specify polling_url or polling_urls' if config.plugin.polling_urls.empty?
 
+      @fetch_failed = false
       data = aggregate_responses
       write_user_data(data)
+      record_fetch_outcome
       data
     # NOTE: trmnlp is a dev tool — a flaky upstream API should surface a warning
     # and keep the preview server alive, not crash the user's session. We
     # deliberately swallow here and return {} so the renderer keeps rendering.
     rescue StandardError => e
       report_warning(e.message)
+      record_fetch_outcome
       {}
     end
 
@@ -107,7 +110,7 @@ module TRMNLP
     # Like the hosted service: a client error is reported, but its body still reaches the data.
     def parse_response(response, url)
       success = (200..299).cover?(response.status)
-      reporter.info(reporter.yellow("warning: HTTP #{response.status} from #{url}")) unless success
+      report_warning("HTTP #{response.status} from #{url}") unless success
       parse_body(without_byte_order_mark(response.body.to_s), response.headers['content-type'])
     rescue JSON::ParserError, CSV::MalformedCSVError => e
       report_warning("Malformed #{e.is_a?(CSV::MalformedCSVError) ? 'CSV' : 'JSON'} from url: #{url}")
@@ -144,8 +147,18 @@ module TRMNLP
     def wrap_array(json) = json.is_a?(Array) ? { data: json } : json
 
     def report_warning(message)
+      @fetch_failed = true
       reporter.info(reporter.yellow("warning: #{message}"))
       nil
+    end
+
+    # The transform runs later, from the cached data, so whether this poll failed is kept beside it.
+    def record_fetch_outcome
+      marker = paths.fetch_failed_marker
+      return marker.delete if !@fetch_failed && marker.exist?
+
+      marker.dirname.mkpath
+      marker.write('') if @fetch_failed
     end
 
     def write_user_data(data)

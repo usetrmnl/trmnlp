@@ -61,6 +61,23 @@ RSpec.describe TRMNLP::TransformPipeline do
         expect(pipeline.call('n' => 2)).to eq('doubled' => 4)
       end
 
+      context 'when the last poll of a polling plugin failed' do
+        before do
+          allow(paths).to receive(:cache_dir).and_return(Pathname.new(tmp_root).join('cache'))
+          allow(config.plugin).to receive(:polling?).and_return(true)
+          paths.fetch_failed_marker.dirname.mkpath
+          paths.fetch_failed_marker.write('')
+          allow(client).to receive(:execute)
+            .and_return(success_result.with(output: '{"doubled":4,"trmnl_state":{"etag":"from-nothing"}}'))
+        end
+
+        it 'keeps the last good state' do
+          pipeline.call('n' => 2)
+
+          expect(paths.transform_state).not_to exist
+        end
+      end
+
       it 'stores the output for the next run without previous_merge_variables' do
         allow(paths).to receive(:cache_dir).and_return(Pathname.new(tmp_root).join('cache'))
         allow(client).to receive(:execute)
