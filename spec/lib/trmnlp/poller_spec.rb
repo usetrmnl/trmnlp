@@ -183,6 +183,39 @@ RSpec.describe TRMNLP::Poller do
           expect(reporter.messages).to include(a_string_matching(/Unable to fetch .* — the host replied 503/))
         end
       end
+
+      context 'when recording whether the poll failed, for the transform state' do
+        let(:cache_dir) { Pathname.new(Dir.mktmpdir) }
+        let(:json_headers) { { 'content-type' => 'application/json' } }
+        let(:ok) { instance_double(Faraday::Response, body: '{}', status: 200, headers: json_headers) }
+
+        before { allow(paths).to receive(:cache_dir).and_return(cache_dir) }
+        after { FileUtils.remove_entry(cache_dir) }
+
+        it 'marks a client error as a failed fetch' do
+          allow(faraday_connection).to receive(:get)
+            .and_return(instance_double(Faraday::Response, body: '{}', status: 404, headers: json_headers))
+          poller.poll_data
+
+          expect(paths.fetch_failed_marker).to exist
+        end
+
+        it 'marks a server error as a failed fetch' do
+          allow(faraday_connection).to receive(:get)
+            .and_return(instance_double(Faraday::Response, body: '{}', status: 503, headers: json_headers))
+          poller.poll_data
+
+          expect(paths.fetch_failed_marker).to exist
+        end
+
+        it 'clears the mark after a clean poll' do
+          allow(faraday_connection).to receive(:get)
+            .and_return(instance_double(Faraday::Response, body: '{}', status: 404, headers: json_headers), ok)
+          2.times { poller.poll_data }
+
+          expect(paths.fetch_failed_marker).not_to exist
+        end
+      end
     end
 
     context 'when the plugin polls with a POST request' do

@@ -27,9 +27,26 @@ RSpec.describe TRMNLP::TransformState do
 
   describe '#extract!' do
     it 'keeps the returned trmnl_state for the next run' do
-      transform_state.extract!('trmnl_state' => { 'etag' => 'abc' })
+      transform_state.extract!({ 'trmnl_state' => { 'etag' => 'abc' } })
 
       expect(transform_state.read).to eq('etag' => 'abc')
+    end
+
+    context 'when the last poll failed' do
+      before { transform_state.extract!({ 'trmnl_state' => { 'etag' => 'good' } }) }
+
+      it 'keeps the last good state, like TRMNL' do
+        transform_state.extract!({ 'trmnl_state' => { 'etag' => 'from-nothing' } }, fetch_failed: true)
+
+        expect(transform_state.read).to eq('etag' => 'good')
+      end
+
+      it 'still removes trmnl_state from what renders' do
+        output = { 'items' => [], 'trmnl_state' => { 'etag' => 'from-nothing' } }
+        transform_state.extract!(output, fetch_failed: true)
+
+        expect(output).to eq('items' => [])
+      end
     end
 
     it 'removes trmnl_state from what renders' do
@@ -40,26 +57,26 @@ RSpec.describe TRMNLP::TransformState do
     end
 
     it 'leaves the stored state alone when the output has no trmnl_state' do
-      transform_state.extract!('trmnl_state' => { 'etag' => 'abc' })
-      transform_state.extract!('items' => [1])
+      transform_state.extract!({ 'trmnl_state' => { 'etag' => 'abc' } })
+      transform_state.extract!({ 'items' => [1] })
 
       expect(transform_state.read).to eq('etag' => 'abc')
     end
 
     it 'ignores a trmnl_state that is not an object' do
-      transform_state.extract!('trmnl_state' => 'abc')
+      transform_state.extract!({ 'trmnl_state' => 'abc' })
 
       expect(transform_state.read).to eq({})
     end
 
     it 'reports a trmnl_state that is not an object' do
-      transform_state.extract!('trmnl_state' => 'abc')
+      transform_state.extract!({ 'trmnl_state' => 'abc' })
 
       expect(reporter).to have_received(:yellow).with('Ignored trmnl_state: expected an object, got String')
     end
 
     it 'ignores a trmnl_state over 8 kB' do
-      transform_state.extract!('trmnl_state' => { 'blob' => 'x' * 8200 })
+      transform_state.extract!({ 'trmnl_state' => { 'blob' => 'x' * 8200 } })
 
       expect(reporter).to have_received(:yellow).with('Ignored trmnl_state: 8211 bytes exceeds the 8192 byte limit')
     end

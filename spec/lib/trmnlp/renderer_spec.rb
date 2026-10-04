@@ -33,6 +33,10 @@ RSpec.describe TRMNLP::Renderer do
       expect(rendered).to include('window.TRMNL_HIGHCHARTS_DONE = true')
     end
 
+    it 'loads the Framework script as a module, as TRMNL does' do
+      expect(rendered).to match(%r{<script type="module" src="[^"]+/plugins\.js"></script>})
+    end
+
     it 'links the stylesheet of a picked theme' do
       allow(config.plugin).to receive(:framework_version).and_return(TRMNLP::FrameworkVersion.new('3.4.0'))
 

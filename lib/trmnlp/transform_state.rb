@@ -21,10 +21,13 @@ module TRMNLP
       {}
     end
 
-    def extract!(output)
+    def extract!(output, fetch_failed: false)
       return unless output.is_a?(Hash) && output.key?(KEY)
 
       state = output.delete(KEY)
+      # Like TRMNL: a state built from a failed fetch would replace the last good one.
+      return if fetch_failed
+
       rejection = rejection_reason(state)
       rejection ? reporter.info(reporter.yellow("Ignored #{KEY}: #{rejection}")) : write(state)
     end
