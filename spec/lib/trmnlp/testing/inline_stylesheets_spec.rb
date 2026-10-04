@@ -26,6 +26,12 @@ RSpec.describe TRMNLP::Testing::InlineStylesheets do
       expect(described_class.call(html)).to include('url(data:image/png;base64,AA)')
     end
 
+    it "leaves a link inside a script's string alone, so the script still parses" do
+      fallback = %(<script>document.write('<link rel="stylesheet" href="https://cdn.test/css/plugins.css">')</script>)
+
+      expect(described_class.call(fallback)).to eq(fallback)
+    end
+
     it 'fetches a stylesheet once per run' do
       2.times { described_class.call(html) }
 
