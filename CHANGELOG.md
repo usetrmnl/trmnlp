@@ -1,6 +1,11 @@
 
 # Changelog
 
+## 0.18.1
+
+- Pages narrower than a Firefox window render, such as a 480x800 TRMNL OG in portrait, in `serve`, `build` and `test`. trmnlp sets the page's viewport with WebDriver BiDi, as TRMNL does, instead of resizing the window, which Firefox will not size under about 500px. (#178)
+- `it_behaves_like 'a publishable recipe'` also draws every view on the TRMNL OG (2-bit) in portrait. (#179)
+
 ## 0.18.0
 
 - `it_behaves_like 'a publishable recipe'` checks what a recipe should hold before it is published: every view draws without overflow or page errors on the TRMNL OG (1-bit and 2-bit) and the TRMNL X (landscape and portrait), and the transform runs without error within TRMNL's limits. `trmnlp init`'s starter spec uses it. (#176)
