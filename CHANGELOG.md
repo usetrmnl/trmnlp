@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- `trmnlp test --report DIR` writes a report of the run: every example with each screen it rendered (the PNG, an outline of every drawn box, the page's problems) and each transform it ran (time, memory, requests), as `DIR/index.html` and `DIR/report.json`. Under GitHub Actions it adds the counts and the failures to the run's summary.
 - A polling plugin with no polling url runs its transform on empty data, as TRMNL does, instead of warning "config must specify polling_url" and counting it as a failed fetch, which stopped the transform's state being saved. A plugin whose transform fetches everything itself has no polling url.
 - `trmnlp test` runs a plugin's RSpec files in `tests/` through trmnlp's own pipeline: `trmnl.transform` and `trmnl.render` with fake APIs (the transform's own HTTPS requests included, in any language), a fixed clock (libfaketime, macOS and Linux), saved state, any TRMNL device, Capybara's matchers on what Firefox drew, layout boxes, overflow checks and PNG snapshots. See the README's Testing Plugins section.
 - A responsive `qr_code` keeps its own size, as on TRMNL. The hosted service gives the SVG a width, a height and `max-width:100%;height:auto` (core's `trmnl_liquid_qr_code_intrinsic_size` initializer), and trmnlp now does the same. Without it, a code in a shrink-to-fit container such as a `flex flex--col` column shrank to the width of its neighbors, or to nothing.

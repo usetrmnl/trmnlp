@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>trmnlp test report</title>
+<style>
+  :root { --ink: #1d1d1f; --muted: #6e6e73; --line: #d2d2d7; --pass: #1a7f37; --fail: #cf222e; --pending: #9a6700; --box: #0969da; }
+  body { font: 14px/1.5 system-ui, sans-serif; color: var(--ink); margin: 0 auto; padding: 24px 16px; max-width: 1400px; }
+  header { display: flex; flex-wrap: wrap; gap: 16px; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+  h1 { font-size: 20px; margin: 0; }
+  .counts span { margin-right: 12px; }
+  .passed { color: var(--pass); } .failed { color: var(--fail); } .pending { color: var(--pending); }
+  label { color: var(--muted); cursor: pointer; }
+  label::before { content: '☐ '; }
+  #outlines:checked ~ header label[for=outlines]::before, #failures:checked ~ header label[for=failures]::before { content: '☑ '; }
+  section { border-bottom: 1px solid var(--line); padding: 16px 0; }
+  section h2 { font-size: 15px; margin: 0 0 4px; }
+  .location, .run { color: var(--muted); font-size: 12px; }
+  pre { background: #f6f8fa; padding: 8px; overflow-x: auto; white-space: pre-wrap; }
+  .screens { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; }
+  figure { margin: 0; max-width: 100%; }
+  .frame { position: relative; border: 1px solid var(--line); max-width: min(100%, 640px); }
+  .frame img, .frame svg { display: block; width: 100%; height: auto; }
+  .frame svg { position: absolute; inset: 0; display: none; }
+  #outlines:checked ~ main .frame svg { display: block; }
+  #failures:checked ~ main section:not(.failed-example) { display: none; }
+  rect { fill: none; stroke: var(--box); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  figcaption { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .problems { color: var(--fail); font-size: 12px; margin: 4px 0 0; padding-left: 16px; }
+  table { border-collapse: collapse; font-size: 12px; margin-top: 4px; }
+  td { border-top: 1px solid var(--line); padding: 2px 8px 2px 0; }
+</style>
+</head>
+<body>
+<input type="checkbox" id="outlines" hidden>
+<input type="checkbox" id="failures" hidden>
+<header>
+  <h1>trmnlp test</h1>
+  <div class="counts">
+    <span class="passed"><%= count('passed') %> passed</span>
+    <span class="failed"><%= count('failed') %> failed</span>
+    <span class="pending"><%= count('pending') %> pending</span>
+    <span><%= examples.sum { it[:screens].size } %> screens</span>
+  </div>
+  <label for="outlines">outline every drawn box</label>
+  <label for="failures">failures only</label>
+</header>
+<main>
+<% examples.each do |example| %>
+  <section class="<%= 'failed-example' if example[:status] == 'failed' %>">
+    <h2 class="<%= example[:status] %>"><%= h(example[:description]) %></h2>
+    <div class="location"><%= h(example[:location]) %> · <%= example[:status] %></div>
+    <% if example[:message] %><pre><%= h(example[:message]) %></pre><% end %>
+    <% example[:runs].each do |run| %>
+      <div class="run">transform: <%= run[:duration_ms] %> ms, <%= run[:max_memory_mb] || '?' %> MB<%= ", error: #{h(run[:error])}" if run[:error] %></div>
+      <% if run[:requests].any? %>
+        <table><% run[:requests].each do |request| %>
+          <tr><td><%= request[:via] %></td><td><%= request[:method] %></td><td><%= h(request[:url]) %></td><td><%= request[:status] %><%= ' aborted' if request[:aborted] %></td></tr>
+        <% end %></table>
+      <% end %>
+    <% end %>
+    <div class="screens">
+    <% example[:screens].each do |screen| %>
+      <figure>
+        <div class="frame">
+          <img src="<%= screen[:image] %>" alt="<%= h(screen[:label]) %>" width="<%= screen[:width] %>" height="<%= screen[:height] %>">
+          <svg viewBox="0 0 <%= screen[:width] %> <%= screen[:height] %>"><% screen[:outlines].each do |box| %><rect x="<%= box['x'] %>" y="<%= box['y'] %>" width="<%= box['w'] %>" height="<%= box['h'] %>"><title><%= h("#{box['tag']}.#{box['class']}") %></title></rect><% end %></svg>
+        </div>
+        <figcaption><%= h(screen[:label]) %></figcaption>
+        <% if screen[:problems].any? %><ul class="problems"><% screen[:problems].each do |problem| %><li><%= h(problem) %></li><% end %></ul><% end %>
+      </figure>
+    <% end %>
+    </div>
+  </section>
+<% end %>
+</main>
+</body>
+</html>
