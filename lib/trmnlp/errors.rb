@@ -13,4 +13,5 @@ module TRMNLP
   class InvalidConfig       < Error; end
   class InvalidCustomFields < Error; end
   class RenderError         < Error; end
+  class TestingError        < Error; end
 end

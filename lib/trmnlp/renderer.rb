@@ -29,6 +29,9 @@ module TRMNLP
 
     def framework = config.plugin.framework_version
 
+    # The data the last page was rendered from, for a test to read back.
+    attr_reader :last_data
+
     def screen_classes(classes = 'screen', theme: nil)
       classes = (classes || 'screen').split # an explicit nil (omitted screen_classes param) still needs a base
       # The picker marks every render 1x, which sets the dither ratio; TRMNL's device render has no such class.
@@ -66,7 +69,7 @@ module TRMNLP
     end
 
     def parse_and_render(template_path, device:)
-      data = user_data_assembler.call(device:)
+      data = @last_data = user_data_assembler.call(device:)
       size = JSON.generate(data.except('trmnl')).bytesize
       if size > MAX_MERGE_VARIABLES_KB * 1024
         raise RenderError, "Large payload received (#{size} bytes), should be less than #{MAX_MERGE_VARIABLES_KB}kb."

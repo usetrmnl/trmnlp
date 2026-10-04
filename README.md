@@ -470,6 +470,42 @@ The `settings.yml` file is part of the plugin definition, and is uploaded and do
 See [TRMNL documentation](https://help.trmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0) for details on this file's contents.
 
 
+
+## Testing Plugins
+
+`trmnlp test` runs the RSpec files in your plugin's `tests/` folder, through the same pipeline `serve` and `build` use, with fake APIs and a fixed clock:
+
+```ruby
+# tests/weather_spec.rb
+RSpec.describe 'Weather' do
+  let(:mocks) { { 'https://api.weather.example/*' => { json: { temp: 12 } } } }
+
+  %w[og_plus v2].each do |device|
+    it "shows the temperature on #{device}" do
+      screen = trmnl.render(device:, now: '2030-01-02T08:00:00Z', custom_fields: { city: 'Amsterdam' }, mocks:)
+
+      expect(screen).to have_text('12°')
+      expect(screen).to have_no_overflow
+      expect(screen.box('.title').bottom).to be <= screen.box('.content').top
+      expect(screen).to match_snapshot
+    end
+  end
+
+  it 'keeps its state when the API has nothing new' do
+    run = trmnl.transform(state: { etag: 'abc' }, mocks: { 'https://api.weather.example/*' => { status: 304 } })
+
+    expect(run.state).to eq('etag' => 'abc')
+  end
+end
+```
+
+- `trmnl.transform(...)` runs the transform and answers `data`, `state`, `requests`, `log`, `error`, `duration_ms` and `max_memory_mb`; `expect(run).to stay_within_serverless_limits` checks TRMNL's 5 seconds and 128 MB. `trmnl.render(view: 'full', ...)` renders a view in Firefox and answers a screen: Capybara's matchers (`have_text`, `have_css`, `within`...) see what is drawn, and `box(selector)`, `evaluate(js)`, `overflowing` and `problems` (script errors, unhandled rejections, `console.error` and files that failed to load; `have_no_problems`) ask the live page; `fresh_browser: true` renders in a new Firefox with nothing cached; `screen.result` holds the run's `data`, `state` and `requests`. `trmnl.plugin(dir)` tests the plugin in another folder, such as a built copy.
+- Inputs, all optional: `device:` (a TRMNL model name, or `{ width:, height:, bit_depth: }`), `palette:`, `orientation: :portrait`, `dark_mode:`, `theme:`, `now:`, `custom_fields:`, `variables:`, `state:`, `previous_merge_variables:`, `data:` (skips polling), `transform: false`. A test's `custom_fields` and `variables` replace those in `.trmnlp.yml`, so development values there never reach a test; the field defaults in `settings.yml` still apply, as on TRMNL.
+- A board drawn by its own script takes `head:` (markup added to the page's `<head>`) and `wait_for:` (a JavaScript expression the page must reach before it is captured, within `wait_for_timeout:` seconds); without it, the capture freezes timers once TRMNL's readiness flags are set.
+- `mocks:` answer every request the run makes: polling urls, and the transform's own requests in any language, HTTPS included. Keys are urls, with `*` wildcards, a Regexp, or a method first (`'POST https://...'`). Values are `{ json:, body:, status:, headers:, delay:, body_delay:, advance_clock:, error: :reset }` (times in seconds: `body_delay:` sends the headers first and the body later, `advance_clock:` moves the transform's clock on when it answers), a string body, a lambda that takes the request, or an array of answers used in order. An unmocked request gets a 599. `requests` lists every request with its `status`, and `aborted: true` for one the transform gave up on before its answer arrived; `duration_ms` is how long the transform ran.
+- `now:` starts every clock: Liquid's, the markup's scripts', and the transform's, through libfaketime (`brew install libfaketime` or `apt-get install libfaketime`; already in the Docker image). On macOS the interpreter must come from brew, mise or similar, since macOS will not hand libfaketime to its own `/usr/bin` binaries.
+- `match_snapshot` stores a missing snapshot under `tests/snapshots/<os>/` and fails one on CI; `trmnlp test --update` rewrites them. Fonts render differently per operating system, so run tests in the Docker image when CI should share your snapshots. `fit_image_size_limit` checks the PNG against the model's limit.
+
 ## Development
 
 To run trmnlp from a checkout of this repo — handy for trying unreleased changes or contributing:

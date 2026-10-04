@@ -32,8 +32,10 @@ module TRMNLP
         'php' => { cmds: %w[php],                  ext: 'php' }
       }.freeze
 
-      def initialize(environment: {})
+      # on_spawn is called with the transform's process id, as soon as it starts.
+      def initialize(environment: {}, on_spawn: nil)
         @environment = environment
+        @on_spawn = on_spawn
       end
 
       def execute(code:, language:, stdin: '', timeout_seconds: DEFAULT_TIMEOUT)
@@ -60,6 +62,7 @@ module TRMNLP
         started = monotonic_ms
 
         Open3.popen3(@environment, cmd, src_path) do |stdin_io, stdout_io, stderr_io, wait_thr|
+          @on_spawn&.call(wait_thr.pid)
           stdin_io.write(stdin)
           stdin_io.close
 

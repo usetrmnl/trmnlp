@@ -26,8 +26,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install PHP CLI
-        run: sudo apt-get update && sudo apt-get install -y php-cli
+      - name: Install PHP CLI, libfaketime and ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y php-cli libfaketime imagemagick
 
       - name: Run specs
         run: bundle exec rspec

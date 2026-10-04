@@ -73,6 +73,18 @@ RSpec.describe TRMNLP::TransformBackend::Subprocess do
       end
     end
 
+    context 'with an on_spawn hook' do
+      subject(:backend) { described_class.new(on_spawn: ->(pid) { spawned << pid }) }
+
+      let(:spawned) { [] }
+
+      it 'hands it the transform process id' do
+        backend.execute(code: 'def run(input) = {}', language: 'ruby', stdin: '{}')
+
+        expect(spawned).to contain_exactly(a_kind_of(Integer))
+      end
+    end
+
     it 'returns a failure Result for unsupported languages' do
       result = backend.execute(code: 'noop', language: 'cobol', stdin: '')
 
