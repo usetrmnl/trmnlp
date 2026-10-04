@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 0.17.2
+
+- `trmnlp test` no longer inlines a stylesheet link inside a script's string, such as a CDN fallback written with `document.write`. It broke the script, and every render came out blank. (#174)
+
 ## 0.17.1
 
 - `trmnlp test --report` writes its images readable by everyone, and `--update` its snapshots. They kept the 0600 mode of the screen's temp file, so under the `trmnl/trmnlp` image, which runs as root, the init workflow could not upload the report. (#171)
