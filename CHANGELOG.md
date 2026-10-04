@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 0.18.0
+
+- `it_behaves_like 'a publishable recipe'` checks what a recipe should hold before it is published: every view draws without overflow or page errors on the TRMNL OG (1-bit and 2-bit) and the TRMNL X (landscape and portrait), and the transform runs without error within TRMNL's limits. `trmnlp init`'s starter spec uses it. (#176)
+
 ## 0.17.2
 
 - `trmnlp test` no longer inlines a stylesheet link inside a script's string, such as a CDN fallback written with `document.write`. It broke the script, and every render came out blank. (#174)
