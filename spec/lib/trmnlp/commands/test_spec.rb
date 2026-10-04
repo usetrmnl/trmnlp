@@ -40,6 +40,11 @@ RSpec.describe 'trmnlp test' do
           expect(screen.evaluate('document.querySelector(".title") !== null')).to be(true)
         end
 
+        it 'renders narrower than a Firefox window can be, as an OG in portrait' do
+          screen = trmnl.render(device: { width: 480, height: 800 }, data: { name: 'Ada' }, transform: false)
+          expect(screen.evaluate('[innerWidth, innerHeight]')).to eq([480, 800])
+        end
+
         it 'tests another plugin folder' do
           expect(trmnl.plugin(Dir.pwd).transform(device:, data: { name: 'Bo' }).data).to include('greeting' => 'Hello Bo')
         end
@@ -73,7 +78,7 @@ RSpec.describe 'trmnlp test' do
   it 'passes a plugin whose tests hold' do
     output, _status = run_tests
 
-    expect(output).to include('7 examples, 0 failures')
+    expect(output).to include('8 examples, 0 failures')
   end
 
   it 'exits cleanly when they hold' do

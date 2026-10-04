@@ -15,7 +15,7 @@ module TRMNLP
     end
 
     def options
-      Selenium::WebDriver::Firefox::Options.new.tap do |opts|
+      Selenium::WebDriver::Firefox::Options.new(web_socket_url: true).tap do |opts|
         opts.add_argument('--headless')
         opts.add_argument('--disable-web-security')
       end

@@ -68,44 +68,29 @@ module TRMNLP
     end
 
     def resize(driver, width, height)
-      apply_window_size(driver, width, height)
+      set_viewport(driver, width, height)
       wait_for_viewport(driver, width, height)
     end
 
-    def apply_window_size(driver, width, height)
-      borders = driver.execute_script(<<~JS)
-        return {
-          width: window.outerWidth - window.innerWidth,
-          height: window.outerHeight - window.innerHeight
-        }
-      JS
-
-      dim = Selenium::WebDriver::Dimension.new(width + borders['width'], height + borders['height'])
-      driver.manage.window.size = dim
+    # The page's viewport, not the window: Firefox will not size a window under about 500px, as an OG in portrait.
+    def set_viewport(driver, width, height)
+      driver.bidi.send_cmd('browsingContext.setViewport', context: driver.window_handle, viewport: { width:, height: })
     end
 
     # NOTE: A cold Firefox — e.g. the first render after the container boots —
-    # applies a window resize lazily. The old fixed sleep raced that reflow and
+    # applies a resize lazily. The old fixed sleep raced that reflow and
     # clipped the first screenshot short (800x433 instead of 800x480). Poll the
-    # real viewport instead, re-applying the size until it lands. A width the
-    # browser refuses to honour (below its ~500px window minimum) never settles;
-    # that surfaces as a clear RenderError rather than an opaque, retried timeout.
+    # real viewport instead, re-applying the size until it lands.
     def wait_for_viewport(driver, width, height)
       Selenium::WebDriver::Wait.new(timeout: @viewport_timeout, interval: 0.1).until do
         next true if viewport(driver) == [width, height]
 
-        apply_window_size(driver, width, height)
+        set_viewport(driver, width, height)
         false
       end
     rescue Selenium::WebDriver::Error::TimeoutError
-      raise RenderError, viewport_clamp_message(driver, width, height)
-    end
-
-    def viewport_clamp_message(driver, width, height)
       actual_width, actual_height = viewport(driver)
-      "Could not render at #{width}x#{height}: the browser clamped the viewport " \
-        "to #{actual_width}x#{actual_height}. PNG rendering needs a width of " \
-        'roughly 500px or more — headless Firefox will not size its window narrower.'
+      raise RenderError, "Could not render at #{width}x#{height}: the viewport stayed #{actual_width}x#{actual_height}"
     end
 
     def viewport(driver)
