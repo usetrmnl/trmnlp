@@ -10,6 +10,22 @@ RSpec.describe TRMNLP::Config::Project do
   let(:paths) { TRMNLP::Paths.new(root_dir) }
 
   describe '#custom_fields' do
+    context 'with overrides' do
+      subject(:project) { described_class.new(paths, overrides:) }
+
+      let(:overrides) { { 'custom_fields' => { 'character_name' => 'Bingo' } } }
+
+      it 'lays them over .trmnlp.yml' do
+        expect(project.custom_fields).to include('character_name' => 'Bingo', 'character_age' => '7')
+      end
+
+      it 'keeps them across a reload' do
+        project.reload!
+
+        expect(project.custom_fields).to include('character_name' => 'Bingo')
+      end
+    end
+
     it 'transforms scalar values to strings' do
       expect(project.custom_fields).to include('character_name' => 'Bluey', 'character_age' => '7')
     end

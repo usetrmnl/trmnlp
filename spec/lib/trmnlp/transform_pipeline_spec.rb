@@ -47,6 +47,23 @@ RSpec.describe TRMNLP::TransformPipeline do
         allow(TRMNLP::TransformClient).to receive(:from_config).and_return(client)
       end
 
+      context 'with a client of its own' do
+        subject(:pipeline) { described_class.new(config:, paths:, reporter:, client: own_client) }
+
+        let(:own_client) { instance_double(TRMNLP::TransformClient, execute: success_result) }
+
+        it 'runs the transform through it' do
+          expect(pipeline.call('n' => 2)).to eq('doubled' => 4)
+        end
+
+        it 'keeps it across a reset' do
+          pipeline.reset!
+          pipeline.call('n' => 2)
+
+          expect(own_client).to have_received(:execute)
+        end
+      end
+
       it 'returns the transform output on success' do
         allow(client).to receive(:execute).and_return(success_result)
 

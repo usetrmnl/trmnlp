@@ -72,6 +72,26 @@ RSpec.describe TRMNLP::Poller do
   let(:expected_by_case) { content_type_cases.to_h { |test_case| [test_case[:name], test_case[:parsed]] } }
   let(:headerless_response) { instance_double(Faraday::Response, body: 'foobar', headers: {}, status: 200) }
 
+  describe '#poll_data with an outbound request of its own' do
+    subject(:poller) { described_class.new(config:, paths:, oauth_session:, outbound_request:) }
+
+    let(:outbound_request) { instance_double(TRMNLP::OutboundRequest, call: [response, nil]) }
+    let(:response) do
+      instance_double(Faraday::Response, body: '{"from": "stub"}', status: 200,
+                                         headers: { 'content-type' => 'application/json' })
+    end
+
+    before do
+      allow(poller).to receive(:write_user_data)
+      allow(config.plugin).to receive_messages(polling?: true, polling_urls: ['https://example.com/api'],
+                                               polling_headers: {}, polling_verb: 'GET')
+    end
+
+    it 'fetches through it' do
+      expect(poller.poll_data).to eq('from' => 'stub')
+    end
+  end
+
   describe '#poll_data' do
     let(:faraday_connection) { instance_double(Faraday::Connection) }
 

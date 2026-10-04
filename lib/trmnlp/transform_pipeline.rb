@@ -19,7 +19,8 @@ module TRMNLP
 
     attr_reader :error
 
-    def initialize(config:, paths:, reporter: Reporter.new)
+    def initialize(config:, paths:, reporter: Reporter.new, client: nil)
+      @given_client = client
       @config = config
       @paths = paths
       @reporter = reporter
@@ -43,13 +44,13 @@ module TRMNLP
       {}
     end
 
-    def reset! = @client = nil
+    def reset! = @client = @given_client
 
     private
 
     attr_reader :config, :paths, :reporter, :transform_state
 
-    def client = @client ||= TransformClient.from_config(config.project)
+    def client = @client ||= @given_client || TransformClient.from_config(config.project)
 
     def run(path, inferred_language, data)
       language = config.plugin.serverless_language || inferred_language

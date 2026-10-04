@@ -7,8 +7,9 @@ module TRMNLP
   class Paths
     attr_reader :root_dir
 
-    def initialize(root_dir)
+    def initialize(root_dir, cache_dir: nil)
       @root_dir = Pathname.new(root_dir).expand_path
+      @cache_dir = cache_dir && Pathname.new(cache_dir)
       @xdg = XDG.new
     end
 
@@ -27,7 +28,7 @@ module TRMNLP
 
     def app_config_dir = xdg.config_home.join('trmnlp')
 
-    def cache_dir = xdg.cache_home.join('trmnl')
+    def cache_dir = @cache_dir || xdg.cache_home.join('trmnl')
 
     def valid? = trmnlp_config.exist?
 
