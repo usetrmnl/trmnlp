@@ -98,6 +98,39 @@ RSpec.describe 'trmnlp test' do
     end
   end
 
+  context "with the publishable recipe's examples" do
+    let(:greeting_markup) { '<div class="layout"><span class="title">{{ greeting }}</span></div>' }
+    let(:quadrant) { greeting_markup }
+    let(:spec_body) do
+      <<~RUBY
+        RSpec.describe 'Greeting' do
+          let(:mocks) { { 'https://api.test/*' => { json: { name: 'Ada' } } } }
+
+          it_behaves_like 'a publishable recipe', screens: [{ device: { model: 'og_test', width: 800, height: 480 } }]
+        end
+      RUBY
+    end
+
+    before do
+      %w[half_horizontal half_vertical].each do |view|
+        File.write(File.join(plugin_dir, 'src', "#{view}.liquid"), greeting_markup)
+      end
+      File.write(File.join(plugin_dir, 'src', 'quadrant.liquid'), quadrant)
+    end
+
+    it 'draws every view and runs the transform' do
+      expect(run_tests.first).to include('6 examples, 0 failures')
+    end
+
+    context 'when a view overflows' do
+      let(:quadrant) { greeting_markup.sub('{{ greeting }}', 'Ada ' * 200).sub('">', '" style="white-space: nowrap">') }
+
+      it 'names the view and the screen' do
+        expect(run_tests.first).to include('draws the quadrant view on og_test without overflow or page errors')
+      end
+    end
+  end
+
   context 'when a test does not hold' do
     let(:spec_body) do
       "RSpec.describe('Greeting') { it('shows the name') { expect(trmnl.render(device: { width: 800, height: 480 }, " \
