@@ -71,7 +71,7 @@ module TRMNLP
       def copy_image(path)
         name = "images/#{@images += 1}.png"
         FileUtils.mkdir_p(File.join(@dir, 'images'))
-        FileUtils.cp(path, File.join(@dir, name))
+        File.binwrite(File.join(@dir, name), File.binread(path)) # not cp, which keeps the screen's private 0600 mode
         name
       end
 

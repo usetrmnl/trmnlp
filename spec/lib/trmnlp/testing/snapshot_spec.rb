@@ -32,6 +32,13 @@ RSpec.describe TRMNLP::Testing::Snapshot do
     expect([snapshot.mismatch, File.exist?(snapshot.path)]).to eq([nil, true])
   end
 
+  it 'stores a snapshot others can read, though the screen is private to its run' do
+    File.chmod(0o600, screen.png_path)
+    snapshot.mismatch
+
+    expect(File.stat(snapshot.path).mode & 0o044).to eq(0o044)
+  end
+
   context 'on CI' do
     let(:environment) { { 'CI' => 'true' } }
 
