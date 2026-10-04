@@ -10,16 +10,19 @@ module TRMNLP
     # measures text (a layout solver, say) raced them and drew a different board from run to run.
     module InlineStylesheets
       LINK = /<link\b[^>]*\brel=["']stylesheet["'][^>]*>/i
+      SCRIPT = %r{<script\b.*?</script>}im
       HREF = /\bhref=["'](https?:[^"']+)["']/i
       CSS_URL = /url\(\s*(['"]?)(?!data:|https?:|#)([^'")]+)\1\s*\)/i
 
       module_function
 
       def call(html)
-        html.gsub(LINK) do |link|
-          url = link[HREF, 1]
+        html.gsub(Regexp.union(SCRIPT, LINK)) do |tag|
+          next tag if tag.match?(/\A<script/i)
+
+          url = tag[HREF, 1]
           css = url && stylesheet(url)
-          css ? "<style data-href=\"#{url}\">#{css}</style>" : link
+          css ? "<style data-href=\"#{url}\">#{css}</style>" : tag
         end
       end
 
