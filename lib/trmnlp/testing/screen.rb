@@ -15,6 +15,7 @@ module TRMNLP
 
       # Every element drawn past the screen's edge, and every box that cuts a child box or a glyph's ink.
       OVERFLOW_SCRIPT = <<~JS
+        const except = arguments[0];
         const screen = document.documentElement.getBoundingClientRect();
         const describe = (el) => el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') +
           (el.classList.length ? '.' + [...el.classList].join('.') : '');
@@ -78,7 +79,7 @@ module TRMNLP
         };
         return [...document.querySelectorAll('.view *')].filter((el) => {
           const box = el.getBoundingClientRect();
-          if (!drawn(box) || insideTruncation(el)) return false;
+          if (!drawn(box) || insideTruncation(el) || (except && el.closest(except))) return false;
           const outside = box.right > screen.right + 1 || box.bottom > screen.bottom + 1 || box.left < -1 || box.top < -1;
           const style = getComputedStyle(el);
           const overflows = el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1;
@@ -123,7 +124,7 @@ module TRMNLP
 
       def evaluate(expression) = @browser.on(self) { it.execute_script("return (#{expression});") }
 
-      def overflowing = @browser.on(self) { it.execute_script(OVERFLOW_SCRIPT) }
+      def overflowing(except: nil) = @browser.on(self) { it.execute_script(OVERFLOW_SCRIPT, except) }
 
       # Script errors, unhandled rejections, console.error lines and files that failed to load.
       def problems = evaluate('window.__trmnlpProblems || []')

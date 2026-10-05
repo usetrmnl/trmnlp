@@ -46,10 +46,10 @@ module TRMNLP
   end
 end
 
-RSpec::Matchers.define :have_no_overflow do
-  match { |screen| screen.overflowing.empty? }
+RSpec::Matchers.define :have_no_overflow do |except: nil|
+  match { |screen| screen.overflowing(except:).empty? }
   failure_message do |screen|
-    "expected nothing to overflow on #{screen.inspect}, but: #{screen.overflowing.join(', ')}"
+    "expected nothing to overflow on #{screen.inspect}, but: #{screen.overflowing(except:).join(', ')}"
   end
 end
 
