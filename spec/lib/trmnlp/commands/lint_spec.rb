@@ -171,6 +171,40 @@ RSpec.describe TRMNLP::Commands::Lint do
                                            a_string_matching(/opacity:0.5/))
     end
 
+    context 'with a rule listed in ignored_lint_rules' do
+      subject(:command) do
+        json_options = described_class::Options.new(dir: tmp_root, quiet: true, format: 'json')
+        described_class.new(context:, options: json_options, reporter:)
+      end
+
+      before do
+        File.write(File.join(tmp_root, '.trmnlp.yml'), "ignored_lint_rules:\n  - no_opacity\n")
+        File.write(File.join(tmp_root, 'src', 'shared.liquid'), '<div style="opacity:0.5">Text</div>')
+      end
+
+      it 'passes' do
+        expect(command.call).to be(true)
+      end
+
+      it 'drops its findings from the JSON report' do
+        command.call
+        expect(JSON.parse(reporter.messages.first)).to eq('version' => 1, 'passed' => true, 'issues' => [])
+      end
+
+      it 'drops its findings from the text report' do
+        text_command = described_class.new(context:, options: described_class::Options.new(dir: tmp_root, quiet: true),
+                                           reporter:)
+        text_command.call
+        expect(reporter.messages).to include(a_string_matching(/All checks passed/))
+      end
+    end
+
+    it 'raises naming the known rule IDs when ignored_lint_rules lists an unknown one' do
+      File.write(File.join(tmp_root, '.trmnlp.yml'), "ignored_lint_rules:\n  - no_opacitee\n")
+
+      expect { command.call }.to raise_error(TRMNLP::InvalidConfig, /no_opacitee.*no_opacity/m)
+    end
+
     it 'raises when the project is not a trmnlp directory' do
       bad_root = Dir.mktmpdir('trmnlp-lint-bad-')
       cmd = described_class.new(
