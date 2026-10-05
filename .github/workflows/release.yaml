@@ -106,6 +106,7 @@ jobs:
       - name: Build and publish gem
         if: steps.gem.outputs.exists != 'true' && steps.rubygemskey.outputs.has == 'true'
         run: |
+          bundle exec rake framework:sync
           gem build trmnl_preview.gemspec
           gem push trmnl_preview-*.gem
         env:
