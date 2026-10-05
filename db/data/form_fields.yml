@@ -19,6 +19,7 @@ field_types:
   - copyable_webhook_url
   - date
   - google_photos_picker
+  - hidden
   - json
   - lat_lon
   - modal_trigger
