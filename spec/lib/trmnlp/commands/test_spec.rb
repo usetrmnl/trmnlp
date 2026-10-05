@@ -35,6 +35,13 @@ RSpec.describe 'trmnlp test' do
           expect(problems).to include(a_string_including('boom'), a_string_including('failed to load https://missing.invalid'))
         end
 
+        it 'ignores the notice Firefox raises when a ResizeObserver resizes what it observes' do
+          growing = '<script>addEventListener("DOMContentLoaded", () => { const title = document.querySelector(".title"); ' \
+                    'title.style.display = "block"; new ResizeObserver(() => { title.style.height = ' \
+                    '`${title.offsetHeight + 1}px`; }).observe(title); });</script>'
+          expect(trmnl.render(device:, data: { name: 'Ada' }, transform: false, head: growing)).to have_no_problems
+        end
+
         it 'renders in a fresh browser when asked' do
           screen = trmnl.render(device:, data: { name: 'Ada' }, transform: false, fresh_browser: true)
           expect(screen.evaluate('document.querySelector(".title") !== null')).to be(true)
@@ -94,7 +101,7 @@ RSpec.describe 'trmnlp test' do
   end
 
   it 'passes a plugin whose tests hold, and exits cleanly' do
-    expect(run_tests).to match([include('10 examples, 0 failures'), be_success])
+    expect(run_tests).to match([include('11 examples, 0 failures'), be_success])
   end
 
   context 'with --report' do

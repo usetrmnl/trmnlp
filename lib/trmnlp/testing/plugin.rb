@@ -18,6 +18,7 @@ module TRMNLP
         (() => {
           const problems = window.__trmnlpProblems = [];
           window.addEventListener('error', (event) => {
+            if (String(event.message).startsWith('ResizeObserver loop')) return;
             const source = event.target && event.target !== window && (event.target.src || event.target.href);
             problems.push(source ? `failed to load ${source}` :
               `${event.message}${event.filename ? ` (${event.filename}:${event.lineno})` : ''}`);
