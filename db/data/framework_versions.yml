@@ -1,6 +1,6 @@
 # Mirrored from the TRMNL design-system source.
 # Refresh with `rake framework:sync` — do not edit manually.
-latest: 3.2.0
+latest: 3.4.0
 versions:
 - number: 0.0.1
   released_at: '2024-06-22'
@@ -86,3 +86,11 @@ versions:
   released_at: '2026-07-23'
 - number: 3.2.0
   released_at: '2026-08-05'
+- number: 3.3.0
+  released_at: '2026-08-27'
+- number: 3.3.1
+  released_at: '2026-09-01'
+- number: 3.3.2
+  released_at: '2026-09-18'
+- number: 3.4.0
+  released_at: '2026-09-28'
