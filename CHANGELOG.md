@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `have_no_overflow(except: '.forecast')` and `screen.overflowing(except:)` leave out a box that hides content on purpose, and everything inside it.
+
 ## 0.20.0
 
 - `trmnlp lint` skips the rules listed under `ignored_lint_rules` in `.trmnlp.yml`, in text and JSON output alike. An unknown rule ID is an error that lists the known ones.

@@ -64,7 +64,7 @@ end
 |---|---|
 | `box(selector)` | Returns the position and size of the element. |
 | `evaluate(js)` | Runs a JavaScript expression in the page and returns the result. |
-| `overflowing` | Lists the elements that overflow. |
+| `overflowing` | Lists the elements that overflow. Takes `except:` like `have_no_overflow`. |
 | `problems` | Lists script errors, unhandled rejections, `console.error` calls and files that failed to load. |
 | `result` | Holds the run's `data`, `state` and `requests`. |
 
@@ -187,12 +187,23 @@ A hash answer can use these keys:
 
 | Matcher | What it checks |
 |---|---|
-| `have_no_overflow` | Nothing is drawn past the screen's edge, and no box cuts a child box or a glyph. Text cut short on purpose passes. |
+| `have_no_overflow` | Nothing is drawn past the screen's edge, and no box cuts a child box or a glyph. Text cut short with an ellipsis or a line clamp passes. |
 | `have_no_problems` | The page has no problems. |
 | `have_no_leaked_text` | The drawn text has no leaked values. |
 | `have_no_transform_error` | The transform of a render ran without error. |
 | `have_qr_code` | A QR code scans in the PNG. |
 | `fit_image_size_limit` | The PNG fits the model's size limit. |
+
+### A box that hides content on purpose
+
+Some boxes hide what does not fit on purpose, such as a forecast that wraps its low temperature to a line its box hides.
+
+- `have_no_overflow` cannot tell that from content cut by mistake, so it reports it.
+- Name the box in `except:`, and that box and everything inside it are left out.
+
+```ruby
+expect(screen).to have_no_overflow(except: '.forecast')
+```
 | `match_snapshot` | The PNG matches its stored snapshot. |
 | `stay_within_serverless_limits` | A transform stays within 5 seconds and 128 MB. |
 

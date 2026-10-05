@@ -365,6 +365,23 @@ RSpec.describe 'trmnlp test' do
             clamp = 'width: 200px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2'
             expect(overflowing(box('clamp', clamp, 'a long paragraph clamped to two lines ' * 5))).to be_empty
           end
+
+          context 'when a box hides a line on purpose' do
+            let(:markup) { box('forecast', 'width: 60px; height: 20px; font-size: 16px; line-height: 20px', 'High 12° Low 4°') }
+            let(:screen) { trmnl.render(device: { width: 800, height: 480 }, data: { markup: }, transform: false) }
+
+            it 'reports the box' do
+              expect(screen.overflowing).to eq(['div#forecast'])
+            end
+
+            it 'leaves out the box named in except:' do
+              expect(screen.overflowing(except: '#forecast')).to be_empty
+            end
+
+            it 'passes have_no_overflow given the box in except:' do
+              expect(screen).to have_no_overflow(except: '#forecast')
+            end
+          end
         end
       RUBY
     end
@@ -374,7 +391,7 @@ RSpec.describe 'trmnlp test' do
     end
 
     it 'reports what is cut and passes what is cut on purpose or only cuts empty space' do
-      expect(run_tests.first).to include('6 examples, 0 failures')
+      expect(run_tests.first).to include('9 examples, 0 failures')
     end
   end
 
