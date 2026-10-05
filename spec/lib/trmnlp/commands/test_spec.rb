@@ -260,15 +260,17 @@ RSpec.describe 'trmnlp test' do
       <<~RUBY
         device = { width: 800, height: 480 }
         now = '2030-01-02T03:04:05Z'
-        page_scripts = '<script>window.startedAt = Date.now();</script>' \\
+        page_scripts = "<script>window.clockLag = Date.now() - \#{Time.iso8601(now).to_i * 1000} - performance.now();</script>" \\
                        '<script>window.calledWithoutNew = Date();</script>' \\
                        '<script>window.formattedYear = new Intl.DateTimeFormat("en", { year: "numeric" }).format();</script>'
 
         RSpec.describe 'Page clock' do
           let(:screen) { trmnl.render(device:, data: { name: 'Ada' }, transform: false, now:, head: page_scripts) }
 
-          it 'starts at now: when the page runs, not when the test builds it' do
-            expect(screen.evaluate('window.startedAt') - (Time.iso8601(now).to_f * 1000)).to be_between(0, 1000)
+          # A fresh browser boots between building the page and loading it, which a clock set in Ruby would lose.
+          it 'starts at now: when the page loads, not when the test builds it' do
+            screen = trmnl.render(device:, data: { name: 'Ada' }, transform: false, now:, head: page_scripts, fresh_browser: true)
+            expect(screen.evaluate('window.clockLag')).to be_within(250).of(0)
           end
 
           it 'answers Date() called without new' do
