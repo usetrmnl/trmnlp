@@ -33,9 +33,11 @@ RSpec.describe TRMNLP::CLI do
 
   describe '#lint' do
     let(:tmp_root) { Dir.mktmpdir('trmnlp-cli-') }
+    let(:endpoint) { 'https://rubygems.org/api/v1/gems/trmnl_preview.json' }
     let(:run_lint) { -> { described_class.start(['lint', '--dir', tmp_root, '--quiet']) } }
 
     before do
+      stub_request(:get, endpoint).to_return(body: { version: TRMNLP::VERSION }.to_json)
       File.write(File.join(tmp_root, '.trmnlp.yml'), '{}')
       FileUtils.mkdir_p(File.join(tmp_root, 'src'))
       File.write(File.join(tmp_root, 'src', 'shared.liquid'), '<p>Some real content here</p>')
@@ -62,6 +64,77 @@ RSpec.describe TRMNLP::CLI do
       end
     end
 
+    context 'when a newer release is available' do
+      before { stub_request(:get, endpoint).to_return(body: { version: '99.0.0' }.to_json) }
+
+      it 'checks RubyGems during an ordinary lint run' do
+        lint_status
+
+        expect(WebMock).to have_requested(:get, endpoint).once
+      end
+
+      it 'reports the update on stderr' do
+        expect do
+          capture_stdout { described_class.start(['lint', '--dir', tmp_root]) }
+        end.to output(/trmnl_preview 99\.0\.0 is available/).to_stderr
+      end
+
+      it 'preserves valid JSON output' do
+        output = capture_stdout do
+          capture_stderr { described_class.start(['lint', '--dir', tmp_root, '--format', 'json']) }
+        end
+
+        expect(JSON.parse(output)).to eq('version' => 1, 'passed' => true, 'issues' => [])
+      end
+
+      it 'does not fail clean lint because an update is available' do
+        expect(lint_status).to eq(0)
+      end
+
+      it 'preserves failing lint status when an update is available' do
+        File.write(File.join(tmp_root, 'src', 'settings.yml'), { 'description' => 'x' * 36 }.to_yaml)
+
+        expect(lint_status).to eq(1)
+      end
+
+      it 'checks for updates even when lint has findings' do
+        File.write(File.join(tmp_root, 'src', 'settings.yml'), { 'description' => 'x' * 36 }.to_yaml)
+        lint_status
+
+        expect(WebMock).to have_requested(:get, endpoint).once
+      end
+
+      it 'skips the network check in quiet mode' do
+        capture_stdout(&run_lint)
+
+        expect(WebMock).not_to have_requested(:get, endpoint)
+      end
+
+      it 'does not emit notices in quiet mode' do
+        expect { capture_stdout(&run_lint) }.not_to output.to_stderr
+      end
+    end
+
+    context 'when RubyGems is unavailable' do
+      before { stub_request(:get, endpoint).to_timeout }
+
+      it 'keeps clean lint successful' do
+        expect(lint_status).to eq(0)
+      end
+
+      it 'keeps failing lint unsuccessful' do
+        File.write(File.join(tmp_root, 'src', 'settings.yml'), { 'description' => 'x' * 36 }.to_yaml)
+
+        expect(lint_status).to eq(1)
+      end
+
+      it 'does not print an update-check error' do
+        expect do
+          capture_stdout { described_class.start(['lint', '--dir', tmp_root]) }
+        end.not_to output.to_stderr
+      end
+    end
+
     context 'when the plugin passes all checks' do
       it 'does not exit non-zero' do
         expect(&run_lint).not_to raise_error
@@ -74,6 +147,23 @@ RSpec.describe TRMNLP::CLI do
         expect(JSON.parse(output)).to eq('version' => 1, 'passed' => true, 'issues' => [])
       end
     end
+  end
+
+  def lint_status
+    capture_stdout { capture_stderr { described_class.start(['lint', '--dir', tmp_root]) } }
+    0
+  rescue SystemExit => e
+    e.status
+  end
+
+  def capture_stderr
+    stream = StringIO.new
+    original = $stderr
+    $stderr = stream
+    yield
+    stream.string
+  ensure
+    $stderr = original
   end
 
   def capture_stdout

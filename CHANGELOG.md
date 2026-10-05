@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- `trmnlp lint` checks RubyGems for a newer stable release and suggests a Gem or Bundler update command on stderr; `--quiet` skips it, and network failures leave lint output and exit status unchanged.
 - `have_no_overflow(except: '.forecast')` and `screen.overflowing(except:)` leave out a box that hides content on purpose, and everything inside it.
 
 ## 0.20.0

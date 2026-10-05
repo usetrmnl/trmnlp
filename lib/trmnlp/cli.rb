@@ -4,6 +4,7 @@ require 'thor'
 
 require_relative '../trmnlp'
 require_relative '../trmnlp/commands'
+require_relative 'update_check'
 
 module TRMNLP
   class CLI < Thor
@@ -76,7 +77,9 @@ module TRMNLP
                            desc: 'Report format (text or json)'
     def lint
       # Exit non-zero when issues are found so CI pipelines can gate on it.
-      exit(1) unless Commands::Lint.run(options)
+      passed = Commands::Lint.run(options)
+      UpdateCheck.new.call unless options.quiet
+      exit(1) unless passed
     end
 
     desc 'serve', 'Start a local dev server'
