@@ -103,6 +103,34 @@ RSpec.describe 'trmnlp test' do
     end
   end
 
+  context 'with --fast' do
+    let(:spec_body) do
+      <<~RUBY
+        device = { width: 800, height: 480, bit_depth: 1, screen_classes: 'screen screen--1bit screen--og_png screen--md' }
+
+        RSpec.describe 'Greeting' do
+          it 'opens the page from a local address, where its scripts find the stylesheets applied' do
+            head = '<script>window.seen = getComputedStyle(document.documentElement).getPropertyValue("--black");</script>'
+            screen = trmnl.render(device:, data: { name: 'Ada' }, transform: false, head:)
+            expect(screen.evaluate('[location.origin, window.seen]'))
+              .to match([start_with('http://127.0.0.1:'), a_string_matching(/\\S/)])
+          end
+
+          it 'draws the same picture' do
+            expect(trmnl.render(device:, data: { name: 'Ada' })).to have_css('.title', text: 'Hello Ada').and match_snapshot
+          end
+        end
+      RUBY
+    end
+
+    it 'opens each page from a local address, and draws what it drew without' do
+      run_tests('--update', 'tests') # without --fast: stores the picture; its local address example fails
+      output, = Open3.capture2e({ 'CI' => 'true' }, RbConfig.ruby, trmnlp, 'test', '--fast', '--dir', plugin_dir)
+
+      expect(output).to include('2 examples, 0 failures')
+    end
+  end
+
   context "with the publishable recipe's examples" do
     let(:greeting_markup) { '<div class="layout"><span class="title">{{ greeting }}</span></div>' }
     let(:quadrant) { greeting_markup }
