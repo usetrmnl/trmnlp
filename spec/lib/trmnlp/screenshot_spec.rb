@@ -162,13 +162,9 @@ RSpec.describe TRMNLP::Screenshot do
       end
 
       it 'does not start over with another browser' do
-        begin
-          result
-        rescue TRMNLP::RenderError
-          nil
-        end
-
-        expect([pool.yield_count, driver.navigated_to.size]).to eq([1, 2])
+        expect { result }.to raise_error(TRMNLP::RenderError)
+          .and change(pool, :yield_count).to(1)
+          .and change { driver.navigated_to.size }.to(2)
       end
     end
 
