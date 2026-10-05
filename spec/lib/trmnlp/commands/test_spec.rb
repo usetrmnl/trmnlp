@@ -287,6 +287,61 @@ RSpec.describe 'trmnlp test' do
     end
   end
 
+  context 'with boxes that cut what they hold' do
+    let(:spec_body) do
+      <<~'RUBY'
+        RSpec.describe 'Overflow' do
+          def overflowing(markup)
+            trmnl.render(device: { width: 800, height: 480 }, data: { markup: }, transform: false).overflowing
+          end
+
+          def box(id, style, content) = %(<div id="#{id}" style="overflow: hidden; #{style}">#{content}</div>)
+
+          let(:big_text) { 'width: 300px; height: 60px; font-family: Inter; font-size: 60px; line-height: 1' }
+
+          it 'passes digits whose line is shorter than their font, when only empty space is cut' do
+            expect(overflowing(box('digits', big_text, '12:45'))).to be_empty
+          end
+
+          it 'reports descenders that are cut' do
+            expect(overflowing(box('gypsy', big_text, 'gypsy'))).to eq(['div#gypsy'])
+          end
+
+          it 'reports a small line cut below a big heading in the same box' do
+            heading = '<div style="font-family: Inter; font-size: 60px; line-height: 1">Heading</div>'
+            body = '<div style="font-size: 16px; line-height: 16px">Body</div>'
+            expect(overflowing(box('shared', 'width: 400px; height: 68px', heading + body))).to eq(['div#shared'])
+          end
+
+          it 'reports a scrolling box inside a clipped box' do
+            lines = (1..10).map { "line #{it}" }.join('<br>')
+            scroller = %(<div id="scroller" style="overflow: auto; height: 100px; font-size: 16px">#{lines}</div>)
+            expect(overflowing(box('outer', 'height: 100px', scroller))).to eq(['div#scroller'])
+          end
+
+          it 'passes text cut short with an ellipsis' do
+            line = "<span>#{'a line longer than the screen, cut short ' * 5}</span>"
+            expect(overflowing(box('ellipsis', 'width: 200px; white-space: nowrap; text-overflow: ellipsis', line)))
+              .to be_empty
+          end
+
+          it 'passes text clamped to its first lines' do
+            clamp = 'width: 200px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2'
+            expect(overflowing(box('clamp', clamp, 'a long paragraph clamped to two lines ' * 5))).to be_empty
+          end
+        end
+      RUBY
+    end
+
+    before do
+      File.write(File.join(plugin_dir, 'src', 'full.liquid'), '<div>{{ markup }}</div>')
+    end
+
+    it 'reports what is cut and passes what is cut on purpose or only cuts empty space' do
+      expect(run_tests.first).to include('6 examples, 0 failures')
+    end
+  end
+
   context 'when a test does not hold' do
     let(:spec_body) do
       "RSpec.describe('Greeting') { it('shows the name') { expect(trmnl.render(device: { width: 800, height: 480 }, " \

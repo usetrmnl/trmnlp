@@ -4,6 +4,7 @@
 ## Unreleased
 
 - `it_behaves_like 'a publishable recipe'` no longer checks overflow. `have_no_overflow` flags text cut short on purpose (`text-overflow: ellipsis`, `-webkit-line-clamp`) on most list and calendar recipes, so authors filtered it out; the matcher stays for examples that call it.
+- `have_no_overflow` passes text cut short on purpose (`text-overflow: ellipsis`, `-webkit-line-clamp`) and text whose font is taller than its line, when only the empty space below it is cut. It reports a box only when a child box or a glyph's ink crosses its edge, so cut descenders still fail, and it now reports a scrolling box (`overflow: auto` or `scroll`) whose content is cut.
 - `trmnlp test`: under `now:`, the page's clock starts at `now:` when the page runs. It started seconds late, by however long Firefox took to load the page. `Date()` without `new` no longer throws, and `Intl.DateTimeFormat#format` and `#formatToParts` given no date use `now:`.
 - `trmnlp test --report` writes a report per process under parallel_tests (`report`, `report2`, ...) instead of each process overwriting the last. The README shows how to run a plugin's tests in parallel.
 - `serve`, `build` and `test` skip resizing the page when it is already the size asked for, and check a resize every 0.01 s instead of 0.1 s. About 0.04 s faster a render.
