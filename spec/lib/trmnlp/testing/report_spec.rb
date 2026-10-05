@@ -37,6 +37,19 @@ RSpec.describe TRMNLP::Testing::Report do
   before { stub_const('ENV', ENV.to_h.except('GITHUB_STEP_SUMMARY')) }
   after { FileUtils.remove_entry(dir) }
 
+  context 'when parallel_tests runs it in its second process' do
+    before do
+      stub_const('ENV', ENV.to_h.merge('TEST_ENV_NUMBER' => '2'))
+      report.close(nil)
+    end
+
+    after { FileUtils.remove_entry("#{dir}2") }
+
+    it 'writes to a folder of its own, so the processes do not overwrite each other' do
+      expect(File).to exist(File.join("#{dir}2", 'report.json'))
+    end
+  end
+
   context 'with a screen and a transform run recorded' do
     before do
       example_running(passed) { report.record_screen(screen) }
