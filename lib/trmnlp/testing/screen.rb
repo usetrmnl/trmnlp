@@ -39,7 +39,7 @@ module TRMNLP
         return copy.outerHTML;
       JS
 
-      attr_reader :html, :device, :view, :png_path, :result, :wait_for, :wait_for_timeout
+      attr_reader :html, :device, :view, :result, :wait_for, :wait_for_timeout
 
       # rubocop:disable-next Metrics/ParameterLists -- what a render produced and how to wait for it
       def initialize(html:, device:, view:, browser:, result:, wait_for: nil, wait_for_timeout: 5)
@@ -50,7 +50,7 @@ module TRMNLP
         @view = view
         @browser = browser
         @result = result
-        @png_path = browser.capture(self)
+        browser.load(self)
         super(Capybara.string(drawn_dom(browser.on(self) { it.execute_script(DRAWN_DOM_SCRIPT) })))
       end
 
@@ -68,6 +68,10 @@ module TRMNLP
 
       # Script errors, unhandled rejections, console.error lines and files that failed to load.
       def problems = evaluate('window.__trmnlpProblems || []')
+
+      # The screenshot, quantized for the device. It is taken the first time it is asked for, so a test that
+      # only reads the page does not wait for a picture.
+      def png_path = @png_path ||= @browser.capture(self)
 
       def png_bytes = File.binread(png_path)
 

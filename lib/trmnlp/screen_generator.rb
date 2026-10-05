@@ -24,17 +24,19 @@ module TRMNLP
       @requested_color_depth = opts[:color_depth]
     end
 
+    # The page as it is shown: chart libraries swapped for TRMNL's copies.
+    def html = CHART_LIBRARIES.reduce(@input) { |page, (from, to)| page.gsub(from, to) }
+
     def process
-      html = CHART_LIBRARIES.reduce(@input) { |page, (from, to)| page.gsub(from, to) }
       output = @screenshot.call(html:, width:, height:)
       ImageQuantizer.new(depth: color_depth, dither: @input.include?('image-dither')).call(output.path)
       output
     end
 
-    private
-
     def width = @requested_width || 800
     def height = @requested_height || 480
+
+    private
 
     def color_depth
       return @requested_color_depth if @requested_color_depth
