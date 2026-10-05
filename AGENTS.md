@@ -5,8 +5,12 @@ trmnlp is the local toolkit for TRMNL plugins: `serve`, `build`, `lint`, `test`,
 ## Parity with TRMNL core comes first
 
 - Core is the reference. When trmnlp and core disagree, trmnlp is wrong unless the difference is written down (README, `docs/testing.md`).
-- Before changing how a page is built, rendered, captured or quantized, read what core does (repo `usetrmnl/core`, `lib/converter/`, `app/views/plugins/`, `config/initializers/`). The `core-parity` skill has the map.
-- A behavior that exists only to make tests faster must not change what a plugin sees. Example: `trmnlp test` opens pages from a local address, and two Firefox prefs keep storage, cookies and the Referer as they are on `about:blank`.
+- Before changing how a page is built, rendered, captured or quantized, read what core does.
+- Core is the repo `usetrmnl/core`. Start in `lib/converter/`, `app/views/plugins/` and `config/initializers/`.
+- The `core-parity` skill has the map.
+- A behavior that exists only to make tests faster must not change what a plugin sees.
+- Example: `trmnlp test` opens pages from a local address.
+- Two Firefox prefs keep storage, cookies and the Referer as they are on `about:blank`.
 
 ## Keep it small
 
@@ -17,7 +21,11 @@ trmnlp is the local toolkit for TRMNL plugins: `serve`, `build`, `lint`, `test`,
 ## Running it
 
 - Ruby from `.ruby-version` (via mise or similar). `bundle install`, then `bundle exec bin/trmnlp <command>` from `lib/`.
-- Specs: `bundle exec rspec` (about 1–2 minutes). Many specs drive a real Firefox, so Firefox must be installed. Also needed: `libfaketime`, `imagemagick` (7), `zbar`, Node 24, PHP and Python for the transform specs. CI installs them in `.github/workflows/ci.yaml`.
+- Specs: `bundle exec rspec`. It takes about 1–2 minutes.
+- Many specs drive a real Firefox, so Firefox must be installed.
+- Also needed: `libfaketime`, `imagemagick` (7) and `zbar`.
+- Also needed: Node 24, PHP and Python, for the transform specs.
+- CI installs all of them in `.github/workflows/ci.yaml`.
 - `bundle exec rubocop` must be clean.
 - On macOS, a stale `/etc/resolver/test` (left by puma-dev) makes every `*.test` lookup hang, and the suite stalls in `OutboundRequest` specs.
 - Never kill processes by pattern (`pkill -f firefox`); other runs share the machine.
