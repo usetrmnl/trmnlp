@@ -15,7 +15,7 @@ Merging a change to `lib/trmnlp/version.rb` on `main` runs `.github/workflows/re
 3. Commit `Updated the version to X.Y.Z`, open the PR with that title and no body beyond the version, merge it once CI is green.
 4. After merge, check it landed:
    - `gh run list -R usetrmnl/trmnlp --workflow release.yaml --limit 1` is green
-   - `gem list trmnlp --remote --exact` shows X.Y.Z
-   - `docker manifest inspect trmnl/trmnlp:X.Y.Z` lists both architectures
+   - `gem list trmnl_preview --remote --exact` shows X.Y.Z (the gem is named `trmnl_preview`)
+   - `trmnl/trmnlp:vX.Y.Z` on Docker Hub lists amd64 and arm64
 
 Past bumps to copy: `git log --oneline -- lib/trmnlp/version.rb`.
