@@ -24,7 +24,10 @@ module TRMNLP
       private
 
       def scan(path)
-        xml, _status = Open3.capture2(COMMAND, '--quiet', '--xml', '-Sdisable', '-Sqrcode.enable', path)
+        xml, error, status = Open3.capture3(COMMAND, '--quiet', '--xml', '-Sdisable', '-Sqrcode.enable', path)
+        # zbarimg exits 4 when the picture has no code.
+        raise TestingError, "zbarimg could not scan #{path}: #{error.strip}" unless [0, 4].include?(status.exitstatus)
+
         Nokogiri::XML(xml).remove_namespaces!.xpath('//symbol/data').map(&:text)
       rescue Errno::ENOENT
         raise TestingError, MISSING
@@ -38,9 +41,9 @@ module TRMNLP
       end
 
       def crop_geometry
-        left = @area.left.floor
-        top = @area.top.floor
-        "#{@area.right.ceil - left}x#{@area.bottom.ceil - top}+#{[left, 0].max}+#{[top, 0].max}"
+        left = [@area.left.floor, 0].max
+        top = [@area.top.floor, 0].max
+        "#{@area.right.ceil - left}x#{@area.bottom.ceil - top}+#{left}+#{top}"
       end
     end
   end

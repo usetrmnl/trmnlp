@@ -37,11 +37,23 @@ RSpec.describe TRMNLP::Testing::QrScanner do
     expect(described_class.new(picture('first', 'second'), area:).texts).to eq(['first'])
   end
 
+  it 'reads only the visible part of an area that starts off the picture' do
+    area = TRMNLP::Testing::Screen::Box.new(left: -116, top: 0, right: 116, bottom: 116, width: 232, height: 116)
+
+    expect(described_class.new(picture('first', 'second'), area:).texts).to eq(['first'])
+  end
+
   it 'finds nothing in a picture without a code' do
     blank = File.join(dir, 'blank.png')
     MiniMagick::Tool.new('convert') { |convert| convert << '-size' << '100x100' << 'xc:white' << blank }
 
     expect(described_class.new(blank).texts).to eq([])
+  end
+
+  it 'raises with the error from zbar when it cannot read the picture' do
+    unreadable = File.join(dir, 'unreadable.png').tap { File.write(it, 'not a png') }
+
+    expect { described_class.new(unreadable).texts }.to raise_error(TRMNLP::TestingError, /improper image header/)
   end
 
   it 'says what to install when zbar is missing' do
