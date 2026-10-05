@@ -13,19 +13,76 @@ module TRMNLP
     class Screen < SimpleDelegator
       Box = Data.define(:left, :top, :right, :bottom, :width, :height)
 
-      # Every element drawn past the screen's edge or cut off inside a box that hides its overflow.
+      # Every element drawn past the screen's edge, and every box that cuts a child box or a glyph's ink.
       OVERFLOW_SCRIPT = <<~JS
         const screen = document.documentElement.getBoundingClientRect();
         const describe = (el) => el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') +
           (el.classList.length ? '.' + [...el.classList].join('.') : '');
+        const clips = (el) => getComputedStyle(el).overflow !== 'visible';
+        const truncatesOnPurpose = (style) => style.textOverflow === 'ellipsis' || style.webkitLineClamp !== 'none';
+        const drawn = (rect) => rect.width > 0 || rect.height > 0;
+        const insideTruncation = (el) => {
+          for (let parent = el.parentElement; parent; parent = parent.parentElement) {
+            if (truncatesOnPurpose(getComputedStyle(parent))) return true;
+          }
+          return false;
+        };
+        const clippedOnlyBy = (node, el) => {
+          for (let parent = node.parentElement; parent !== el; parent = parent.parentElement) {
+            if (clips(parent)) return false;
+          }
+          return true;
+        };
+        const inlineBox = (el) => getComputedStyle(el).display === 'inline' &&
+          !(el instanceof HTMLImageElement || el instanceof SVGSVGElement || el instanceof HTMLCanvasElement);
+        const textMeasuringContext = document.createElement('canvas').getContext('2d');
+        const glyphInk = (glyph, rect) => {
+          const metrics = textMeasuringContext.measureText(glyph);
+          const scale = rect.height / (metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent);
+          const baseline = rect.top + metrics.fontBoundingBoxAscent * scale;
+          return { left: rect.left - metrics.actualBoundingBoxLeft * scale,
+                   right: rect.left + metrics.actualBoundingBoxRight * scale,
+                   top: baseline - metrics.actualBoundingBoxAscent * scale,
+                   bottom: baseline + metrics.actualBoundingBoxDescent * scale };
+        };
+        const glyphRects = (el) => {
+          const found = [];
+          const range = document.createRange();
+          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            if (!node.data.trim() || !clippedOnlyBy(node, el) || node.parentElement instanceof SVGElement) continue;
+            const style = getComputedStyle(node.parentElement);
+            textMeasuringContext.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+            for (let start = 0; start < node.data.length;) {
+              const end = start + String.fromCodePoint(node.data.codePointAt(start)).length;
+              const glyph = node.data.slice(start, end);
+              if (glyph.trim()) {
+                range.setStart(node, start);
+                range.setEnd(node, end);
+                [...range.getClientRects()].filter(drawn).forEach((rect) => found.push(glyphInk(glyph, rect)));
+              }
+              start = end;
+            }
+          }
+          return found;
+        };
+        const cutsChildOrGlyph = (el) => {
+          const box = el.getBoundingClientRect();
+          const left = box.left + el.clientLeft;
+          const top = box.top + el.clientTop;
+          const crossesBoxEdge = (rect) => rect.left < left - 1 || rect.top < top - 1 ||
+            rect.right > left + el.clientWidth + 1 || rect.bottom > top + el.clientHeight + 1;
+          const children = [...el.querySelectorAll('*')].filter((child) => clippedOnlyBy(child, el) && !inlineBox(child))
+            .map((child) => child.getBoundingClientRect()).filter(drawn);
+          return children.some(crossesBoxEdge) || glyphRects(el).some(crossesBoxEdge);
+        };
         return [...document.querySelectorAll('.view *')].filter((el) => {
           const box = el.getBoundingClientRect();
-          if (box.width === 0 && box.height === 0) return false;
+          if (!drawn(box) || insideTruncation(el)) return false;
           const outside = box.right > screen.right + 1 || box.bottom > screen.bottom + 1 || box.left < -1 || box.top < -1;
           const style = getComputedStyle(el);
-          const clips = ['hidden', 'clip'].includes(style.overflowX) || ['hidden', 'clip'].includes(style.overflowY);
-          const cut = clips && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1);
-          return outside || cut;
+          const overflows = el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1;
+          return outside || (clips(el) && !truncatesOnPurpose(style) && overflows && cutsChildOrGlyph(el));
         }).map(describe);
       JS
 
