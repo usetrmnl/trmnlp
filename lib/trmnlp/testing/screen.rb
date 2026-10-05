@@ -11,19 +11,38 @@ module TRMNLP
     class Screen < SimpleDelegator
       Box = Data.define(:left, :top, :right, :bottom, :width, :height)
 
-      # Every element drawn past the screen's edge or cut off inside a box that hides its overflow.
+      # Every element drawn past the screen's edge or cut off inside a box that hides its overflow, by more
+      # than `tolerance` pixels. A font's own box is taller than a tight line (line-height: 1, say), and the
+      # part of it that hangs under the line is empty, so that much is not counted as cut off.
       OVERFLOW_SCRIPT = <<~JS
+        const [tolerance, ignored] = arguments;
         const screen = document.documentElement.getBoundingClientRect();
         const describe = (el) => el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') +
           (el.classList.length ? '.' + [...el.classList].join('.') : '');
+        const range = document.createRange();
+        const hang = (el) => {
+          const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
+          if (Number.isNaN(lineHeight)) return 0;
+          const heights = [...el.childNodes].filter((node) => node.nodeType === 3 && node.data.trim())
+            .flatMap((node) => { range.selectNodeContents(node); return [...range.getClientRects()]; })
+            .map((rect) => rect.height);
+          return Math.max(0, Math.ceil((Math.max(0, ...heights) - lineHeight) / 2));
+        };
+        const cutBelow = (el) => {
+          const over = el.scrollHeight - el.clientHeight;
+          if (over <= tolerance) return false;
+          const fonts = [el, ...el.querySelectorAll('*')].map(hang);
+          return over > tolerance + Math.max(0, ...fonts);
+        };
         return [...document.querySelectorAll('.view *')].filter((el) => {
+          if (ignored && el.closest(ignored)) return false;
           const box = el.getBoundingClientRect();
           if (box.width === 0 && box.height === 0) return false;
-          const outside = box.right > screen.right + 1 || box.bottom > screen.bottom + 1 || box.left < -1 || box.top < -1;
+          const outside = box.right > screen.right + tolerance || box.bottom > screen.bottom + tolerance ||
+            box.left < -tolerance || box.top < -tolerance;
           const style = getComputedStyle(el);
           const clips = ['hidden', 'clip'].includes(style.overflowX) || ['hidden', 'clip'].includes(style.overflowY);
-          const cut = clips && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1);
-          return outside || cut;
+          return outside || (clips && (el.scrollWidth > el.clientWidth + tolerance || cutBelow(el)));
         }).map(describe);
       JS
 
@@ -64,7 +83,12 @@ module TRMNLP
 
       def evaluate(expression) = @browser.on(self) { it.execute_script("return (#{expression});") }
 
-      def overflowing = @browser.on(self) { it.execute_script(OVERFLOW_SCRIPT) }
+      # tolerance: pixels an element may overflow by; ignore: a selector (or several) whose elements, and
+      # everything inside them, are left out.
+      def overflowing(tolerance: 1, ignore: nil)
+        ignored = Array(ignore).join(', ')
+        @browser.on(self) { it.execute_script(OVERFLOW_SCRIPT, tolerance, ignored.empty? ? nil : ignored) }
+      end
 
       # Script errors, unhandled rejections, console.error lines and files that failed to load.
       def problems = evaluate('window.__trmnlpProblems || []')

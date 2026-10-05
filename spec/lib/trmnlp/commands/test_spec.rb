@@ -111,10 +111,11 @@ RSpec.describe 'trmnlp test' do
         RSpec.describe 'Greeting' do
           let(:mocks) { { 'https://api.test/*' => { json: { name: 'Ada' } } } }
 
-          it_behaves_like 'a publishable recipe', screens: [{ device: { model: 'og_test', width: 800, height: 480 } }]
+          it_behaves_like 'a publishable recipe', screens: [{ device: { model: 'og_test', width: 800, height: 480 } }]#{recipe_options}
         end
       RUBY
     end
+    let(:recipe_options) { '' }
 
     before do
       %w[half_horizontal half_vertical].each do |view|
@@ -163,6 +164,44 @@ RSpec.describe 'trmnlp test' do
       it 'names the view and the screen' do
         expect(run_tests.first).to include('draws the quadrant view on og_test without overflow or page errors')
       end
+
+      context 'when the recipe leaves that element out' do
+        let(:recipe_options) { ", overflow: { ignore: '.layout' }" }
+
+        it 'passes' do
+          expect(run_tests.first).to include('9 examples, 0 failures')
+        end
+      end
+    end
+  end
+
+  context 'with boxes that hide their overflow' do
+    let(:spec_body) do
+      <<~RUBY
+        RSpec.describe 'Greeting' do
+          it 'reports only what is cut off' do
+            screen = trmnl.render(device: { width: 800, height: 480 }, data: { name: 'Ada' })
+            expect(screen.overflowing).to eq(['div#cut'])
+            expect(screen).to have_no_overflow(ignore: '#cut').and have_no_overflow(tolerance: 200)
+            expect(screen).to have_no_overflow
+          end
+        end
+      RUBY
+    end
+
+    # #tight holds one whole line: only the empty part of the font's box hangs under it. #cut loses a line.
+    before do
+      box = 'overflow: hidden; line-height: 1; font-size: 60px'
+      File.write(File.join(plugin_dir, 'src', 'full.liquid'), <<~HTML)
+        <div class="layout layout--col">
+          <div id="tight" style="#{box}">{{ greeting }} gypsy</div>
+          <div id="cut" style="#{box}; height: 60px; width: 300px">{{ greeting }} on two lines</div>
+        </div>
+      HTML
+    end
+
+    it 'does not count the space a font keeps under a tight line' do
+      expect(run_tests.first).to include('expected nothing to overflow', 'but: div#cut', 'greeting_spec.rb:6')
     end
   end
 

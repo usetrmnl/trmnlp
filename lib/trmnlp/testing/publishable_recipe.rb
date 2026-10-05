@@ -32,12 +32,12 @@ module TRMNLP
 end
 
 # rubocop:disable-next Metrics/BlockLength -- one shared group, one check per example
-RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLISHABLE_RECIPE_SCREENS|
+RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLISHABLE_RECIPE_SCREENS, overflow: {}|
   let(:recipe_inputs) do
     { mocks: respond_to?(:mocks) ? mocks : {}, custom_fields: respond_to?(:custom_fields) ? custom_fields : {} }
   end
 
-  def draw_cleanly = have_no_overflow.and(have_no_problems).and(have_no_leaked_text)
+  define_method(:draw_cleanly) { have_no_overflow(**overflow).and(have_no_problems).and(have_no_leaked_text) }
 
   TRMNLP::Testing::PUBLISHABLE_RECIPE_VIEWS.product(screens).each do |view, screen|
     device = screen[:device].is_a?(Hash) ? screen[:device][:model] : screen[:device]
