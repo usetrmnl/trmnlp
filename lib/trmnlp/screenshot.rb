@@ -15,6 +15,11 @@ module TRMNLP
       return document.readyState === 'complete' && window.TRMNL_PLUGINS_READY === true &&
              window.TRMNL_HIGHCHARTS_DONE === true && window.TRMNL_CHILD_DITHER_DONE !== false
     JS
+    # A font file that never arrives would keep the page waiting until WebDriver's own 30 second limit.
+    FONTS_TIMEOUT_SECONDS = 10
+    FONTS_LOADED_SCRIPT = "return !document.fonts || document.fonts.status === 'loaded'"
+    FONTS_LOADING_SCRIPT =
+      "return [...document.fonts].filter((font) => font.status === 'loading').map((font) => font.family)"
     # Stops timers and animation callbacks from changing the page mid-capture. A window numbers its timeouts
     # and intervals upward from one counter, so a new timer's id is the highest there is to clear.
     FREEZE_TIMERS = <<~JS
@@ -29,9 +34,10 @@ module TRMNLP
       window.onresize = null;
     JS
 
-    def initialize(pool:, viewport_timeout: 5)
+    def initialize(pool:, viewport_timeout: 5, fonts_timeout: FONTS_TIMEOUT_SECONDS)
       @pool = pool
       @viewport_timeout = viewport_timeout
+      @fonts_timeout = fonts_timeout
     end
 
     def call(html:, width:, height:)
@@ -102,18 +108,31 @@ module TRMNLP
       driver.execute_script('return [window.innerWidth, window.innerHeight]')
     end
 
-    def load_page(driver, html, url: nil)
-      url ? driver.navigate.to(url) : write_page(driver, html)
-
-      wait_until_ready(driver, html)
-      yield if block_given?
-      driver.execute_script('return document.fonts && document.fonts.ready')
+    # A font that stalls is usually a dropped connection, so the page is loaded once more before giving up.
+    def load_page(driver, html, url: nil, &)
+      attempts = 0
+      begin
+        open_page(driver, html, url, &)
+      rescue Selenium::WebDriver::Error::TimeoutError
+        retry if (attempts += 1) <= 1
+        loading = driver.execute_script(FONTS_LOADING_SCRIPT).uniq.join(', ')
+        raise RenderError, "The page's fonts did not load within #{@fonts_timeout}s: #{loading}"
+      end
 
       driver.execute_script(<<~JS)
         document.documentElement.style.overflow = 'hidden';
         document.body.style.overflow = 'hidden';
       JS
       driver.execute_script(FREEZE_TIMERS)
+    end
+
+    def open_page(driver, html, url)
+      url ? driver.navigate.to(url) : write_page(driver, html)
+
+      wait_until_ready(driver, html)
+      yield if block_given?
+      Selenium::WebDriver::Wait.new(timeout: @fonts_timeout, interval: 0.05)
+                               .until { driver.execute_script(FONTS_LOADED_SCRIPT) }
     end
 
     def write_page(driver, html)

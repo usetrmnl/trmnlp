@@ -11,7 +11,7 @@ RSpec.describe TRMNLP::Screenshot do
 
   class FakeDriver
     attr_reader :scripts_run, :viewport_set, :screenshot_path, :navigated_to, :viewport_set_count
-    attr_accessor :script_errors, :viewport_overrides, :readiness_answers
+    attr_accessor :script_errors, :viewport_overrides, :readiness_answers, :fonts_load_on_attempt
 
     def initialize
       @scripts_run = []
@@ -20,6 +20,7 @@ RSpec.describe TRMNLP::Screenshot do
       @viewport_overrides = []
       @viewport_set_count = 0
       @readiness_answers = []
+      @fonts_load_on_attempt = 1
     end
 
     def execute_script(script, *_args)
@@ -27,6 +28,9 @@ RSpec.describe TRMNLP::Screenshot do
 
       @scripts_run << script
       return next_viewport if script.include?('innerWidth')
+      # A page's fonts arrive on the nth time it is loaded; a stalled font file never does.
+      return @navigated_to.size >= @fonts_load_on_attempt if script.include?('document.fonts.status')
+      return ['Inter'] if script.include?("font.status === 'loading'")
 
       @readiness_answers.empty? || @readiness_answers.shift if script.include?('TRMNL_PLUGINS_READY')
     end
@@ -135,6 +139,36 @@ RSpec.describe TRMNLP::Screenshot do
 
       it 'captures anyway' do
         expect(result.path).to eq(driver.screenshot_path)
+      end
+    end
+
+    context 'when a font file stalls' do
+      subject(:screenshot) { described_class.new(pool:, fonts_timeout: 0.1) }
+
+      before { driver.fonts_load_on_attempt = 2 }
+
+      it 'loads the page once more, and captures it' do
+        expect([result.path, driver.navigated_to.size]).to eq([driver.screenshot_path, 2])
+      end
+    end
+
+    context 'when the fonts never load' do
+      subject(:screenshot) { described_class.new(pool:, fonts_timeout: 0.1) }
+
+      before { driver.fonts_load_on_attempt = 1000 }
+
+      it 'raises a RenderError naming them, after loading the page twice' do
+        expect { result }.to raise_error(TRMNLP::RenderError, /fonts did not load within 0.1s: Inter/)
+      end
+
+      it 'does not start over with another browser' do
+        begin
+          result
+        rescue TRMNLP::RenderError
+          nil
+        end
+
+        expect([pool.yield_count, driver.navigated_to.size]).to eq([1, 2])
       end
     end
 
