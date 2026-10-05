@@ -12,7 +12,9 @@ module TRMNLP
     DEFAULT_DEVICE_WIDTH = 800
     DEFAULT_DEVICE_HEIGHT = 480
 
-    def initialize(config:, paths:, transform_pipeline:, oauth_session: nil)
+    # source_data: a test's own data, in place of what the plugin's strategy would read.
+    def initialize(config:, paths:, transform_pipeline:, oauth_session: nil, source_data: nil)
+      @given_source_data = source_data
       @config = config
       @paths = paths
       @transform_pipeline = transform_pipeline
@@ -73,7 +75,9 @@ module TRMNLP
     def previous_merge_variables = config.plugin.webhook? ? source_data : transform_pipeline.previous_output
 
     def source_data
-      if config.plugin.static?
+      if @given_source_data
+        @given_source_data
+      elsif config.plugin.static?
         config.plugin.static_data
       elsif config.plugin.plugin_merge?
         MergedPluginLocals.new(config:, paths:).call
