@@ -43,6 +43,12 @@ RSpec.describe TRMNLP::Testing::QrScanner do
     expect(described_class.new(picture('first', 'second'), area:).texts).to eq(['first'])
   end
 
+  it 'finds nothing in an area wholly off the picture' do
+    area = TRMNLP::Testing::Screen::Box.new(left: -116, top: 0, right: 0, bottom: 116, width: 116, height: 116)
+
+    expect(described_class.new(picture('first', 'second'), area:).texts).to eq([])
+  end
+
   it 'finds nothing in a picture without a code' do
     blank = File.join(dir, 'blank.png')
     MiniMagick::Tool.new('convert') { |convert| convert << '-size' << '100x100' << 'xc:white' << blank }
