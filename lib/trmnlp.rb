@@ -3,7 +3,7 @@
 module TRMNLP; end
 require 'oj'
 require 'trmnl/liquid'
-require_relative 'trmnlp/qr_code_intrinsic_size'
+require_relative 'trmnlp/qr_code'
 Oj.mimic_JSON
 require_relative 'trmnlp/rails_helpers'
 require_relative 'trmnlp/errors'
