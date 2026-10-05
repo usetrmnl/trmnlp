@@ -18,6 +18,8 @@ require_relative 'snapshot'
 module TRMNLP
   module Testing
     PLUGIN_DIR_ENV_KEY = 'TRMNLP_PLUGIN_DIR'
+    # What a template or script draws when its data is missing.
+    LEAKED_TEXT_PATTERN = /Liquid (?:syntax )?error|\bundefined\b|\bNaN\b|\bnull\b|\[object Object\]|\{\{|\{%/
 
     def self.plugin_dir = ENV.fetch(PLUGIN_DIR_ENV_KEY, Dir.pwd)
 
@@ -51,6 +53,19 @@ RSpec::Matchers.define :stay_within_serverless_limits do
     "expected the transform to stay within 5000 ms and 128 MB, but it took #{run.duration_ms} ms " \
       "and #{run.max_memory_mb} MB"
   end
+end
+
+RSpec::Matchers.define :have_no_leaked_text do
+  match { |screen| screen.text.scan(TRMNLP::Testing::LEAKED_TEXT_PATTERN).empty? }
+  failure_message do |screen|
+    leaked = screen.text.scan(TRMNLP::Testing::LEAKED_TEXT_PATTERN).uniq
+    "expected no leaked values on #{screen.inspect}, but it shows: #{leaked.join(', ')}"
+  end
+end
+
+RSpec::Matchers.define :have_no_transform_error do
+  match { |screen| screen.result.error.nil? }
+  failure_message { |screen| "expected the transform to run without error, but: #{screen.result.error}" }
 end
 
 RSpec::Matchers.define :have_no_problems do

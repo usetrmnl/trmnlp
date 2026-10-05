@@ -123,8 +123,38 @@ RSpec.describe 'trmnlp test' do
       File.write(File.join(plugin_dir, 'src', 'quadrant.liquid'), quadrant)
     end
 
-    it 'draws every view and runs the transform' do
-      expect(run_tests.first).to include('6 examples, 0 failures')
+    it 'draws every view, runs the transform, and draws when the API fails' do
+      expect(run_tests.first).to include('9 examples, 0 failures')
+    end
+
+    context 'when a view shows a leaked value' do
+      let(:quadrant) { greeting_markup.sub('{{ greeting }}', '{{ greeting }} undefined') }
+
+      it 'names the view and the screen' do
+        expect(run_tests.first).to include('draws the quadrant view on og_test without overflow or page errors')
+      end
+    end
+
+    context 'with a select field' do
+      before do
+        File.write(File.join(plugin_dir, 'src', 'settings.yml'), <<~YAML)
+          name: Greeting
+          strategy: polling
+          polling_url: https://api.test/person
+          custom_fields:
+            - keyname: mood
+              field_type: select
+              options: [Calm, { Very loud: loud }]
+              default: calm
+        YAML
+        loud_leaks = "{% if trmnl.plugin_settings.custom_fields_values.mood == 'loud' %} NaN{% endif %}"
+        File.write(File.join(plugin_dir, 'src', 'full.liquid'), greeting_markup.sub('</span>', "#{loud_leaks}</span>"))
+      end
+
+      it 'draws the full view with each option, and names the one that breaks' do
+        expect(run_tests.first)
+          .to include('draws the full view with mood set to loud').and include('11 examples, 1 failure')
+      end
     end
 
     context 'when a view overflows' do
