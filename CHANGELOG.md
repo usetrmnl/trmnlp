@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 0.19.0
+
+- `it_behaves_like 'a publishable recipe'` also checks every screen for leaked values (`undefined`, `NaN`, `null`, `[object Object]`, `Liquid error`, raw `{{` or `{%`), draws the full view when the API answers with nothing, answers 500 or cannot be reached, and draws it with each option of every select field. New matchers: `have_no_leaked_text` and `have_no_transform_error`. (#181)
+
 ## 0.18.1
 
 - Pages narrower than a Firefox window render, such as a 480x800 TRMNL OG in portrait, in `serve`, `build` and `test`. trmnlp sets the page's viewport with WebDriver BiDi, as TRMNL does, instead of resizing the window, which Firefox will not size under about 500px. (#178)
