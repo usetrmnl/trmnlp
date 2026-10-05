@@ -195,7 +195,7 @@ RSpec.describe 'trmnlp test' do
       let(:quadrant) { greeting_markup.sub('{{ greeting }}', '{{ greeting }} undefined') }
 
       it 'names the view and the screen' do
-        expect(run_tests.first).to include('draws the quadrant view on og_test without overflow or page errors')
+        expect(run_tests.first).to include('draws the quadrant view on og_test without page errors')
       end
     end
 
@@ -224,8 +224,8 @@ RSpec.describe 'trmnlp test' do
     context 'when a view overflows' do
       let(:quadrant) { greeting_markup.sub('{{ greeting }}', 'Ada ' * 200).sub('">', '" style="white-space: nowrap">') }
 
-      it 'names the view and the screen' do
-        expect(run_tests.first).to include('draws the quadrant view on og_test without overflow or page errors')
+      it 'leaves overflow to the recipe' do
+        expect(run_tests.first).to include('9 examples, 0 failures')
       end
     end
   end

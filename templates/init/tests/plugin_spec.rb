@@ -10,7 +10,7 @@ RSpec.describe 'My Plugin' do
   # The values of the custom fields in src/settings.yml to test with.
   let(:custom_fields) { {} }
 
-  # Every view on TRMNL's devices, a failing API and every select option, checked for overflow and errors.
+  # Every view on TRMNL's devices, a failing API and every select option, checked for page errors and leaked values.
   it_behaves_like 'a publishable recipe'
 
   # A picture of the full view, compared pixel for pixel on every run. Record it once with

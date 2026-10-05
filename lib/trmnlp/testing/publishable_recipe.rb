@@ -37,13 +37,13 @@ RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLI
     { mocks: respond_to?(:mocks) ? mocks : {}, custom_fields: respond_to?(:custom_fields) ? custom_fields : {} }
   end
 
-  def draw_cleanly = have_no_overflow.and(have_no_problems).and(have_no_leaked_text)
+  def draw_cleanly = have_no_problems.and(have_no_leaked_text)
 
   TRMNLP::Testing::PUBLISHABLE_RECIPE_VIEWS.product(screens).each do |view, screen|
     device = screen[:device].is_a?(Hash) ? screen[:device][:model] : screen[:device]
     screen_name = [device, screen[:orientation]].compact.join(' ')
 
-    it "draws the #{view} view on #{screen_name} without overflow or page errors" do
+    it "draws the #{view} view on #{screen_name} without page errors" do
       expect(trmnl.render(view:, **screen, **recipe_inputs)).to draw_cleanly
     end
   end
