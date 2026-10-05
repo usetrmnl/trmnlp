@@ -28,10 +28,25 @@ module TRMNLP
           console.error = (...parts) => { problems.push(`console.error: ${parts.join(' ')}`); consoleError(...parts); };
         })();
       JS
-      PAGE_CLOCK_SCRIPT = '(() => { const offset = %d; const RealDate = Date; ' \
-                          'class TestDate extends RealDate { constructor(...args) { args.length ? super(...args) : ' \
-                          'super(RealDate.now() + offset); } static now() { return RealDate.now() + offset; } } ' \
-                          'window.Date = TestDate; })();'
+      # Takes its offset when the page runs, so the time Firefox takes to load the page does not put it behind now:.
+      PAGE_CLOCK_SCRIPT = <<~JS.gsub(/\s+/, ' ').strip
+        (() => {
+          const RealDate = Date;
+          const offset = %d - RealDate.now();
+          class TestDate extends RealDate {
+            constructor(...args) { args.length ? super(...args) : super(RealDate.now() + offset); }
+            static now() { return RealDate.now() + offset; }
+          }
+          window.Date = new Proxy(TestDate, { apply: () => new TestDate().toString() });
+          const prototype = Intl.DateTimeFormat.prototype;
+          const format = Object.getOwnPropertyDescriptor(prototype, 'format').get;
+          const formatToParts = prototype.formatToParts;
+          Object.defineProperty(prototype, 'format', {
+            get() { const bound = format.call(this); return (date = TestDate.now()) => bound(date); }
+          });
+          prototype.formatToParts = function (date = TestDate.now()) { return formatToParts.call(this, date); };
+        })();
+      JS
 
       def initialize(dir, browser:, authority:)
         @dir = dir
@@ -83,8 +98,8 @@ module TRMNLP
       def with_page_clock(html, now)
         return html unless now
 
-        offset = ((time(now).to_f - Time.now.to_f) * 1000).round
-        html.sub(/<head>/i) { "<head><script>#{format(PAGE_CLOCK_SCRIPT, offset)}</script>" }
+        milliseconds = (time(now).to_f * 1000).round
+        html.sub(/<head>/i) { "<head><script>#{format(PAGE_CLOCK_SCRIPT, milliseconds)}</script>" }
       end
     end
   end
