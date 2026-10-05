@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- `trmnlp test`: `have_qr_code` on an element wholly off the left or top of the screen finds no code. It scanned part of the screen instead, because ImageMagick reads a crop 0 pixels wide as the whole width.
 - `it_behaves_like 'a publishable recipe'` no longer checks overflow. `have_no_overflow` flags text cut short on purpose (`text-overflow: ellipsis`, `-webkit-line-clamp`) on most list and calendar recipes, so authors filtered it out; the matcher stays for examples that call it.
 - `have_no_overflow` passes text cut short on purpose (`text-overflow: ellipsis`, `-webkit-line-clamp`) and text whose font is taller than its line, when only the empty space below it is cut. It reports a box only when a child box or a glyph's ink crosses its edge, so cut descenders still fail, and it now reports a scrolling box (`overflow: auto` or `scroll`) whose content is cut.
 - `trmnlp test`: under `now:`, the page's clock starts at `now:` when the page runs. It started seconds late, by however long Firefox took to load the page. `Date()` without `new` no longer throws, and `Intl.DateTimeFormat#format` and `#formatToParts` given no date use `now:`.

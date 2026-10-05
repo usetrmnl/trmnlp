@@ -34,8 +34,10 @@ module TRMNLP
       end
 
       def cropped
+        return [] unless (geometry = crop_geometry)
+
         Tempfile.create(['trmnlp-qr-', '.png']) do |file|
-          MiniMagick::Image.open(@path).crop(crop_geometry).write(file.path)
+          MiniMagick::Image.open(@path).crop(geometry).write(file.path)
           yield file.path
         end
       end
@@ -43,7 +45,10 @@ module TRMNLP
       def crop_geometry
         left = [@area.left.floor, 0].max
         top = [@area.top.floor, 0].max
-        "#{@area.right.ceil - left}x#{@area.bottom.ceil - top}+#{left}+#{top}"
+        width = @area.right.ceil - left
+        height = @area.bottom.ceil - top
+        # ImageMagick reads a 0 width or height as the whole picture, so an area off it has nothing to crop.
+        "#{width}x#{height}+#{left}+#{top}" if width.positive? && height.positive?
       end
     end
   end
