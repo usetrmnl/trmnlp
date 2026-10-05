@@ -93,14 +93,8 @@ RSpec.describe 'trmnlp test' do
     Open3.capture2e({ 'CI' => nil }, RbConfig.ruby, trmnlp, 'test', '--dir', plugin_dir, *options)
   end
 
-  it 'passes a plugin whose tests hold' do
-    output, _status = run_tests
-
-    expect(output).to include('10 examples, 0 failures')
-  end
-
-  it 'exits cleanly when they hold' do
-    expect(run_tests.last).to be_success
+  it 'passes a plugin whose tests hold, and exits cleanly' do
+    expect(run_tests).to match([include('10 examples, 0 failures'), be_success])
   end
 
   context 'with --report' do
@@ -109,15 +103,12 @@ RSpec.describe 'trmnlp test' do
 
     before { run_tests('--report', report_dir) }
 
-    it 'writes the page' do
-      expect(File.read(File.join(report_dir, 'index.html'))).to include('shows it on the screen')
-    end
-
-    it 'keeps each screen it rendered, with the boxes it drew' do
+    it 'writes the page, and keeps each screen it rendered with the boxes it drew' do
       screen = report['examples'].flat_map { it['screens'] }.first
 
-      expect([File.exist?(File.join(report_dir, screen['image'])), screen['outlines']])
-        .to match([true, include(include('tag' => 'span'))])
+      expect([File.read(File.join(report_dir, 'index.html')), File.exist?(File.join(report_dir, screen['image'])),
+              screen['outlines']])
+        .to match([include('shows it on the screen'), true, include(include('tag' => 'span'))])
     end
   end
 
@@ -302,12 +293,8 @@ RSpec.describe 'trmnlp test' do
         "data: { name: 'Ada' })).to have_text('Grace') } }"
     end
 
-    it 'names what it looked for' do
-      expect(run_tests.first).to include('expected to find text "Grace"')
-    end
-
-    it 'exits with a failure' do
-      expect(run_tests.last).not_to be_success
+    it 'names what it looked for, and exits with a failure' do
+      expect(run_tests).to match([include('expected to find text "Grace"'), have_attributes(success?: false)])
     end
   end
 end
