@@ -25,7 +25,7 @@ module TRMNLP
       end
 
       def initialize(dir)
-        @dir = dir
+        @dir = "#{dir}#{ENV.fetch('TEST_ENV_NUMBER', '')}" # parallel_tests: report, report2, report3...
         @examples = {}
         @images = 0
       end

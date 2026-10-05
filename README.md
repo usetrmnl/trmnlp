@@ -508,6 +508,17 @@ end
 - `it_behaves_like 'a publishable recipe'` is what a recipe should hold before it is published: every view draws without overflow or page errors on the TRMNL OG (1-bit, and 2-bit in landscape and portrait) and the TRMNL X (landscape and portrait), and the transform runs without error within TRMNL's limits. Every screen is also checked for leaked values (`undefined`, `NaN`, `null`, `[object Object]`, `Liquid error`, raw `{{`); the full view must still draw when the API answers with nothing, answers 500 or cannot be reached; and it is drawn with each option of every select field (the first and last when a field has more than 20). It uses the group's `mocks` and `custom_fields` when the group defines them; `screens: [{ device: 'kobo_libra_2' }, ...]` draws on other devices.
 - `match_snapshot` stores a missing snapshot under `tests/snapshots/<os>/` and fails one on CI; `trmnlp test --update` rewrites them. Fonts render differently per operating system, so run tests in the Docker image when CI should share your snapshots. `fit_image_size_limit` checks the PNG against the model's limit, `have_no_leaked_text` the drawn text for leaked values, and `have_no_transform_error` a render's transform.
 
+### Running tests in parallel
+
+`trmnlp test` runs one example at a time in one Firefox. To spread the spec files over several processes, each with its own Firefox, use the [parallel_tests](https://github.com/grosser/parallel_tests) gem from the plugin's folder:
+
+```sh
+gem install parallel_tests
+PARALLEL_TESTS_EXECUTABLE="trmnlp test --dir ." parallel_rspec -n 3 tests/
+```
+
+Files, not examples, are shared out, so a cache that a spec file builds for its own examples still works. Add `--report report` to the executable for a report per process: `report/`, `report2/`, `report3/`.
+
 ## Development
 
 To run trmnlp from a checkout of this repo — handy for trying unreleased changes or contributing:
