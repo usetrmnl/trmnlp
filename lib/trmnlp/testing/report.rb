@@ -12,6 +12,9 @@ module TRMNLP
     # DIR/report.json. Under GitHub Actions the counts and failures go to the step summary too.
     class Report
       TEMPLATE = File.expand_path('report.html.erb', __dir__)
+      DIR_ENV_KEY = 'TRMNLP_REPORT_DIR'
+      # Set in a worker of `trmnlp test --workers`: it writes its share only, for .combine to put together.
+      PART_ENV_KEY = 'TRMNLP_REPORT_PART'
       OUTLINES_SCRIPT = <<~JS
         (() => [...document.querySelectorAll('.view *')].slice(0, 3000).map((el) => {
           const box = el.getBoundingClientRect();
@@ -22,12 +25,30 @@ module TRMNLP
 
       class << self
         attr_accessor :current
+
+        # One report out of the workers' parts, its examples in the order RSpec listed them.
+        def combine(parts, into:, order: [])
+          report = new(into)
+          parts.select { File.exist?(File.join(it, 'report.json')) }.each { report.add_part(it) }
+          report.write(order:)
+          parts.each { FileUtils.rm_rf(it) }
+        end
       end
 
       def initialize(dir)
         @dir = dir
         @examples = {}
         @images = 0
+      end
+
+      def add_part(dir)
+        JSON.parse(File.read(File.join(dir, 'report.json')), symbolize_names: true).fetch(:examples).each do |example|
+          example[:screens].each do |screen|
+            screen[:image] = copy_image(File.join(dir, screen[:image]))
+            screen[:outlines] = screen[:outlines].map { it.transform_keys(&:to_s) }
+          end
+          @examples[example[:id]] = example
+        end
       end
 
       def record_screen(screen)
@@ -48,21 +69,29 @@ module TRMNLP
       def example_pending(notification) = finish(notification.example, 'pending')
       def example_failed(notification) = finish(notification.example, 'failed', notification.example.exception&.message)
 
-      def close(_notification)
+      def close(_notification) = write(part: ENV.key?(PART_ENV_KEY))
+
+      def write(order: [], part: false)
+        @order = order
         FileUtils.mkdir_p(@dir)
         File.write(File.join(@dir, 'report.json'), JSON.pretty_generate(examples: examples))
+        return if part
+
         File.write(File.join(@dir, 'index.html'), ERB.new(File.read(TEMPLATE)).result(binding))
         write_step_summary if ENV['GITHUB_STEP_SUMMARY']
       end
 
       private
 
-      def examples = @examples.values
+      def examples
+        order = @order || []
+        @examples.values.sort_by.with_index { |example, index| [order.index(example[:id]) || order.size, index] }
+      end
 
       def entry(example = RSpec.current_example)
         return unless example
 
-        @examples[example.id] ||= { description: example.full_description, location: example.location,
+        @examples[example.id] ||= { id: example.id, description: example.full_description, location: example.location,
                                     status: 'running', message: nil, screens: [], runs: [] }
       end
 

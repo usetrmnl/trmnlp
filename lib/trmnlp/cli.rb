@@ -89,6 +89,8 @@ module TRMNLP
     desc 'test [PATHS]', "Run the plugin's tests in tests/ (RSpec, with `trmnl` and screen matchers)"
     method_option :update, type: :boolean, default: false, desc: 'Rewrite the stored snapshots'
     method_option :report, type: :string, banner: 'DIR', desc: 'Write a report of every screen and transform to DIR'
+    method_option :workers, type: :numeric, aliases: '-w', banner: 'N',
+                            desc: 'Run the examples in N processes, each with its own Firefox'
     def test(*paths)
       exit(1) unless Commands::Test.run(options, paths)
     end

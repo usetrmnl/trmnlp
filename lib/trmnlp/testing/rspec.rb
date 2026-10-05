@@ -93,7 +93,7 @@ RSpec::Matchers.define :match_snapshot do |name = nil|
 end
 
 RSpec.configure do |config|
-  if (report_dir = ENV.fetch('TRMNLP_REPORT_DIR', nil))
+  if (report_dir = ENV.fetch(TRMNLP::Testing::Report::DIR_ENV_KEY, nil))
     TRMNLP::Testing::Report.current = TRMNLP::Testing::Report.new(report_dir)
     config.reporter.register_listener(TRMNLP::Testing::Report.current, :example_passed, :example_failed,
                                       :example_pending, :close)

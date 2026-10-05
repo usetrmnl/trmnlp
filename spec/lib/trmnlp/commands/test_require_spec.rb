@@ -21,4 +21,35 @@ RSpec.describe TRMNLP::Commands::Test do
       expect(File).to exist(arguments[arguments.index('--require') + 1])
     end
   end
+
+  context 'with workers' do
+    let(:options) { described_class::Options.new(dir:, quiet: true, update: false, report: nil, workers: 3) }
+    let(:parallel) { instance_double(TRMNLP::Testing::Parallel, call: outcome) }
+    let(:outcome) { false }
+
+    before do
+      require 'trmnlp/testing/parallel'
+      allow(TRMNLP::Testing::Parallel).to receive(:new).and_return(parallel)
+    end
+
+    it 'shares the examples out over that many' do
+      command.call
+
+      expect(TRMNLP::Testing::Parallel).to have_received(:new).with(hash_including(workers: 3))
+    end
+
+    it 'answers what the workers found' do
+      expect(command.call).to be(false)
+    end
+
+    context 'when the examples cannot be shared out' do
+      let(:outcome) { nil }
+
+      it 'runs them in this process' do
+        command.call
+
+        expect(RSpec::Core::Runner).to have_received(:run)
+      end
+    end
+  end
 end

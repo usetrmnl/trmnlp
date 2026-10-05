@@ -93,6 +93,53 @@ RSpec.describe TRMNLP::Testing::Report do
     end
   end
 
+  context "when put together from two workers' parts" do
+    let(:parts) { [File.join(dir, '.worker-0'), File.join(dir, '.worker-1')] }
+    let(:json) { JSON.parse(File.read(File.join(dir, 'report.json'))) }
+
+    def write_part(part_dir, notification, method)
+      stub_const('ENV', ENV.to_h.merge('TRMNLP_REPORT_PART' => '1'))
+      part = described_class.new(part_dir)
+      example_running(notification) { part.record_screen(screen) }
+      part.public_send(method, notification)
+      part.close(nil)
+    end
+
+    before do
+      write_part(parts.first, failed, :example_failed)
+      write_part(parts.last, passed, :example_passed)
+      described_class.combine(parts, into: dir, order: [passed, failed].map { it.example.id })
+    end
+
+    it 'lists the examples in the order RSpec listed them' do
+      expect(json['examples'].map { it['description'] }).to eq(['shows the weather', 'keeps its state'])
+    end
+
+    it "keeps every worker's screens, each under its own name" do
+      images = json['examples'].flat_map { it['screens'] }.map { it['image'] }
+
+      present = images.all? { File.exist?(File.join(dir, it)) }
+
+      expect([images.sort, present]).to eq([%w[images/1.png images/2.png], true])
+    end
+
+    it 'writes the page with the outlines' do
+      expect(File.read(File.join(dir, 'index.html'))).to include('keeps its state', '<rect x="1" y="2"')
+    end
+
+    it 'removes the parts' do
+      expect(parts.select { File.exist?(it) }).to be_empty
+    end
+  end
+
+  it 'writes no page for a part' do
+    stub_const('ENV', ENV.to_h.merge('TRMNLP_REPORT_PART' => '1'))
+    report.example_passed(passed)
+    report.close(nil)
+
+    expect(Dir.children(dir)).to eq(['report.json'])
+  end
+
   it 'leaves out a run whose transform did not run' do
     example_running(passed) { report.record_run(double('run', duration_ms: nil)) }
     report.example_passed(passed)

@@ -103,6 +103,19 @@ RSpec.describe 'trmnlp test' do
     end
   end
 
+  context 'with --workers' do
+    let(:report_dir) { File.join(plugin_dir, 'report') }
+    let(:output) { run_tests('--workers', '3', '--report', report_dir).first }
+    let(:report) { JSON.parse(File.read(File.join(report_dir, 'report.json'))) }
+
+    it 'runs every example once, and writes one report in the order of the file' do
+      expect([output, report['examples'].map { it['description'] }, Dir.children(report_dir).sort])
+        .to match([include('8 examples, 0 failures', '(3 workers)'),
+                   start_with('Greeting transforms the mocked answer', 'Greeting shows it on the screen'),
+                   %w[images index.html report.json]])
+    end
+  end
+
   context "with the publishable recipe's examples" do
     let(:greeting_markup) { '<div class="layout"><span class="title">{{ greeting }}</span></div>' }
     let(:quadrant) { greeting_markup }
@@ -178,6 +191,28 @@ RSpec.describe 'trmnlp test' do
 
     it 'exits with a failure' do
       expect(run_tests.last).not_to be_success
+    end
+
+    context 'with --workers' do
+      let(:spec_body) do
+        <<~RUBY
+          RSpec.describe 'Greeting' do
+            let(:screen) { trmnl.render(device: { width: 800, height: 480 }, data: { name: 'Ada' }) }
+
+            it('shows the name') { expect(screen).to have_text('Grace') }
+            it('shows the greeting') { expect(screen).to have_text('Hello Ada') }
+          end
+        RUBY
+      end
+
+      it 'names what it looked for, and where' do
+        expect(run_tests('--workers', '2').first)
+          .to include('expected to find text "Grace"', '2 examples, 1 failure', 'rspec ./tests/greeting_spec.rb:4')
+      end
+
+      it 'exits with a failure' do
+        expect(run_tests('--workers', '2').last).not_to be_success
+      end
     end
   end
 end
