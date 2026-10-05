@@ -6,6 +6,17 @@
 - It answers API requests with fake responses.
 - It starts every clock at a fixed time.
 
+```mermaid
+flowchart LR
+  spec["Your spec<br/>tests/*_spec.rb"] -->|"trmnl.transform(...)"| transform["Transform<br/>fake APIs (mocks:)<br/>fixed clock (now:)"]
+  transform --> run["Run<br/>data, state, requests"]
+  spec -->|"trmnl.render(...)"| liquid["Liquid markup<br/>+ the Framework"]
+  transform --> liquid
+  liquid --> firefox["Firefox<br/>draws the page"]
+  firefox --> screen["Screen<br/>have_text, box, problems"]
+  screen --> png["PNG for the device<br/>match_snapshot, have_qr_code"]
+```
+
 ## Quick start
 
 `trmnlp init` creates a plugin that is ready to test.
