@@ -2,6 +2,7 @@
 
 require 'time'
 
+require_relative '../lint'
 require_relative 'device_models'
 require_relative 'report'
 require_relative 'run'
@@ -41,6 +42,12 @@ module TRMNLP
 
       # The plugin in another folder, rendered in the same browser: a built copy, say.
       def plugin(dir) = self.class.new(File.expand_path(dir), browser: @browser, authority: @authority)
+
+      # What `trmnlp lint` finds: a Hash per issue, with :rule_id, :message and :locations.
+      def lint
+        context = Context.new(@dir, reporter: Reporter.new(quiet: true))
+        Lint.issues(config: context.config, paths: context.paths)
+      end
 
       def transform(device: 'og_plus', orientation: :landscape, now: nil, **)
         device = DeviceModels.find(device, orientation:)

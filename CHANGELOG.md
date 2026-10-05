@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- A plugin's test can run the lint checks: `expect(trmnl).to pass_lint` (`allow:` accepts rules by id), and `trmnl.lint` answers the issues.
+
 ## 0.19.0
 
 - `it_behaves_like 'a publishable recipe'` also checks every screen for leaked values (`undefined`, `NaN`, `null`, `[object Object]`, `Liquid error`, raw `{{` or `{%`), draws the full view when the API answers with nothing, answers 500 or cannot be reached, and draws it with each option of every select field. New matchers: `have_no_leaked_text` and `have_no_transform_error`. (#181)

@@ -20,6 +20,8 @@ require_relative 'lint/checks/custom_fields_used'
 require_relative 'lint/checks/form_fields_valid'
 require_relative 'lint/checks/no_custom_filters'
 
+require_relative 'lint/diagnostic'
+
 module TRMNLP
   # Markup best-practice checks behind `trmnlp lint`.
   module Lint
@@ -43,5 +45,14 @@ module TRMNLP
       Checks::FormFieldsValid,
       Checks::NoCustomFilters
     ].freeze
+
+    # Every finding for a plugin, each a Hash with :rule_id, :message, :severity and :locations.
+    def self.issues(config:, paths:)
+      source = Source.new(config:, paths:)
+      CHECKS.flat_map do |type|
+        check = type.new(source)
+        check.issues.map { |finding| Diagnostic.new(check, source, finding).to_h }
+      end.uniq
+    end
   end
 end

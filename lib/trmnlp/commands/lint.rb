@@ -2,7 +2,6 @@
 
 require_relative 'base'
 require_relative '../lint'
-require_relative '../lint/diagnostic'
 require 'json'
 
 module TRMNLP
@@ -23,16 +22,7 @@ module TRMNLP
 
       private
 
-      def issues
-        @issues ||= TRMNLP::Lint::CHECKS.flat_map do |type|
-          check = type.new(source)
-          check.issues.map { |finding| TRMNLP::Lint::Diagnostic.new(check, source, finding).to_h }
-        end.uniq
-      end
-
-      def source
-        @source ||= TRMNLP::Lint::Source.new(config:, paths:)
-      end
+      def issues = @issues ||= TRMNLP::Lint.issues(config:, paths:)
 
       def report
         return reporter.info(JSON.generate(version: 1, passed: issues.empty?, issues:)) if options.format == 'json'

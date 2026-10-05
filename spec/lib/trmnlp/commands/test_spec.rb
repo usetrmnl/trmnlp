@@ -49,6 +49,13 @@ RSpec.describe 'trmnlp test' do
           expect(trmnl.plugin(Dir.pwd).transform(device:, data: { name: 'Bo' }).data).to include('greeting' => 'Hello Bo')
         end
 
+        it 'lints the plugin' do
+          expect(trmnl.lint.map { it[:rule_id] }).to eq(['layouts_have_content'])
+          expect(trmnl).to pass_lint(allow: 'layouts_have_content')
+          expect { expect(trmnl).to pass_lint }
+            .to raise_error(RSpec::Expectations::ExpectationNotMetError, /layouts_have_content.*quadrant.liquid:1/m)
+        end
+
         it 'waits for a page that finishes drawing late' do
           screen = trmnl.render(device:, data: { name: 'Ada' }, transform: false,
                                 head: '<script>window.drawLater = () => setTimeout(() => window.drawn = true, 300);</script>',
@@ -78,7 +85,7 @@ RSpec.describe 'trmnlp test' do
   it 'passes a plugin whose tests hold' do
     output, _status = run_tests
 
-    expect(output).to include('8 examples, 0 failures')
+    expect(output).to include('9 examples, 0 failures')
   end
 
   it 'exits cleanly when they hold' do

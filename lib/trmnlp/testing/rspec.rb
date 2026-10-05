@@ -73,6 +73,21 @@ RSpec::Matchers.define :have_no_problems do
   failure_message { |screen| "expected no problems on #{screen.inspect}, but: #{screen.problems.join('; ')}" }
 end
 
+# `trmnlp lint` finds nothing; allow: names the rules (`no_opacity`, say) whose findings are accepted.
+RSpec::Matchers.define :pass_lint do |allow: []|
+  match do |plugin|
+    @issues = plugin.lint.reject { Array(allow).map(&:to_s).include?(it[:rule_id]) }
+    @issues.empty?
+  end
+  failure_message do
+    lines = @issues.map do |issue|
+      places = issue[:locations].map { "#{it[:path]}:#{it[:line]}" }.join(', ')
+      "  [#{issue[:rule_id]}] #{issue[:message]}#{" (#{places})" unless places.empty?}"
+    end
+    "expected the plugin to pass `trmnlp lint`, but:\n#{lines.join("\n")}"
+  end
+end
+
 RSpec::Matchers.define :fit_image_size_limit do
   match { |screen| screen.png_bytes.bytesize <= screen.device.image_size_limit.to_i }
   failure_message do |screen|
