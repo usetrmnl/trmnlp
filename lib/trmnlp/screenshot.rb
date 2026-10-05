@@ -15,13 +15,15 @@ module TRMNLP
       return document.readyState === 'complete' && window.TRMNL_PLUGINS_READY === true &&
              window.TRMNL_HIGHCHARTS_DONE === true && window.TRMNL_CHILD_DITHER_DONE !== false
     JS
-    # Stops timers and animation callbacks from changing the page mid-capture.
+    # Stops timers and animation callbacks from changing the page mid-capture. A window numbers its timeouts
+    # and intervals upward from one counter, so a new timer's id is the highest there is to clear.
     FREEZE_TIMERS = <<~JS
       const noop = () => 0;
+      const newest = window.setTimeout(noop, 0);
       window.setTimeout = window.setInterval = noop;
       window.requestAnimationFrame = noop;
       if (window.requestIdleCallback) window.requestIdleCallback = noop;
-      for (let i = 100000; i >= 0; i--) { window.clearTimeout(i); window.clearInterval(i); }
+      for (let i = typeof newest === 'number' ? newest : 100000; i >= 0; i--) { window.clearTimeout(i); window.clearInterval(i); }
       if (window.ResizeObserver) window.ResizeObserver.prototype.observe = noop;
       if (window.MutationObserver) window.MutationObserver.prototype.observe = noop;
       window.onresize = null;
