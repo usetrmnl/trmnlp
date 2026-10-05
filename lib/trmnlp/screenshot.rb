@@ -48,9 +48,10 @@ module TRMNLP
     # Loads html into driver at width x height and waits until TRMNL would capture it, and until wait_for
     # (a JavaScript expression) is true when given: a page still drawing would be stopped by the frozen timers.
     # rubocop:disable-next Metrics/ParameterLists -- the page, its size, and what to wait for
-    def show(driver, html, width, height, wait_for: nil, wait_for_timeout: READINESS_TIMEOUT_SECONDS)
+    # url: an address that serves html, opened in place of writing html into a blank page.
+    def show(driver, html, width, height, wait_for: nil, wait_for_timeout: READINESS_TIMEOUT_SECONDS, url: nil)
       resize(driver, width, height)
-      load_page(driver, html) { wait_for_expression(driver, wait_for, wait_for_timeout) if wait_for }
+      load_page(driver, html, url:) { wait_for_expression(driver, wait_for, wait_for_timeout) if wait_for }
     end
 
     def capture(driver)
@@ -97,14 +98,8 @@ module TRMNLP
       driver.execute_script('return [window.innerWidth, window.innerHeight]')
     end
 
-    def load_page(driver, html)
-      driver.navigate.to('about:blank')
-
-      driver.execute_script(<<~JS, html)
-        document.open();
-        document.write(arguments[0]);
-        document.close();
-      JS
+    def load_page(driver, html, url: nil)
+      url ? driver.navigate.to(url) : write_page(driver, html)
 
       wait_until_ready(driver, html)
       yield if block_given?
@@ -115,6 +110,16 @@ module TRMNLP
         document.body.style.overflow = 'hidden';
       JS
       driver.execute_script(FREEZE_TIMERS)
+    end
+
+    def write_page(driver, html)
+      driver.navigate.to('about:blank')
+
+      driver.execute_script(<<~JS, html)
+        document.open();
+        document.write(arguments[0]);
+        document.close();
+      JS
     end
 
     def wait_for_expression(driver, expression, timeout)

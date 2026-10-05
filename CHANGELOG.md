@@ -7,6 +7,7 @@
 - `trmnlp test --report` writes a report per process under parallel_tests (`report`, `report2`, ...) instead of each process overwriting the last. The README shows how to run a plugin's tests in parallel.
 - `trmnlp test`: `data:` reaches a static plugin. It was ignored there, so the test rendered the `static_data` in `settings.yml`.
 - `trmnlp test` takes a screen's PNG only when a test asks for it (`match_snapshot`, `fit_image_size_limit`, `png_path`, `--report`). A test that only reads the page no longer waits for the screenshot and its quantizing, about 0.15 seconds a render. The picture is of the page when it is first asked for, so a page changed with `evaluate` before `match_snapshot` is drawn changed.
+- `trmnlp test` opens each page from a local address instead of writing it into `about:blank` with its stylesheets inlined, so Firefox parses the Framework's 15 MB stylesheet once for the run: 10 renders take 5.5 seconds where they took 10.1, and trmnlp's own suite 89 seconds where it took 114. The page still gets no storage, cookies or `Referer`, as on TRMNL. Its `location` and the `Origin` of its cross-origin requests are `http://127.0.0.1:<port>`, and a relative URL is not found. (#193)
 
 ## 0.19.0
 

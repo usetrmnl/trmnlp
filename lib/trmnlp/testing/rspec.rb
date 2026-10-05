@@ -10,6 +10,7 @@ require_relative '../browser_pool'
 require_relative '../firefox_driver'
 require_relative 'browser'
 require_relative 'certificate_authority'
+require_relative 'page_server'
 require_relative 'plugin'
 require_relative 'report'
 require_relative 'publishable_recipe'
@@ -31,10 +32,16 @@ module TRMNLP
       @browser_pool ||= BrowserPool.new(driver_factory: FirefoxDriver.method(:build), max_size: 1)
     end
 
+    def self.page_server
+      @page_server ||= PageServer.new.start.tap { |server| at_exit { server.stop } }
+    end
+
     module Helpers
       def trmnl = @trmnl ||= Plugin.new(Testing.plugin_dir, browser: trmnl_browser, authority: Testing.authority)
 
-      def trmnl_browser = @trmnl_browser ||= Browser.new(pool: Testing.browser_pool)
+      def trmnl_browser
+        @trmnl_browser ||= Browser.new(pool: Testing.browser_pool, page_server: Testing.page_server)
+      end
     end
   end
 end
