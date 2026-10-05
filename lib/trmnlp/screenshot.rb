@@ -23,7 +23,7 @@ module TRMNLP
       window.setTimeout = window.setInterval = noop;
       window.requestAnimationFrame = noop;
       if (window.requestIdleCallback) window.requestIdleCallback = noop;
-      for (let i = newest; i >= 0; i--) { window.clearTimeout(i); window.clearInterval(i); }
+      for (let i = typeof newest === 'number' ? newest : 100000; i >= 0; i--) { window.clearTimeout(i); window.clearInterval(i); }
       if (window.ResizeObserver) window.ResizeObserver.prototype.observe = noop;
       if (window.MutationObserver) window.MutationObserver.prototype.observe = noop;
       window.onresize = null;

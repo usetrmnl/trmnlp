@@ -58,6 +58,15 @@ RSpec.describe 'trmnlp test' do
           expect(screen.evaluate('[window.ticks, window.late === undefined]')).to eq([ticks, true])
         end
 
+        it "stops the page's timers when the page wraps setTimeout" do
+          head = '<script>window.ticks = 0; setInterval(() => window.ticks++, 20); ' \
+                 'const native = setTimeout; window.setTimeout = (f, ms) => ({ id: native(f, ms) });</script>'
+          screen = trmnl.render(device:, data: { name: 'Ada' }, transform: false, head:)
+          ticks = screen.evaluate('window.ticks')
+          sleep 0.3
+          expect(screen.evaluate('window.ticks')).to eq(ticks)
+        end
+
         it 'waits for a page that finishes drawing late' do
           screen = trmnl.render(device:, data: { name: 'Ada' }, transform: false,
                                 head: '<script>window.drawLater = () => setTimeout(() => window.drawn = true, 300);</script>',
@@ -87,7 +96,7 @@ RSpec.describe 'trmnlp test' do
   it 'passes a plugin whose tests hold' do
     output, _status = run_tests
 
-    expect(output).to include('9 examples, 0 failures')
+    expect(output).to include('10 examples, 0 failures')
   end
 
   it 'exits cleanly when they hold' do
