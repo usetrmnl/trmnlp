@@ -4,6 +4,7 @@
 ## Unreleased
 
 - `trmnlp test`: `data:` reaches a static plugin. It was ignored there, so the test rendered the `static_data` in `settings.yml`.
+- `trmnlp test` takes a screen's PNG only when a test asks for it (`match_snapshot`, `fit_image_size_limit`, `png_path`, `--report`). A test that only reads the page no longer waits for the screenshot and its quantizing, about 0.15 seconds a render. The picture is of the page when it is first asked for, so a page changed with `evaluate` before `match_snapshot` is drawn changed.
 
 ## 0.19.0
 

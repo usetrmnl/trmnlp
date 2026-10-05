@@ -27,18 +27,22 @@ module TRMNLP
         self.class.new(pool:).tap { @fresh_browsers << [it, pool] }
       end
 
+      # Loads the screen's page; its picture is only taken when a test asks for it.
+      def load(screen)
+        generator = generator(screen)
+        @pages[screen] = [InlineStylesheets.call(generator.html), generator.width, generator.height]
+        show(screen)
+      end
+
       # The PNG path, quantized to the device's bit depth like a build's.
       def capture(screen)
         @capturing = screen
-        keep(generate(screen))
+        keep(generator(screen).process)
       end
 
-      # ScreenGenerator's screenshot interface: html arrives with chart libraries swapped for TRMNL's copies.
-      def call(html:, width:, height:)
-        @pages[@capturing] = [html, width, height]
-        show(@capturing)
-        @screenshot.capture(driver)
-      end
+      # ScreenGenerator's screenshot interface: the page is already loaded, or loaded again if a later
+      # render replaced it.
+      def call(**) = on(@capturing) { @screenshot.capture(it) }
 
       # Yields the driver with screen's page loaded, reloading it if a later render replaced it.
       def on(screen)
@@ -59,11 +63,10 @@ module TRMNLP
 
       private
 
-      def generate(screen)
+      def generator(screen)
         device = screen.device
-        html = InlineStylesheets.call(screen.html)
-        ScreenGenerator.new(html, screenshot: self, width: device.width, height: device.height,
-                                  color_depth: device.bit_depth).process
+        ScreenGenerator.new(screen.html, screenshot: self, width: device.width, height: device.height,
+                                         color_depth: device.bit_depth)
       end
 
       def driver = @driver ||= @pool.checkout
