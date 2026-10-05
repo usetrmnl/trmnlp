@@ -31,8 +31,20 @@ module TRMNLP
       @browser_pool ||= BrowserPool.new(driver_factory: FirefoxDriver.method(:build), max_size: 1)
     end
 
+    def self.render_checks = @render_checks ||= []
+
+    # Adds a check that runs after every `trmnl.render`, inside the example, with the screen:
+    #   TRMNLP::Testing.after_render { |screen| expect(screen).to have_no_overflow.and have_no_problems }
+    # Put it in tests/spec_helper.rb, which `trmnlp test` loads first. A render skips them with checks: false.
+    def self.after_render(&check) = render_checks << check
+
     module Helpers
-      def trmnl = @trmnl ||= Plugin.new(Testing.plugin_dir, browser: trmnl_browser, authority: Testing.authority)
+      def trmnl
+        @trmnl ||= Plugin.new(Testing.plugin_dir, browser: trmnl_browser, authority: Testing.authority,
+                                                  after_render: method(:run_render_checks))
+      end
+
+      def run_render_checks(screen) = Testing.render_checks.each { instance_exec(screen, &it) }
 
       def trmnl_browser = @trmnl_browser ||= Browser.new(pool: Testing.browser_pool)
     end

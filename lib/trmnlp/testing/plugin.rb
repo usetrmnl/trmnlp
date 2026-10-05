@@ -33,14 +33,18 @@ module TRMNLP
                           'super(RealDate.now() + offset); } static now() { return RealDate.now() + offset; } } ' \
                           'window.Date = TestDate; })();'
 
-      def initialize(dir, browser:, authority:)
+      # after_render: called with every screen this plugin renders, unless the render says checks: false.
+      def initialize(dir, browser:, authority:, after_render: nil)
         @dir = dir
         @browser = browser
         @authority = authority
+        @after_render = after_render
       end
 
       # The plugin in another folder, rendered in the same browser: a built copy, say.
-      def plugin(dir) = self.class.new(File.expand_path(dir), browser: @browser, authority: @authority)
+      def plugin(dir)
+        self.class.new(File.expand_path(dir), browser: @browser, authority: @authority, after_render: @after_render)
+      end
 
       def transform(device: 'og_plus', orientation: :landscape, now: nil, **)
         device = DeviceModels.find(device, orientation:)
@@ -48,10 +52,11 @@ module TRMNLP
       end
 
       # A render also takes head: (markup for the page's <head>, before the Framework loads), wait_for: (a
-      # JavaScript expression the page must reach before it is captured) and wait_for_timeout: (seconds).
+      # JavaScript expression the page must reach before it is captured), wait_for_timeout: (seconds) and
+      # checks: false (skips the checks TRMNLP::Testing.after_render added).
       # rubocop:disable-next Metrics/ParameterLists -- one keyword per choice a render offers
       def render(view: 'full', device: 'og_plus', orientation: :landscape, palette: nil, dark_mode: false, theme: nil,
-                 now: nil, head: nil, wait_for: nil, wait_for_timeout: 5, fresh_browser: false, **)
+                 now: nil, head: nil, wait_for: nil, wait_for_timeout: 5, fresh_browser: false, checks: true, **)
         device = DeviceModels.find(device, orientation:, palette:)
         classes = [device.screen_classes, ('screen--dark-mode' if dark_mode)].compact.join(' ')
         result = run(now, **).render(view:, device: device.render_params, screen_classes: classes, theme:)
@@ -60,6 +65,7 @@ module TRMNLP
         Report.current&.record_run(result)
         Screen.new(html:, device:, view:, browser:, result:, wait_for:, wait_for_timeout:)
               .tap { Report.current&.record_screen(it) }
+              .tap { @after_render&.call(it) if checks }
       end
 
       private

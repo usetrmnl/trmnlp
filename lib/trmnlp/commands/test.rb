@@ -8,6 +8,8 @@ module TRMNLP
     class Test < Base
       Options = Data.define(:dir, :quiet, :update, :report)
       HELPERS = File.expand_path('../testing/rspec.rb', __dir__)
+      # The plugin's own setup, loaded before its specs when it exists.
+      SPEC_HELPER = 'tests/spec_helper.rb'
 
       def call(paths = [])
         context.validate!
@@ -17,8 +19,15 @@ module TRMNLP
         ENV['TRMNLP_UPDATE_SNAPSHOTS'] = '1' if options.update
         ENV['TRMNLP_REPORT_DIR'] = File.expand_path(options.report) if options.report
         Dir.chdir(context.paths.root_dir) do
-          RSpec::Core::Runner.run(['--require', HELPERS, *(paths.empty? ? ['tests'] : paths)]).zero?
+          RSpec::Core::Runner.run([*requires, *(paths.empty? ? ['tests'] : paths)]).zero?
         end
+      end
+
+      private
+
+      def requires
+        files = [HELPERS, (File.expand_path(SPEC_HELPER) if File.exist?(SPEC_HELPER))].compact
+        files.flat_map { ['--require', it] }
       end
     end
   end

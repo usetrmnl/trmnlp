@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `TRMNLP::Testing.after_render { |screen| ... }` runs a check after every `trmnl.render`, inside the example, so a suite states once what every screen must hold; `render(checks: false)` skips it. `trmnlp test` loads `tests/spec_helper.rb` first when the plugin has one.
+
 ## 0.19.0
 
 - `it_behaves_like 'a publishable recipe'` also checks every screen for leaked values (`undefined`, `NaN`, `null`, `[object Object]`, `Liquid error`, raw `{{` or `{%`), draws the full view when the API answers with nothing, answers 500 or cannot be reached, and draws it with each option of every select field. New matchers: `have_no_leaked_text` and `have_no_transform_error`. (#181)

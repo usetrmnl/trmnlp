@@ -166,6 +166,30 @@ RSpec.describe 'trmnlp test' do
     end
   end
 
+  context 'with a check after every render in tests/spec_helper.rb' do
+    let(:spec_body) do
+      <<~RUBY
+        RSpec.describe 'Greeting' do
+          let(:inputs) { { device: { width: 800, height: 480 }, data: { name: 'Ada' } } }
+
+          it('checks a render') { trmnl.render(**inputs) }
+          it('checks a render of another folder') { trmnl.plugin(Dir.pwd).render(**inputs) }
+          it('skips the checks when asked') { trmnl.render(**inputs, checks: false) }
+        end
+      RUBY
+    end
+
+    before do
+      File.write(File.join(plugin_dir, 'tests', 'spec_helper.rb'),
+                 "TRMNLP::Testing.after_render { |screen| expect(screen).to have_text('Grace') }\n")
+    end
+
+    it 'runs it inside the example, on every render that does not skip it' do
+      expect(run_tests.first).to include('3 examples, 2 failures', 'expected to find text "Grace"', 'spec_helper.rb:1')
+        .and include('rspec ./tests/greeting_spec.rb:4', 'rspec ./tests/greeting_spec.rb:5')
+    end
+  end
+
   context 'when a test does not hold' do
     let(:spec_body) do
       "RSpec.describe('Greeting') { it('shows the name') { expect(trmnl.render(device: { width: 800, height: 480 }, " \
