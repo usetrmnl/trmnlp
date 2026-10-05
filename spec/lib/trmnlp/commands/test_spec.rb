@@ -166,6 +166,38 @@ RSpec.describe 'trmnlp test' do
     end
   end
 
+  context 'with now: on a render' do
+    let(:spec_body) do
+      <<~RUBY
+        device = { width: 800, height: 480 }
+        now = '2030-01-02T03:04:05Z'
+        page_scripts = '<script>window.startedAt = Date.now();</script>' \\
+                       '<script>window.calledWithoutNew = Date();</script>' \\
+                       '<script>window.formattedYear = new Intl.DateTimeFormat("en", { year: "numeric" }).format();</script>'
+
+        RSpec.describe 'Page clock' do
+          let(:screen) { trmnl.render(device:, data: { name: 'Ada' }, transform: false, now:, head: page_scripts) }
+
+          it 'starts at now: when the page runs, not when the test builds it' do
+            expect(screen.evaluate('window.startedAt') - (Time.iso8601(now).to_f * 1000)).to be_between(0, 1000)
+          end
+
+          it 'answers Date() called without new' do
+            expect(screen.evaluate('window.calledWithoutNew')).to include('2030')
+          end
+
+          it 'formats a date given no argument at now:' do
+            expect(screen.evaluate('window.formattedYear')).to eq('2030')
+          end
+        end
+      RUBY
+    end
+
+    it 'gives page scripts a clock that starts at now:' do
+      expect(run_tests.first).to include('3 examples, 0 failures')
+    end
+  end
+
   context 'when a test does not hold' do
     let(:spec_body) do
       "RSpec.describe('Greeting') { it('shows the name') { expect(trmnl.render(device: { width: 800, height: 480 }, " \

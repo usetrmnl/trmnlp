@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- `trmnlp test`: under `now:`, the page's clock starts at `now:` when the page runs. It started seconds late, by however long Firefox took to load the page. `Date()` without `new` no longer throws, and `Intl.DateTimeFormat#format` and `#formatToParts` given no date use `now:`.
 - `trmnlp test`: `data:` reaches a static plugin. It was ignored there, so the test rendered the `static_data` in `settings.yml`.
 
 ## 0.19.0
