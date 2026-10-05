@@ -80,6 +80,21 @@ RSpec::Matchers.define :have_no_problems do
   failure_message { |screen| "expected no problems on #{screen.inspect}, but: #{screen.problems.join('; ')}" }
 end
 
+# A QR code that scans in the PNG; with a String or Regexp, one that reads as it.
+RSpec::Matchers.define :have_qr_code do |text = nil, within: nil|
+  match do |screen|
+    @found = screen.qr_codes(within:)
+    text ? @found.any? { text === it } : @found.any? # rubocop:disable Style/CaseEquality -- a String or a Regexp
+  end
+  failure_message do |screen|
+    wanted = text ? "a QR code reading #{text.inspect}" : 'a QR code that scans'
+    place = within ? " in #{within}" : ''
+    "expected #{wanted}#{place} on #{screen.inspect}, but " \
+      "#{@found.empty? ? 'none scans' : "found #{@found.map(&:inspect).join(', ')}"}"
+  end
+  failure_message_when_negated { |screen| "expected no QR code on #{screen.inspect}, but found #{@found.inspect}" }
+end
+
 RSpec::Matchers.define :fit_image_size_limit do
   match { |screen| screen.png_bytes.bytesize <= screen.device.image_size_limit.to_i }
   failure_message do |screen|

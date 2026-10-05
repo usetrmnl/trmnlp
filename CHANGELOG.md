@@ -11,6 +11,7 @@
 - `trmnlp test` opens each page from a local address instead of writing it into `about:blank` with its stylesheets inlined, so Firefox parses the Framework's 15 MB stylesheet once for the run: 10 renders take 5.5 seconds where they took 10.1, and trmnlp's own suite 89 seconds where it took 114. The page still gets no storage, cookies or `Referer`, as on TRMNL. Its `location` and the `Origin` of its cross-origin requests are `http://127.0.0.1:<port>`, and a relative URL is not found. (#193)
 - Every screenshot is 0.1 to 0.2 s faster, in `test`, `build` and `serve`. Stopping the page's timers before the capture cleared 100,000 timer ids one by one; it now clears only the ids the page has used.
 - A font file that never arrives no longer hangs a render until WebDriver's 30 second limit (`Selenium::WebDriver::Error::ScriptTimeoutError: Timed out after 30000 ms`), in `test`, `build` and `serve`. The page is given 10 seconds for its fonts, loaded once more, and then fails with the names of the fonts still loading.
+- `have_qr_code` checks that a QR code scans in a screen's PNG, and with a String or Regexp what it reads; `within:` scans one element and `screen.qr_codes` lists every text. It uses zbar, which the Docker image now includes.
 
 ## 0.19.0
 

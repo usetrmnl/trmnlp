@@ -239,6 +239,31 @@ RSpec.describe 'trmnlp test' do
     end
   end
 
+  context 'with a QR code on the screen' do
+    let(:spec_body) do
+      <<~RUBY
+        RSpec.describe 'Greeting' do
+          it 'scans the code' do
+            screen = trmnl.render(device: { width: 800, height: 480 }, data: { name: 'Ada' })
+            expect(screen).to have_qr_code.and have_qr_code('Hello Ada', within: '#code')
+            expect(screen).to have_qr_code(/Ada/)
+            expect(screen).not_to have_qr_code(within: '.title')
+            expect(screen).to have_qr_code('Hello Bo')
+          end
+        end
+      RUBY
+    end
+
+    before do
+      File.write(File.join(plugin_dir, 'src', 'full.liquid'),
+                 '<div class="layout"><div id="code">{{ greeting | qr_code }}</div><span class="title">Hi</span></div>')
+    end
+
+    it 'reads its text, and names what it read when another was expected' do
+      expect(run_tests.first).to include('expected a QR code reading "Hello Bo"', 'but found "Hello Ada"')
+    end
+  end
+
   context 'with now: on a render' do
     let(:spec_body) do
       <<~RUBY
