@@ -228,6 +228,33 @@ RSpec.describe 'trmnlp test' do
       end
     end
 
+    context "with the group's variables and now" do
+      let(:spec_body) do
+        <<~RUBY
+          RSpec.describe 'Greeting' do
+            let(:mocks) { { 'https://api.test/*' => { json: { name: 'Ada' } } } }
+            let(:variables) { { city: 'Lisbon' } }
+            let(:now) { '2030-01-02T08:00:00Z' }
+
+            it_behaves_like 'a publishable recipe', screens: [{ device: { model: 'og_test', width: 800, height: 480 } }]
+          end
+        RUBY
+      end
+
+      before do
+        File.write(File.join(plugin_dir, 'src', 'transform.rb'), "def run(input) = { 'city' => input['city'] }")
+        missing = "{% if city != 'Lisbon' or trmnl.system.timestamp_utc != 1893571200 %} undefined{% endif %}"
+        markup = greeting_markup.sub('</span>', "#{missing}</span>")
+        %w[full half_horizontal half_vertical quadrant].each do |view|
+          File.write(File.join(plugin_dir, 'src', "#{view}.liquid"), markup)
+        end
+      end
+
+      it 'renders with them' do
+        expect(run_tests.first).to include('9 examples, 0 failures')
+      end
+    end
+
     context 'when a view overflows' do
       let(:quadrant) { greeting_markup.sub('{{ greeting }}', 'Ada ' * 200).sub('">', '" style="white-space: nowrap">') }
 
