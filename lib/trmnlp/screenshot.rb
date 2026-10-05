@@ -71,6 +71,8 @@ module TRMNLP
     end
 
     def resize(driver, width, height)
+      return if viewport(driver) == [width, height]
+
       set_viewport(driver, width, height)
       wait_for_viewport(driver, width, height)
     end
@@ -85,7 +87,7 @@ module TRMNLP
     # clipped the first screenshot short (800x433 instead of 800x480). Poll the
     # real viewport instead, re-applying the size until it lands.
     def wait_for_viewport(driver, width, height)
-      Selenium::WebDriver::Wait.new(timeout: @viewport_timeout, interval: 0.1).until do
+      Selenium::WebDriver::Wait.new(timeout: @viewport_timeout, interval: 0.01).until do
         next true if viewport(driver) == [width, height]
 
         set_viewport(driver, width, height)

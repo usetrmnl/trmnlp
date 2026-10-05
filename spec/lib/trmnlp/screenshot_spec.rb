@@ -50,7 +50,7 @@ RSpec.describe TRMNLP::Screenshot do
     def next_viewport
       return @viewport_overrides.shift if @viewport_overrides.any?
 
-      @viewport_set.values_at(:width, :height)
+      @viewport_set&.values_at(:width, :height)
     end
   end
 
@@ -90,9 +90,14 @@ RSpec.describe TRMNLP::Screenshot do
     end
 
     it 're-applies the viewport until the page reports the requested dimensions' do
-      driver.viewport_overrides = [[800, 433], [800, 433]]
+      driver.viewport_overrides = [[400, 240], [800, 433], [800, 433]]
       result
       expect(driver.viewport_set_count).to eq(3)
+    end
+
+    it 'does not set the viewport again for a second render at the same size' do
+      2.times { screenshot.call(html: '<p>hi</p>', width: 800, height: 480) }
+      expect(driver.viewport_set_count).to eq(1)
     end
 
     it 'navigates to about:blank before loading the page' do
