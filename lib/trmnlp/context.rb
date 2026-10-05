@@ -18,12 +18,13 @@ module TRMNLP
     # The keywords after reporter let `trmnlp test` run the real pipeline with a test's inputs.
     # rubocop:disable-next Metrics/ParameterLists -- the composition root takes what it wires
     def initialize(root_dir, reporter: Reporter.new, cache_dir: nil, project_overrides: {}, outbound_request: nil,
-                   transform_client: nil)
+                   transform_client: nil, source_data: nil)
       @paths = Paths.new(root_dir, cache_dir:)
       @config = Config.new(paths, project_overrides:)
       @reporter = reporter
       @outbound_request = outbound_request
       @transform_client = transform_client
+      @source_data = source_data
     end
 
     # Context is the composition root: it wires and memoizes the runtime
@@ -51,7 +52,8 @@ module TRMNLP
     end
 
     def user_data_assembler
-      @user_data_assembler ||= UserDataAssembler.new(config:, paths:, transform_pipeline:, oauth_session:)
+      @user_data_assembler ||= UserDataAssembler.new(config:, paths:, transform_pipeline:, oauth_session:,
+                                                     source_data: @source_data)
     end
 
     def renderer = @renderer ||= Renderer.new(config:, paths:, user_data_assembler:)

@@ -75,7 +75,7 @@ module TRMNLP
       def build_context(cache_dir, proxy)
         transform_client = inputs[:transform] ? transform_client(proxy) : nil
         context = Context.new(plugin, reporter:, cache_dir:, project_overrides:, outbound_request: table,
-                                      transform_client:)
+                                      transform_client:, source_data: inputs[:data] && stringify(inputs[:data]))
         seed(context.paths)
         context
       end

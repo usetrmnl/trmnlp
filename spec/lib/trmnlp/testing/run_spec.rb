@@ -143,6 +143,17 @@ RSpec.describe TRMNLP::Testing::Run do
       it 'skips polling' do
         expect(result.requests.map { it[:via] }).to eq([:transform])
       end
+
+      context 'when the plugin is static' do
+        before do
+          File.write(File.join(plugin_dir, 'src', 'settings.yml'),
+                     %(name: Probe\nstrategy: static\nstatic_data: '{"items":["from settings"]}'\n))
+        end
+
+        it "uses it in place of the plugin's static data" do
+          expect(result.data['items']).to eq(%w[given])
+        end
+      end
     end
   end
 
