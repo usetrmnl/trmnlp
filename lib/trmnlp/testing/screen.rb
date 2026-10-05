@@ -4,6 +4,8 @@ require 'capybara'
 require 'delegate'
 require 'nokogiri'
 
+require_relative 'qr_scanner'
+
 module TRMNLP
   module Testing
     # A rendered view, as Firefox drew it. Capybara's finders and matchers (have_text, have_css, within...)
@@ -74,6 +76,10 @@ module TRMNLP
       def png_path = @png_path ||= @browser.capture(self)
 
       def png_bytes = File.binread(png_path)
+
+      # The text of each QR code that scans in the PNG, so on what the device shows; within: a selector
+      # limits the scan to that element.
+      def qr_codes(within: nil) = QrScanner.new(png_path, area: within && box(within)).texts
 
       def drawn_dom(source)
         document = Nokogiri::HTML(source)

@@ -35,6 +35,7 @@ FROM ruby:${RUBY_VERSION}-slim-trixie AS runner
 # (lib/trmnlp/transform_backend/subprocess.rb) can shell out to the
 # author's chosen runtime without a sidecar container. imagemagick on
 # trixie ships IM7 (the `magick` binary trmnlp's PNG quantizer needs).
+# zbar-tools reads QR codes for `trmnlp test`'s have_qr_code.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     git \
@@ -43,6 +44,7 @@ RUN apt-get update && \
     python3 \
     php-cli \
     libfaketime \
+    zbar-tools \
     && rm -rf /var/lib/apt/lists/*
 
 # Node from its own image: Debian's is 20, and only Node 24 sends fetch through HTTPS_PROXY, which
