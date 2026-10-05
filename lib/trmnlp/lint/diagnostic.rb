@@ -33,9 +33,7 @@ module TRMNLP
 
       attr_reader :check, :source, :finding
 
-      def rule_id
-        check.class.name.split('::').last.gsub(/([a-z\d])([A-Z])/, '\1_\2').downcase
-      end
+      def rule_id = Lint.rule_id(check.class)
 
       def locations
         return source.yaml_location('src/settings.yml', SETTINGS_KEYS[rule_id]) if SETTINGS_KEYS.key?(rule_id)

@@ -43,5 +43,7 @@ module TRMNLP
       Checks::FormFieldsValid,
       Checks::NoCustomFilters
     ].freeze
+
+    def self.rule_id(check_type) = check_type.name.split('::').last.gsub(/([a-z\d])([A-Z])/, '\1_\2').downcase
   end
 end

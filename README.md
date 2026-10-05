@@ -123,6 +123,10 @@ Filters from `custom_filters` in `.trmnlp.yml` exist only in trmnlp. TRMNL does 
 and outputs the value unfiltered, so `no_custom_filters` reports each place the markup uses one.
 Filters that trmnl-liquid also provides are not reported.
 
+To accept a rule's findings, list its rule ID under `ignored_lint_rules` in `.trmnlp.yml`.
+`trmnlp lint` then skips that check in both formats, so the CLI and CI agree. An unknown
+rule ID is an error that lists the known ones, so a typo does not pass quietly.
+
 ## Building Static Files
 
 `trmnlp build` renders every view to a static file under `_build/` — handy for exporting a snapshot or feeding the output into another pipeline. Run it from inside a plugin project:
@@ -337,6 +341,10 @@ variables:
       name: Peter Quill
     plugin_settings:
       instance_name: Kevin Bacon Facts
+
+# rule IDs whose findings `trmnlp lint` drops
+ignored_lint_rules:
+  - no_opacity
 
 # plugin_merge strategy: the plugins this one reads, as "<keyname>_<id>" on TRMNL,
 # each mapped to the trmnlp project whose last fetched data stands in for it

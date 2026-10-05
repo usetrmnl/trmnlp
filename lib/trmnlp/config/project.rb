@@ -54,6 +54,8 @@ module TRMNLP
 
       def time_zone = @config['time_zone'] || 'UTC'
 
+      def ignored_lint_rules = Array(@config['ignored_lint_rules'])
+
       # Local override for the framework asset host (offline / mirrored
       # dev). Trmnlp-specific (local dev only) — so it stays in
       # .trmnlp.yml. Consumed by Config::Plugin#framework_version.

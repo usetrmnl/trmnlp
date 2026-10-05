@@ -24,10 +24,21 @@ module TRMNLP
       private
 
       def issues
-        @issues ||= TRMNLP::Lint::CHECKS.flat_map do |type|
+        @issues ||= checks.flat_map do |type|
           check = type.new(source)
           check.issues.map { |finding| TRMNLP::Lint::Diagnostic.new(check, source, finding).to_h }
         end.uniq
+      end
+
+      def checks
+        checks_by_rule_id = TRMNLP::Lint::CHECKS.to_h { |type| [TRMNLP::Lint.rule_id(type), type] }
+        unknown_rule_ids = config.project.ignored_lint_rules - checks_by_rule_id.keys
+        unless unknown_rule_ids.empty?
+          raise InvalidConfig, ".trmnlp.yml ignored_lint_rules has unknown rule IDs: #{unknown_rule_ids.join(', ')}. " \
+                               "Known rule IDs: #{checks_by_rule_id.keys.join(', ')}"
+        end
+
+        checks_by_rule_id.except(*config.project.ignored_lint_rules).values
       end
 
       def source
