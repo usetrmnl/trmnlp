@@ -5,13 +5,11 @@ require 'socket'
 
 module TRMNLP
   module Testing
-    # `trmnlp test --fast`: serves each rendered page from one local address, so Firefox opens it as a page
-    # of its own. Written into about:blank, every page has its stylesheets parsed again, 1.5 seconds for
-    # the Framework's; pages that share an address share the parsed copy, and a page's scripts wait for
-    # its stylesheets as on any site.
+    # Serves each page `trmnlp test` renders from one local address, so Firefox opens it as a page of its own.
+    # Written into about:blank, as TRMNL writes its page, every page has its stylesheets parsed again, 1.5 seconds
+    # for the Framework's; pages that share an address share the parsed copy, and a page's scripts wait for its
+    # stylesheets as on any site.
     class PageServer
-      ENV_KEY = 'TRMNLP_TEST_FAST'
-
       def initialize
         @pages = {}
         @lock = Mutex.new

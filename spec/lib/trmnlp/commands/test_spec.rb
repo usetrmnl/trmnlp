@@ -103,31 +103,58 @@ RSpec.describe 'trmnlp test' do
     end
   end
 
-  context 'with --fast' do
+  context 'with pages opened from the page server' do
     let(:spec_body) do
-      <<~RUBY
+      <<~'RUBY'
         device = { width: 800, height: 480, bit_depth: 1, screen_classes: 'screen screen--1bit screen--og_png screen--md' }
 
         RSpec.describe 'Greeting' do
+          let(:screen) { trmnl.render(device:, data: { name: 'Ada' }, transform: false) }
+
           it 'opens the page from a local address, where its scripts find the stylesheets applied' do
             head = '<script>window.seen = getComputedStyle(document.documentElement).getPropertyValue("--black");</script>'
             screen = trmnl.render(device:, data: { name: 'Ada' }, transform: false, head:)
             expect(screen.evaluate('[location.origin, window.seen]'))
-              .to match([start_with('http://127.0.0.1:'), a_string_matching(/\\S/)])
+              .to match([start_with('http://127.0.0.1:'), a_string_matching(/\S/)])
           end
 
-          it 'draws the same picture' do
-            expect(trmnl.render(device:, data: { name: 'Ada' })).to have_css('.title', text: 'Hello Ada').and match_snapshot
+          it 'draws what the page draws written into a blank one, as TRMNL writes it' do
+            pool = TRMNLP::BrowserPool.new(driver_factory: TRMNLP::FirefoxDriver.method(:build), max_size: 1)
+            blank = TRMNLP::ScreenGenerator.new(screen.html, screenshot: TRMNLP::Screenshot.new(pool:),
+                                                             width: 800, height: 480, color_depth: 1).process
+            snapshot = TRMNLP::Testing::Snapshot.new(screen, name: 'blank', dir: Dir.mktmpdir)
+            FileUtils.mkdir_p(File.dirname(snapshot.path))
+            FileUtils.cp(blank.path, snapshot.path)
+            expect(snapshot.mismatch).to be_nil
+          ensure
+            pool&.shutdown
+          end
+
+          it 'gives the page no storage or cookies, as about:blank has none' do
+            storage = '(() => { try { return localStorage.length; } catch (error) { return error.name; } })()'
+            expect(screen.evaluate("[#{storage}, (document.cookie = 'a=1', document.cookie)]")).to eq(['SecurityError', ''])
+          end
+
+          it 'sends no Referer, as about:blank sends none' do
+            server = TCPServer.new('127.0.0.1', 0)
+            request = Thread.new do
+              socket = server.accept
+              lines = []
+              while (line = socket.gets) && line != "\r\n" do lines << line end
+              socket.write("HTTP/1.1 404 Not Found\r\ncontent-length: 0\r\n\r\n")
+              socket.close
+              lines
+            end
+            trmnl.render(device:, data: { name: 'Ada' }, transform: false,
+                         head: "<img src='http://127.0.0.1:#{server.addr[1]}/a.png'>")
+            expect(request.value.grep(/\A(GET|referer)/i)).to eq(["GET /a.png HTTP/1.1\r\n"])
           end
         end
       RUBY
     end
 
-    it 'opens each page from a local address, and draws what it drew without' do
-      run_tests('--update', 'tests') # without --fast: stores the picture; its local address example fails
-      output, = Open3.capture2e({ 'CI' => 'true' }, RbConfig.ruby, trmnlp, 'test', '--fast', '--dir', plugin_dir)
-
-      expect(output).to include('2 examples, 0 failures')
+    it 'gives each page what TRMNL gives a page written into about:blank, and draws it the same' do
+      expect(run_tests.first).to include('4 examples, 0 failures')
     end
   end
 

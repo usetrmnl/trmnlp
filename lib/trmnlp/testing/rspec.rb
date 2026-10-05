@@ -32,10 +32,7 @@ module TRMNLP
       @browser_pool ||= BrowserPool.new(driver_factory: FirefoxDriver.method(:build), max_size: 1)
     end
 
-    # nil without `trmnlp test --fast`.
     def self.page_server
-      return unless ENV.key?(PageServer::ENV_KEY)
-
       @page_server ||= PageServer.new.start.tap { |server| at_exit { server.stop } }
     end
 

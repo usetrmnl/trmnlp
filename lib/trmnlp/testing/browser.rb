@@ -7,16 +7,13 @@ require_relative '../browser_pool'
 require_relative '../firefox_driver'
 require_relative '../screen_generator'
 require_relative '../screenshot'
-require_relative 'inline_stylesheets'
 
 module TRMNLP
   module Testing
     # The Firefox one example renders in, checked out of the pool on first use and back in by #release.
-    # Pages load the way `trmnlp build --png` loads them, through ScreenGenerator and Screenshot.
+    # Pages are drawn through ScreenGenerator and Screenshot like `trmnlp build --png`'s, but opened from page_server.
     class Browser
-      # page_server: the PageServer its pages are opened from (`trmnlp test --fast`). Without one, each page is
-      # written into a blank page with its stylesheets inlined, as TRMNL writes its own.
-      def initialize(pool:, page_server: nil)
+      def initialize(pool:, page_server:)
         @pool = pool
         @page_server = page_server
         @screenshot = Screenshot.new(pool:)
@@ -33,8 +30,7 @@ module TRMNLP
       # Loads the screen's page; its picture is only taken when a test asks for it.
       def load(screen)
         generator = generator(screen)
-        html = @page_server ? generator.html : InlineStylesheets.call(generator.html)
-        @pages[screen] = [html, generator.width, generator.height, @page_server&.add(html)]
+        @pages[screen] = [generator.html, generator.width, generator.height, @page_server.add(generator.html)]
         show(screen)
       end
 
@@ -60,7 +56,7 @@ module TRMNLP
           pool.shutdown
         end
         @fresh_browsers.clear
-        @pages.each_value { @page_server&.forget(it.last) }
+        @pages.each_value { @page_server.forget(it.last) }
         @pages.clear
         @pool.checkin(@driver) if @driver
         @driver = nil
