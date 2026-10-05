@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.20.0
 
 - `trmnlp lint` skips the rules listed under `ignored_lint_rules` in `.trmnlp.yml`, in text and JSON output alike. An unknown rule ID is an error that lists the known ones.
 - `trmnlp lint`, `build` and `serve` accept the `hidden` field type, which TRMNL renders as a hidden input. They warned "unknown field_type: hidden".
