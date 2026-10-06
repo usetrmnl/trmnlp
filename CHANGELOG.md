@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- `trmnlp lint` reports a filter that neither Liquid nor trmnl-liquid defines (`no_unknown_filters`), such as a typo or a LiquidJS filter like `push`. TRMNL outputs the value unfiltered, and `serve` and `build` drew it the same way, so nothing showed the mistake.
 - `have_no_overflow(except: '.forecast')` and `screen.overflowing(except:)` leave out a box that hides content on purpose, and everything inside it.
 
 ## 0.20.0
