@@ -4,6 +4,7 @@ require 'thor'
 
 require_relative '../trmnlp'
 require_relative '../trmnlp/commands'
+require_relative 'paths'
 require_relative 'update_check'
 
 module TRMNLP
@@ -22,6 +23,22 @@ module TRMNLP
     # published ports, so we bind to all interfaces instead.
     def self.in_container? = File.exist?('/.dockerenv') || File.exist?('/run/.containerenv')
     def self.default_bind = in_container? ? '0.0.0.0' : '127.0.0.1'
+
+    no_commands do
+      # Thor routes every command through here, so the update notice covers
+      # them all without each command having to remember it. `version` runs
+      # its own fresh check after printing, and help has nothing to update.
+      def invoke_command(command, *)
+        check_for_update unless %w[help version].include?(command.name)
+        super
+      end
+
+      def check_for_update(fresh: false)
+        return if options[:quiet] || UpdateCheck.disabled?
+
+        UpdateCheck.new(Paths.new(options[:dir]).update_check).call(fresh:)
+      end
+    end
 
     desc 'build', 'Generate static HTML files'
     method_option :png, type: :boolean, default: false, desc: 'Also render a PNG per view'
@@ -77,9 +94,7 @@ module TRMNLP
                            desc: 'Report format (text or json)'
     def lint
       # Exit non-zero when issues are found so CI pipelines can gate on it.
-      passed = Commands::Lint.run(options)
-      UpdateCheck.new.call unless options.quiet
-      exit(1) unless passed
+      exit(1) unless Commands::Lint.run(options)
     end
 
     desc 'serve', 'Start a local dev server'
@@ -99,6 +114,9 @@ module TRMNLP
     desc 'version', 'Show version'
     def version
       puts VERSION
+      # Keep the version first when stdout is a pipe and stderr is not.
+      $stdout.flush
+      check_for_update(fresh: true)
     end
   end
 end

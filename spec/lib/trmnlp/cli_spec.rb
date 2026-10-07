@@ -5,6 +5,18 @@ require 'tmpdir'
 require 'trmnlp/cli'
 
 RSpec.describe TRMNLP::CLI do
+  # Every command may consult the update-check cache, so keep it out of the
+  # real cache directory and empty for each example.
+  around do |example|
+    Dir.mktmpdir('trmnlp-cache-') do |cache_home|
+      previous = ENV.fetch('XDG_CACHE_HOME', nil)
+      ENV['XDG_CACHE_HOME'] = cache_home
+      example.run
+    ensure
+      ENV['XDG_CACHE_HOME'] = previous
+    end
+  end
+
   describe '.default_bind' do
     before { allow(File).to receive(:exist?).and_return(false) }
 
@@ -28,6 +40,79 @@ RSpec.describe TRMNLP::CLI do
       it 'binds to localhost' do
         expect(described_class.default_bind).to eq('127.0.0.1')
       end
+    end
+  end
+
+  describe 'update notices' do
+    let(:tmp_root) { Dir.mktmpdir('trmnlp-cli-') }
+    let(:endpoint) { 'https://rubygems.org/api/v1/gems/trmnl_preview.json' }
+
+    before { stub_request(:get, endpoint).to_return(body: { version: '99.0.0' }.to_json) }
+
+    it 'checks RubyGems for any command' do
+      capture_stderr { capture_stdout { described_class.start(['init', 'plugin', '--dir', tmp_root, '--skip-git']) } }
+
+      expect(WebMock).to have_requested(:get, endpoint).once
+    end
+
+    it 'reports the update before the command runs, so a server does not hide it' do
+      output = capture_stderr do
+        capture_stdout { described_class.start(['init', 'plugin', '--dir', tmp_root, '--skip-git']) }
+      end
+
+      expect(output).to start_with('trmnl_preview 99.0.0 is available')
+    end
+
+    it 'does not check for help' do
+      capture_stdout { described_class.start(['help']) }
+
+      expect(WebMock).not_to have_requested(:get, endpoint)
+    end
+
+    it 'asks RubyGems at most once a day across commands' do
+      capture_stderr { capture_stdout { described_class.start(['init', 'plugin', '--dir', tmp_root, '--skip-git']) } }
+      capture_stderr { capture_stdout { described_class.start(['init', 'other', '--dir', tmp_root, '--skip-git']) } }
+
+      expect(WebMock).to have_requested(:get, endpoint).once
+    end
+
+    it 'skips the check when TRMNLP_NO_UPDATE_NOTIFIER is set' do
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with('TRMNLP_NO_UPDATE_NOTIFIER').and_return('1')
+      capture_stdout { described_class.start(['init', 'plugin', '--dir', tmp_root, '--skip-git', '--quiet']) }
+
+      expect(WebMock).not_to have_requested(:get, endpoint)
+    end
+  end
+
+  describe '#version' do
+    let(:endpoint) { 'https://rubygems.org/api/v1/gems/trmnl_preview.json' }
+
+    before { stub_request(:get, endpoint).to_return(body: { version: '99.0.0' }.to_json) }
+
+    it 'prints the installed version to stdout' do
+      output = nil
+      capture_stderr { output = capture_stdout { described_class.start(['version']) } }
+
+      expect(output).to eq("#{TRMNLP::VERSION}\n")
+    end
+
+    it 'reports a newer release' do
+      expect { capture_stdout { described_class.start(['version']) } }
+        .to output(/trmnl_preview 99\.0\.0 is available/).to_stderr
+    end
+
+    it 'asks RubyGems even when the cache is fresh' do
+      capture_stderr { capture_stdout { described_class.start(['version']) } }
+      capture_stderr { capture_stdout { described_class.start(['version']) } }
+
+      expect(WebMock).to have_requested(:get, endpoint).twice
+    end
+
+    it 'skips the check in quiet mode' do
+      capture_stdout { described_class.start(['version', '--quiet']) }
+
+      expect(WebMock).not_to have_requested(:get, endpoint)
     end
   end
 

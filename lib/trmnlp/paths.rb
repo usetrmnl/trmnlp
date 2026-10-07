@@ -55,6 +55,9 @@ module TRMNLP
 
     def transform_output = cache_dir.join('transform_output', "#{project_key}.json")
 
+    # One file for every project: the published gem version is not per project.
+    def update_check = cache_dir.join('update_check.json')
+
     def render_template = Pathname.new(__dir__).join('..', '..', 'web', 'views', 'render_html.erb')
 
     def src_files = src_dir.glob('*').select(&:file?)
