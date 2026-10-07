@@ -100,6 +100,17 @@ trmnlp push                    # upload
 
 `trmnlp lint` exits non-zero when it finds issues, so you can gate CI on it. Run `trmnlp help` for all flags.
 
+Every command also checks RubyGems for a newer stable `trmnl_preview` release
+and, when one is available, suggests `gem update trmnl_preview`, or
+`bundle update trmnl_preview` when run through Bundler. An exact Gemfile pin must
+be changed before Bundler can update it. Notices go to stderr, keeping lint JSON
+output and exit status unchanged. The answer is cached for a day, so most runs
+make no request; `trmnlp version` always asks RubyGems. `--quiet` or
+`TRMNLP_NO_UPDATE_NOTIFIER=1` skips the check. Connection and read timeouts are
+two seconds each; current versions and an unavailable registry stay silent. The
+check never installs an update or changes your Gemfile or lockfile. Inside Docker there is no
+check: the `bin/trmnlp` script pulls a newer image once a day instead.
+
 Lint findings include a stable snake_case rule ID, severity and source locations.
 Locations use project-relative paths and one-based line/column numbers, followed
 by a source excerpt (up to 240 characters). Aggregate checks show their contributing

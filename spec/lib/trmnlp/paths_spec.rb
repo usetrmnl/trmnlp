@@ -79,6 +79,18 @@ RSpec.describe TRMNLP::Paths do
     end
   end
 
+  describe '#update_check' do
+    it 'is shared by every project' do
+      other = described_class.new(Dir.mktmpdir('trmnlp-other-'))
+      expect(paths.update_check).to eq(other.update_check)
+    end
+
+    it 'lives in the cache directory' do
+      paths = described_class.new(tmp_root, cache_dir: '/tmp/run-1')
+      expect(paths.update_check.to_s).to eq('/tmp/run-1/update_check.json')
+    end
+  end
+
   describe '#root_dir' do
     it 'expands a relative directory, so the cache key does not depend on how -d was typed' do
       expect(described_class.new('.').root_dir).to eq(Pathname.pwd)
