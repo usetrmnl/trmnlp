@@ -24,7 +24,7 @@ RSpec.describe 'templates/init/bin/trmnlp' do
 
   before do
     FileUtils.mkdir_p([path, plugin_dir])
-    %w[env id mkdir].each { |tool| File.symlink(which(tool), File.join(path, tool)) }
+    %w[env find id mkdir touch].each { |tool| File.symlink(which(tool), File.join(path, tool)) }
     # The script finds bash on this PATH. A script that runs itself would start processes until the
     # machine is out of memory, so this bash counts its starts and gives up after 20.
     stand_in('bash', <<~SH)
@@ -37,6 +37,7 @@ RSpec.describe 'templates/init/bin/trmnlp' do
     stand_in('uname', 'echo "${FAKE_UNAME:-Linux}"')
     stand_in('docker', <<~SH)
       echo "$*" >> "$DOCKER_LOG"
+      [ "$1" = pull ] && exit "${FAKE_PULL_STATUS:-0}"
       [ "$1" = info ] && echo "[name=seccomp,profile=builtin ${FAKE_DOCKER_SECURITY:-}]"
       exit 0
     SH
@@ -68,6 +69,7 @@ RSpec.describe 'templates/init/bin/trmnlp' do
 
   def docker_calls = File.exist?(docker_log) ? File.readlines(docker_log, chomp: true) : []
   def docker_run = docker_calls.grep(/\Arun /).last
+  def docker_pulls = docker_calls.grep(/\Apull /)
 
   context 'with the gem installed' do
     before { stand_in('trmnlp', 'echo "gem $*"') }
@@ -173,6 +175,32 @@ RSpec.describe 'templates/init/bin/trmnlp' do
     it 'stays root on macOS, where Docker Desktop already hands the files to the user' do
       run('test', FAKE_UNAME: 'Darwin')
       expect(docker_run).to include("--volume #{config_dir}/trmnlp:/root/.config/trmnlp")
+    end
+  end
+
+  describe 'keeping the image current' do
+    let(:pulled_at) { File.join(tmp, '.cache', 'trmnl', 'image_pulled') }
+
+    it 'pulls the image on the first run' do
+      run('lint')
+      expect(docker_pulls).to eq(['pull --quiet trmnl/trmnlp'])
+    end
+
+    it 'pulls at most once a day' do
+      2.times { run('lint') }
+      expect(docker_pulls.size).to eq(1)
+    end
+
+    it 'pulls again after a day' do
+      run('lint')
+      File.utime(Time.now - (25 * 60 * 60), Time.now - (25 * 60 * 60), pulled_at)
+      run('lint')
+      expect(docker_pulls.size).to eq(2)
+    end
+
+    it 'runs the image it has when the pull fails, as with no network' do
+      run('lint', FAKE_PULL_STATUS: '1')
+      expect(docker_run).to end_with(' trmnl/trmnlp lint')
     end
   end
 

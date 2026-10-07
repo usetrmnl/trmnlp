@@ -216,7 +216,7 @@ The `bin/trmnlp` script is provided as a convenience. It will use the local Ruby
 
 You can modify the `bin/trmnlp` script to set up environment variables (plugin secrets, etc.) before running the server.
 
-**Gem or Docker?** Install the gem if you already have Ruby >= 3.4 — it has the fastest startup. Use Docker for zero local setup.
+**Gem or Docker?** Install the gem if you already have Ruby >= 4.0 — it has the fastest startup. Use Docker for zero local setup.
 
 ### Installing via RubyGems
 
@@ -233,6 +233,20 @@ trmnlp serve
 ```
 
 ### Installing via Docker
+
+To type `trmnlp` as with the gem, copy the script from the image onto your `PATH`:
+
+```sh
+mkdir -p ~/.local/bin
+docker run --rm --entrypoint cat trmnl/trmnlp /app/templates/init/bin/trmnlp > ~/.local/bin/trmnlp
+chmod +x ~/.local/bin/trmnlp
+```
+
+It runs each command in the image and pulls a newer image once a day. To stay on one release,
+set `IMAGE` in the script to a tag such as `trmnl/trmnlp:v0.20.0`. `trmnlp init` puts the same
+script in each plugin as `bin/trmnlp`.
+
+Or run the image yourself:
 
 ```sh
 docker run \
