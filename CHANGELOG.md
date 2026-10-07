@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 0.22.1
+
+- The Docker image runs liquid 5.14 and selenium-webdriver 4.50, as TRMNL does. It had 5.13 and 4.48, so Liquid output could differ from TRMNL. Installs of the gem already took the newer versions.
+
 ## 0.22.0
 
 - The `bin/trmnlp` script that `trmnlp init` writes takes the steps that run the Docker image from the image, once a day, so a fix to them reaches every plugin with the image. Before, each plugin kept its own copy, which changed only when `trmnlp init` ran again. A plugin made before this release gets the new script from `trmnlp init <its folder>`, answering `y` for `bin/trmnlp` only, once.
