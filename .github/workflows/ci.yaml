@@ -19,7 +19,7 @@ jobs:
 
       # The transform-backend specs run real node/python/php subprocesses,
       # so the runtimes are declared here rather than relied on implicitly.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
 
