@@ -35,6 +35,16 @@ CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/trmnl"
 
 mkdir -p "$CONFIG_DIR" "$CACHE_DIR"
 
+# Add a tag to stay on one release: trmnl/trmnlp:v0.20.0
+IMAGE=trmnl/trmnlp
+
+# A newer release is pulled once a day. With no network, the image already here runs.
+PULLED_AT="$CACHE_DIR/image_pulled"
+if [ -z "$(find "$PULLED_AT" -mtime -1 2> /dev/null)" ]; then
+    docker pull --quiet "$IMAGE" > /dev/null 2>&1
+    touch "$PULLED_AT"
+fi
+
 # On Linux the container's root is the host's root, and the files trmnlp writes (snapshots, _build,
 # a pulled plugin) would be root's. So trmnlp runs as you, with a home of its own to write in.
 # Docker Desktop and rootless Docker hand the files to you already.
@@ -80,4 +90,4 @@ exec docker run \
     --volume "$CONFIG_DIR:$CONTAINER_HOME/.config/trmnlp" \
     --volume "$CACHE_DIR:$CONTAINER_HOME/.cache/trmnl" \
     --volume "$(pwd):/plugin" \
-    trmnl/trmnlp "$@"
+    "$IMAGE" "$@"
