@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: bundler
+    directory: /
+    schedule:
+      interval: weekly
+    # The gemspec's ranges are what gem users install; only CI and the Docker image read the lockfile.
+    versioning-strategy: lockfile-only
+    cooldown:
+      default-days: 7
+    groups:
+      gems:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        update-types: [minor, patch]
