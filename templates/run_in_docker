@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+#
+# Runs a trmnlp command in the Docker image. The bin/trmnlp script that `trmnlp init` writes takes
+# this file from the image once a day, so a fix here reaches every plugin with the image.
+#
+
+IMAGE="${IMAGE:-trmnl/trmnlp}"
+
+# Determine XDG config directory on host OS
+if [ -n "$XDG_CONFIG_HOME" ]; then
+    CONFIG_DIR="$XDG_CONFIG_HOME/trmnlp"
+else
+    CONFIG_DIR="$HOME/.config/trmnlp"
+fi
+
+# What trmnlp caches is kept as well: a plugin's OAuth tokens, its saved data and transform state.
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/trmnl"
+
+mkdir -p "$CONFIG_DIR" "$CACHE_DIR"
+
+# On Linux the container's root is the host's root, and the files trmnlp writes (snapshots, _build,
+# a pulled plugin) would be root's. So trmnlp runs as you, with a home of its own to write in.
+# Docker Desktop and rootless Docker hand the files to you already.
+CONTAINER_HOME=/root
+SECURITY="$(docker info --format '{{.SecurityOptions}}' 2> /dev/null)"
+if [ "$(uname)" = Linux ] && [ "$(id -u)" != 0 ] && [ -n "$SECURITY" ] && [[ "$SECURITY" != *rootless* ]]
+then
+    CONTAINER_HOME=/tmp/home
+    # .config and .cache are made for you as well: Docker would make them root's to mount the
+    # folders below into them, and Firefox hangs when it cannot write there.
+    ARGS=(
+        --user "$(id -u):$(id -g)"
+        --env HOME=/tmp/home
+        --tmpfs "/tmp/home:exec,uid=$(id -u),gid=$(id -g)"
+        --tmpfs "/tmp/home/.config:uid=$(id -u),gid=$(id -g)"
+        --tmpfs "/tmp/home/.cache:exec,uid=$(id -u),gid=$(id -g)"
+    )
+fi
+
+# A terminal only when there is one: CI and scripts have none.
+if [ -t 0 ] && [ -t 1 ]; then
+    ARGS+=(--tty)
+fi
+
+# Only serve listens, so every other command can run next to it.
+if [ "$1" = serve ]; then
+    PORT=4567
+    for ARG in "$@"; do
+        case "$PREVIOUS" in -p | --port) PORT="$ARG" ;; esac
+        case "$ARG" in --port=*) PORT="${ARG#--port=}" ;; esac
+        PREVIOUS="$ARG"
+    done
+    ARGS+=(--publish "$PORT:$PORT")
+fi
+
+exec docker run \
+    --rm \
+    --init \
+    --interactive \
+    "${ARGS[@]}" \
+    --env CI \
+    --env TRMNL_API_KEY \
+    --volume "$CONFIG_DIR:$CONTAINER_HOME/.config/trmnlp" \
+    --volume "$CACHE_DIR:$CONTAINER_HOME/.cache/trmnl" \
+    --volume "$(pwd):/plugin" \
+    "$IMAGE" "$@"

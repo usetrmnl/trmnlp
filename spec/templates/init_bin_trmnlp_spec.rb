@@ -6,7 +6,8 @@ require 'timeout'
 require 'tmpdir'
 
 # Runs the script `trmnlp init` puts in a plugin, with stand-ins for docker and the gem on a PATH that
-# holds nothing else, so the examples read the exact `docker` commands it would run.
+# holds nothing else, so the examples read the exact `docker` commands it would run. The stand-in docker
+# hands out templates/run_in_docker as the image would.
 RSpec.describe 'templates/init/bin/trmnlp' do
   let(:script) { File.expand_path('../../templates/init/bin/trmnlp', __dir__) }
   let(:tmp) { File.realpath(Dir.mktmpdir('trmnlp-bin-')) }
@@ -18,13 +19,14 @@ RSpec.describe 'templates/init/bin/trmnlp' do
   let(:env) do
     { 'PATH' => path, 'HOME' => tmp, 'XDG_CONFIG_HOME' => config_dir, 'XDG_CACHE_HOME' => nil,
       'DOCKER_LOG' => docker_log, 'BASH_STARTS' => bash_starts,
+      'RUN_IN_DOCKER_SOURCE' => File.expand_path('../../templates/run_in_docker', __dir__),
       'CI' => nil, 'TRMNL_API_KEY' => nil }
   end
   let(:id) { "#{Process.uid}:#{Process.gid}" }
 
   before do
     FileUtils.mkdir_p([path, plugin_dir])
-    %w[env find id mkdir touch].each { |tool| File.symlink(which(tool), File.join(path, tool)) }
+    %w[cat dirname env find id mkdir mv rm].each { |tool| File.symlink(which(tool), File.join(path, tool)) }
     # The script finds bash on this PATH. A script that runs itself would start processes until the
     # machine is out of memory, so this bash counts its starts and gives up after 20.
     stand_in('bash', <<~SH)
@@ -38,6 +40,7 @@ RSpec.describe 'templates/init/bin/trmnlp' do
     stand_in('docker', <<~SH)
       echo "$*" >> "$DOCKER_LOG"
       [ "$1" = pull ] && exit "${FAKE_PULL_STATUS:-0}"
+      [[ "$*" = *"--entrypoint cat"* ]] && { [ -z "$FAKE_CAT_STATUS" ] && cat "$RUN_IN_DOCKER_SOURCE"; exit "${FAKE_CAT_STATUS:-0}"; }
       [ "$1" = info ] && echo "[name=seccomp,profile=builtin ${FAKE_DOCKER_SECURITY:-}]"
       exit 0
     SH
@@ -68,7 +71,7 @@ RSpec.describe 'templates/init/bin/trmnlp' do
   end
 
   def docker_calls = File.exist?(docker_log) ? File.readlines(docker_log, chomp: true) : []
-  def docker_run = docker_calls.grep(/\Arun /).last
+  def docker_run = docker_calls.grep(/\Arun /).grep_v(/--entrypoint cat/).last
   def docker_pulls = docker_calls.grep(/\Apull /)
 
   context 'with the gem installed' do
@@ -179,7 +182,13 @@ RSpec.describe 'templates/init/bin/trmnlp' do
   end
 
   describe 'keeping the image current' do
-    let(:pulled_at) { File.join(tmp, '.cache', 'trmnl', 'image_pulled') }
+    let(:run_in_docker) { File.join(tmp, '.cache', 'trmnl', 'run_in_docker', 'trmnl_trmnlp') }
+
+    def write_run_in_docker(body, age:)
+      FileUtils.mkdir_p(File.dirname(run_in_docker))
+      File.write(run_in_docker, body)
+      File.utime(Time.now - age, Time.now - age, run_in_docker)
+    end
 
     it 'pulls the image on the first run' do
       run('lint')
@@ -193,7 +202,7 @@ RSpec.describe 'templates/init/bin/trmnlp' do
 
     it 'pulls again after a day' do
       run('lint')
-      File.utime(Time.now - (25 * 60 * 60), Time.now - (25 * 60 * 60), pulled_at)
+      File.utime(Time.now - (25 * 60 * 60), Time.now - (25 * 60 * 60), run_in_docker)
       run('lint')
       expect(docker_pulls.size).to eq(2)
     end
@@ -201,6 +210,28 @@ RSpec.describe 'templates/init/bin/trmnlp' do
     it 'runs the image it has when the pull fails, as with no network' do
       run('lint', FAKE_PULL_STATUS: '1')
       expect(docker_run).to end_with(' trmnl/trmnlp lint')
+    end
+
+    it 'takes the steps that run the image from a newer image the next day' do
+      write_run_in_docker('docker run stale "$@"', age: 25 * 60 * 60)
+      run('lint')
+      expect(docker_run).to end_with(' trmnl/trmnlp lint')
+    end
+
+    it 'keeps the steps it has when the image cannot give them' do
+      write_run_in_docker('docker run stale "$@"', age: 25 * 60 * 60)
+      run('lint', FAKE_CAT_STATUS: '1')
+      expect(docker_run).to eq('run stale lint')
+    end
+
+    context 'when an image before v0.22.0 has no steps to give' do
+      it 'says so' do
+        expect(run('lint', FAKE_CAT_STATUS: '1').first).to include('v0.22.0 or later')
+      end
+
+      it 'fails' do
+        expect(run('lint', FAKE_CAT_STATUS: '1').last).not_to be_success
+      end
     end
   end
 

@@ -4,6 +4,9 @@
 # Use this opportunity to set up environment variables, install dependencies, etc.
 #
 
+# Add a tag to stay on one release, v0.22.0 or later: trmnl/trmnlp:v0.22.0
+IMAGE=trmnl/trmnlp
+
 # Saved on the PATH as `trmnlp`, this script is what `command -v trmnlp` finds: not a gem.
 GEM="$(command -v trmnlp)"
 if [ -n "$GEM" ] && ! [ "$GEM" -ef "$0" ]
@@ -23,71 +26,25 @@ Or install Docker:
     exit 1
 fi
 
-# Determine XDG config directory on host OS
-if [ -n "$XDG_CONFIG_HOME" ]; then
-    CONFIG_DIR="$XDG_CONFIG_HOME/trmnlp"
-else
-    CONFIG_DIR="$HOME/.config/trmnlp"
-fi
-
-# What trmnlp caches is kept as well: a plugin's OAuth tokens, its saved data and transform state.
+# The steps that run the image live in the image, so this copy in the plugin never goes out of date.
+# Once a day a newer image is pulled and those steps are taken from it. With no network, the image
+# already here is used.
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/trmnl"
-
-mkdir -p "$CONFIG_DIR" "$CACHE_DIR"
-
-# Add a tag to stay on one release: trmnl/trmnlp:v0.20.0
-IMAGE=trmnl/trmnlp
-
-# A newer release is pulled once a day. With no network, the image already here runs.
-PULLED_AT="$CACHE_DIR/image_pulled"
-if [ -z "$(find "$PULLED_AT" -mtime -1 2> /dev/null)" ]; then
+RUN_IN_DOCKER="$CACHE_DIR/run_in_docker/${IMAGE//[^a-zA-Z0-9._-]/_}"
+if [ -z "$(find "$RUN_IN_DOCKER" -mtime -1 2> /dev/null)" ]; then
+    mkdir -p "$(dirname "$RUN_IN_DOCKER")"
     docker pull --quiet "$IMAGE" > /dev/null 2>&1
-    touch "$PULLED_AT"
+    if docker run --rm --entrypoint cat "$IMAGE" /app/templates/run_in_docker > "$RUN_IN_DOCKER.$$" 2> /dev/null
+    then
+        mv "$RUN_IN_DOCKER.$$" "$RUN_IN_DOCKER"
+    else
+        rm -f "$RUN_IN_DOCKER.$$"
+    fi
 fi
 
-# On Linux the container's root is the host's root, and the files trmnlp writes (snapshots, _build,
-# a pulled plugin) would be root's. So trmnlp runs as you, with a home of its own to write in.
-# Docker Desktop and rootless Docker hand the files to you already.
-CONTAINER_HOME=/root
-SECURITY="$(docker info --format '{{.SecurityOptions}}' 2> /dev/null)"
-if [ "$(uname)" = Linux ] && [ "$(id -u)" != 0 ] && [ -n "$SECURITY" ] && [[ "$SECURITY" != *rootless* ]]
-then
-    CONTAINER_HOME=/tmp/home
-    # .config and .cache are made for you as well: Docker would make them root's to mount the
-    # folders below into them, and Firefox hangs when it cannot write there.
-    ARGS=(
-        --user "$(id -u):$(id -g)"
-        --env HOME=/tmp/home
-        --tmpfs "/tmp/home:exec,uid=$(id -u),gid=$(id -g)"
-        --tmpfs "/tmp/home/.config:uid=$(id -u),gid=$(id -g)"
-        --tmpfs "/tmp/home/.cache:exec,uid=$(id -u),gid=$(id -g)"
-    )
+if ! [ -s "$RUN_IN_DOCKER" ]; then
+    echo "Could not run $IMAGE. Check that Docker is running and that the image is v0.22.0 or later."
+    exit 1
 fi
 
-# A terminal only when there is one: CI and scripts have none.
-if [ -t 0 ] && [ -t 1 ]; then
-    ARGS+=(--tty)
-fi
-
-# Only serve listens, so every other command can run next to it.
-if [ "$1" = serve ]; then
-    PORT=4567
-    for ARG in "$@"; do
-        case "$PREVIOUS" in -p | --port) PORT="$ARG" ;; esac
-        case "$ARG" in --port=*) PORT="${ARG#--port=}" ;; esac
-        PREVIOUS="$ARG"
-    done
-    ARGS+=(--publish "$PORT:$PORT")
-fi
-
-exec docker run \
-    --rm \
-    --init \
-    --interactive \
-    "${ARGS[@]}" \
-    --env CI \
-    --env TRMNL_API_KEY \
-    --volume "$CONFIG_DIR:$CONTAINER_HOME/.config/trmnlp" \
-    --volume "$CACHE_DIR:$CONTAINER_HOME/.cache/trmnl" \
-    --volume "$(pwd):/plugin" \
-    "$IMAGE" "$@"
+IMAGE="$IMAGE" exec bash "$RUN_IN_DOCKER" "$@"
