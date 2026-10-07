@@ -163,7 +163,7 @@ jobs:
       # The manifest job below stitches the per-arch digests into the
       # final `:latest` and `:vX.Y.Z` multi-arch tags.
       - id: build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: ${{ matrix.platform }}

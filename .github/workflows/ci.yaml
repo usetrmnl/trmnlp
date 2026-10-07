@@ -55,7 +55,7 @@ jobs:
         run: echo "RUBY_VERSION=$(cat .ruby-version)" >> "$GITHUB_ENV"
 
       - name: Build image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           build-args: RUBY_VERSION=${{ env.RUBY_VERSION }}
