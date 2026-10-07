@@ -220,7 +220,7 @@ You can modify the `bin/trmnlp` script to set up environment variables (plugin s
 
 Prerequisites:
 
-- Ruby >= 3.4
+- Ruby >= 4.0
 - For PNG rendering (optional):
   - Firefox
   - ImageMagick

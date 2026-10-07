@@ -4,10 +4,23 @@
 # Use this opportunity to set up environment variables, install dependencies, etc.
 #
 
-if command -v trmnlp &> /dev/null
+# Saved on the PATH as `trmnlp`, this script is what `command -v trmnlp` finds: not a gem.
+GEM="$(command -v trmnlp)"
+if [ -n "$GEM" ] && ! [ "$GEM" -ef "$0" ]
 then
-    trmnlp "$@"
-    exit
+    exec "$GEM" "$@"
+fi
+
+if ! command -v docker &> /dev/null
+then
+    echo "Install the trmnl_preview gem:
+
+  gem install trmnl_preview
+
+Or install Docker:
+
+    https://docs.docker.com/get-docker/"
+    exit 1
 fi
 
 # Determine XDG config directory on host OS
@@ -17,28 +30,54 @@ else
     CONFIG_DIR="$HOME/.config/trmnlp"
 fi
 
-if [ ! -d "$CONFIG_DIR" ]; then
-    mkdir -p "$CONFIG_DIR"
-fi
+# What trmnlp caches is kept as well: a plugin's OAuth tokens, its saved data and transform state.
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/trmnl"
 
-if command -v docker &> /dev/null
+mkdir -p "$CONFIG_DIR" "$CACHE_DIR"
+
+# On Linux the container's root is the host's root, and the files trmnlp writes (snapshots, _build,
+# a pulled plugin) would be root's. So trmnlp runs as you, with a home of its own to write in.
+# Docker Desktop and rootless Docker hand the files to you already.
+CONTAINER_HOME=/root
+SECURITY="$(docker info --format '{{.SecurityOptions}}' 2> /dev/null)"
+if [ "$(uname)" = Linux ] && [ "$(id -u)" != 0 ] && [ -n "$SECURITY" ] && [[ "$SECURITY" != *rootless* ]]
 then
-    docker run \
-        -it \
-        --rm \
-        --publish 4567:4567 \
-        --volume "$(pwd):/plugin" \
-        --volume "$CONFIG_DIR:/root/.config/trmnlp" \
-        trmnl/trmnlp "$@"
-    exit
+    CONTAINER_HOME=/tmp/home
+    # .config and .cache are made for you as well: Docker would make them root's to mount the
+    # folders below into them, and Firefox hangs when it cannot write there.
+    ARGS=(
+        --user "$(id -u):$(id -g)"
+        --env HOME=/tmp/home
+        --tmpfs "/tmp/home:exec,uid=$(id -u),gid=$(id -g)"
+        --tmpfs "/tmp/home/.config:uid=$(id -u),gid=$(id -g)"
+        --tmpfs "/tmp/home/.cache:exec,uid=$(id -u),gid=$(id -g)"
+    )
 fi
 
-echo "Install the trmnl_preview gem:
+# A terminal only when there is one: CI and scripts have none.
+if [ -t 0 ] && [ -t 1 ]; then
+    ARGS+=(--tty)
+fi
 
-  gem install trmnl_preview
+# Only serve listens, so every other command can run next to it.
+if [ "$1" = serve ]; then
+    PORT=4567
+    for ARG in "$@"; do
+        case "$PREVIOUS" in -p | --port) PORT="$ARG" ;; esac
+        case "$ARG" in --port=*) PORT="${ARG#--port=}" ;; esac
+        PREVIOUS="$ARG"
+    done
+    ARGS+=(--publish "$PORT:$PORT")
+fi
 
-Or install Docker:
-
-    https://docs.docker.com/get-docker/"
-
-exit 1
+exec docker run \
+    --rm \
+    --init \
+    --interactive \
+    "${ARGS[@]}" \
+    --env CI \
+    --env TRMNL_API_KEY \
+    --volume "$CONFIG_DIR:$CONTAINER_HOME/.config/trmnlp" \
+    --volume "$CACHE_DIR:$CONTAINER_HOME/.cache/trmnl" \
+    --volume "$(pwd):/plugin" \
+    trmnl/trmnlp "$@"

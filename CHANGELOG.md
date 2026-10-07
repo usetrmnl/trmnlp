@@ -3,6 +3,8 @@
 
 ## Unreleased
 
+- The `bin/trmnlp` script that `trmnlp init` writes runs every command in Docker as the gem would. It asked for a terminal it did not have on CI and in scripts (`the input device is not a TTY`), and published port 4567 for every command, so `lint` and `test` failed while `serve` ran and `serve --port` could not be reached. On Linux it runs as you, so snapshots and `_build` are not root's. A plugin's OAuth tokens and saved data are kept between runs, and `CI` and `TRMNL_API_KEY` reach trmnlp. Saved as `trmnlp` on the `PATH`, it no longer starts itself without end. An existing plugin gets the new script from `trmnlp init <its folder>`, answering `y` for `bin/trmnlp` only.
+- The README asks for Ruby >= 4.0 to install the gem, as the gem does. It said 3.4.
 - The Docker image includes geckodriver, so it draws screens on arm64 Linux such as a Raspberry Pi. Selenium downloaded it on every run that draws a screen (`test`, `build`, `serve`), which took about half a second and failed with no network, and on arm64 without x86 emulation it could not download one at all (`Unable to obtain geckodriver`).
 - `have_no_overflow(except: '.forecast')` and `screen.overflowing(except:)` leave out a box that hides content on purpose, and everything inside it.
 
