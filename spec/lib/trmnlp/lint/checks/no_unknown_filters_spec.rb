@@ -69,6 +69,14 @@ RSpec.describe TRMNLP::Lint::Checks::NoUnknownFilters do
       end
     end
 
+    context 'when a template tag body uses a filter TRMNL does not have' do
+      let(:markup) { '{% template card %}{{ value | titleize }}{% endtemplate %}{% render "card" %}' }
+
+      it 'names the filter' do
+        expect(check.issues.first[:message]).to include("Filter 'titleize'")
+      end
+    end
+
     context 'when the markup does not parse' do
       let(:markup) { '{% if %}{{ value | titleize }}' }
 

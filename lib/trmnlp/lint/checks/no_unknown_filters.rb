@@ -38,7 +38,8 @@ module TRMNLP
           [] # A template that does not parse fails to render, which says so.
         end
 
-        def environment = @environment ||= TRMNL::Liquid.new
+        # trmnl-liquid's template tag keeps its body as a String, which ParseTreeVisitor cannot walk.
+        def environment = @environment ||= TRMNL::Liquid.new { it.register_tag 'template', ::Liquid::Block }
       end
     end
   end
