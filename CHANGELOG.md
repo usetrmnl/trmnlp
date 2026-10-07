@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- The `bin/trmnlp` script that `trmnlp init` writes takes the steps that run the Docker image from the image, once a day, so a fix to them reaches every plugin with the image. Before, each plugin kept its own copy, which changed only when `trmnlp init` ran again. A plugin made before this release gets the new script from `trmnlp init <its folder>`, answering `y` for `bin/trmnlp` only, once.
+
 ## 0.21.0
 
 - The `bin/trmnlp` script that `trmnlp init` writes pulls a newer `trmnl/trmnlp` image once a day, so a Docker user stays on the latest release. Before, it ran whatever image was pulled first. The README shows how to install the script as `trmnlp` with Docker alone.

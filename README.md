@@ -253,9 +253,10 @@ docker run --rm --entrypoint cat trmnl/trmnlp /app/templates/init/bin/trmnlp > ~
 chmod +x ~/.local/bin/trmnlp
 ```
 
-It runs each command in the image and pulls a newer image once a day. To stay on one release,
-set `IMAGE` in the script to a tag such as `trmnl/trmnlp:v0.20.0`. `trmnlp init` puts the same
-script in each plugin as `bin/trmnlp`.
+It runs each command in the image and pulls a newer image once a day. The steps that run the image
+come from the image too, so the script itself does not go out of date. To stay on one release, set
+`IMAGE` in the script to a tag such as `trmnl/trmnlp:v0.22.0` (v0.22.0 or later). `trmnlp init` puts
+the same script in each plugin as `bin/trmnlp`.
 
 Or run the image yourself:
 
