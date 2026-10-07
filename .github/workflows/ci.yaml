@@ -65,3 +65,9 @@ jobs:
 
       - name: Smoke-test the image starts
         run: docker run --rm trmnlp:ci help
+
+      # With no geckodriver in the image, Selenium downloads one on every run, and this fails.
+      - name: Check Firefox starts on the image's geckodriver, with no network to download one
+        run: >
+          docker run --rm --network none --entrypoint ruby trmnlp:ci
+          -r/app/lib/trmnlp/firefox_driver -e 'TRMNLP::FirefoxDriver.build.quit'

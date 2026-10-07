@@ -133,6 +133,8 @@ Liquid in declaration values is counted without rendering the plugin, every bran
 Filters from `custom_filters` in `.trmnlp.yml` exist only in trmnlp. TRMNL does not load them
 and outputs the value unfiltered, so `no_custom_filters` reports each place the markup uses one.
 Filters that trmnl-liquid also provides are not reported.
+A filter that neither Liquid nor trmnl-liquid defines, such as a typo or one from another
+Liquid (Jekyll, LiquidJS), is also output unfiltered on TRMNL, so `no_unknown_filters` reports it.
 
 To accept a rule's findings, list its rule ID under `ignored_lint_rules` in `.trmnlp.yml`.
 `trmnlp lint` then skips that check in both formats, so the CLI and CI agree. An unknown
@@ -230,7 +232,7 @@ You can modify the `bin/trmnlp` script to set up environment variables (plugin s
 
 Prerequisites:
 
-- Ruby >= 3.4
+- Ruby >= 4.0
 - For PNG rendering (optional):
   - Firefox
   - ImageMagick
