@@ -550,6 +550,16 @@ To cut a release:
 
 By convention, add a matching `CHANGELOG.md` entry in the same change.
 
+## Related guides
+
+- [Private Plugins](https://help.trmnl.com/en/articles/9510536-private-plugins): strategies, polling and webhooks
+- [Liquid 101](https://help.trmnl.com/en/articles/10671186-liquid-101) and the [Framework Design Docs](https://help.trmnl.com/en/articles/12410486-framework-design-docs)
+- [Custom plugin form builder](https://help.trmnl.com/en/articles/10513740-custom-plugin-form-builder): the form fields `src/settings.yml` declares
+- [Syncing Plugins with GitHub](https://help.trmnl.com/en/articles/13465101-syncing-plugins-with-github) and [GitHub Sync](https://help.trmnl.com/en/articles/15977899-github-sync)
+- [Recipe best practices](https://help.trmnl.com/en/articles/11395668-recipe-best-practices) and [Demo Data for Publishing Plugins](https://help.trmnl.com/en/articles/12772238-demo-data-for-publishing-plugins)
+- [TRMNL CLI](https://help.trmnl.com/en/articles/17226209-trmnl-cli): the rest of your account from the terminal
+- [MCP Server](https://help.trmnl.com/en/articles/17432548-mcp-server) and our [agent skills](https://github.com/usetrmnl/trmnl-agent-skills): build plugins with an AI agent
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/usetrmnl/trmnlp.
