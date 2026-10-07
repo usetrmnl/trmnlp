@@ -4,6 +4,7 @@
 ## Unreleased
 
 - `trmnlp lint` reports a filter that neither Liquid nor trmnl-liquid defines (`no_unknown_filters`), such as a typo or a LiquidJS filter like `push`. TRMNL outputs the value unfiltered, and `serve` and `build` drew it the same way, so nothing showed the mistake.
+- The Docker image includes geckodriver, so it draws screens on arm64 Linux such as a Raspberry Pi. Selenium downloaded it on every run that draws a screen (`test`, `build`, `serve`), which took about half a second and failed with no network, and on arm64 without x86 emulation it could not download one at all (`Unable to obtain geckodriver`).
 - `have_no_overflow(except: '.forecast')` and `screen.overflowing(except:)` leave out a box that hides content on purpose, and everything inside it.
 
 ## 0.20.0
