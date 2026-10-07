@@ -76,6 +76,13 @@ RSpec.describe TRMNLP::CLI do
       expect(WebMock).to have_requested(:get, endpoint).once
     end
 
+    it 'does not check inside a container, where the image is updated instead' do
+      allow(described_class).to receive(:in_container?).and_return(true)
+      capture_stderr { capture_stdout { described_class.start(['init', 'plugin', '--dir', tmp_root, '--skip-git']) } }
+
+      expect(WebMock).not_to have_requested(:get, endpoint)
+    end
+
     it 'skips the check when TRMNLP_NO_UPDATE_NOTIFIER is set' do
       allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with('TRMNLP_NO_UPDATE_NOTIFIER').and_return('1')

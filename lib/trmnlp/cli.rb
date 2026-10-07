@@ -34,7 +34,8 @@ module TRMNLP
       end
 
       def check_for_update(fresh: false)
-        return if options[:quiet] || UpdateCheck.disabled?
+        # In a container `gem update` does not apply; bin/trmnlp pulls a newer image instead.
+        return if options[:quiet] || UpdateCheck.disabled? || self.class.in_container?
 
         UpdateCheck.new(Paths.new(options[:dir]).update_check).call(fresh:)
       end

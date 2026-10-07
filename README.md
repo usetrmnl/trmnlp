@@ -108,7 +108,8 @@ output and exit status unchanged. The answer is cached for a day, so most runs
 make no request; `trmnlp version` always asks RubyGems. `--quiet` or
 `TRMNLP_NO_UPDATE_NOTIFIER=1` skips the check. Connection and read timeouts are
 two seconds each; current versions and an unavailable registry stay silent. The
-check never installs an update or changes your Gemfile or lockfile.
+check never installs an update or changes your Gemfile or lockfile. Inside Docker there is no
+check: the `bin/trmnlp` script pulls a newer image once a day instead.
 
 Lint findings include a stable snake_case rule ID, severity and source locations.
 Locations use project-relative paths and one-based line/column numbers, followed
