@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.21.0
 
 - The `bin/trmnlp` script that `trmnlp init` writes pulls a newer `trmnl/trmnlp` image once a day, so a Docker user stays on the latest release. Before, it ran whatever image was pulled first. The README shows how to install the script as `trmnlp` with Docker alone.
 - The `bin/trmnlp` script that `trmnlp init` writes runs every command in Docker as the gem would. It asked for a terminal it did not have on CI and in scripts (`the input device is not a TTY`), and published port 4567 for every command, so `lint` and `test` failed while `serve` ran and `serve --port` could not be reached. On Linux it runs as you, so snapshots and `_build` are not root's. A plugin's OAuth tokens and saved data are kept between runs, and `CI` and `TRMNL_API_KEY` reach trmnlp. Saved as `trmnlp` on the `PATH`, it no longer starts itself without end. An existing plugin gets the new script from `trmnlp init <its folder>`, answering `y` for `bin/trmnlp` only.
