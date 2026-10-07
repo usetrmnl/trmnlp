@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- The Docker image includes geckodriver. Selenium downloaded it on every run that draws a screen (`test`, `build`, `serve`), which took about half a second and failed with no network.
 - `have_no_overflow(except: '.forecast')` and `screen.overflowing(except:)` leave out a box that hides content on purpose, and everything inside it.
 
 ## 0.20.0
