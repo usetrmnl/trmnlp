@@ -6,6 +6,7 @@
 - `it_behaves_like 'a publishable recipe'` names a screen's palette and dark mode in its examples, so a group that draws the TRMNL X in color and in 1-bit, or in light and dark, can tell them apart.
 - `trmnlp test --report` writes `og-vs-x.png`: the full view on TRMNL OG and TRMNL X side by side at the same height, first on the report page and as `og_vs_x` in `report.json`. It shows a recipe whose content is small on the X with a lot of empty space.
 - `trmnlp lint` reports a `select` form field with only Yes and No options (`yes_no_selects_are_boolean`), which should be a `boolean` switch, and separate latitude and longitude fields (`coordinates_use_lat_lon`), which should be one `lat_lon` field.
+- `trmnlp lint` reports a plugin whose `author_bio` custom field gives no email address, web link or GitHub link. TRMNL's recipe review asks for one, and a Discord link alone is not enough.
 
 ## 0.23.1
 

@@ -17,6 +17,13 @@ RSpec.describe TRMNLP::Commands::Lint do
     File.write(File.join(tmp_root, '.trmnlp.yml'), '{}')
     FileUtils.mkdir_p(File.join(tmp_root, 'src'))
     File.write(File.join(tmp_root, 'src', 'shared.liquid'), '<p>Some real content here</p>')
+    File.write(File.join(tmp_root, 'src', 'settings.yml'), <<~YAML)
+      custom_fields:
+        - keyname: about
+          field_type: author_bio
+          name: About
+          email_address: me@example.com
+    YAML
   end
 
   after { FileUtils.rm_rf(tmp_root) }
