@@ -103,6 +103,21 @@ RSpec.describe TRMNLP::TransformBackend::Subprocess do
       expect(result.stderr).to include('boom')
     end
 
+    context 'when the transform prints more than a pipe holds' do
+      let(:result) do
+        backend.execute(code: "def run(input); puts 'x' * 200_000; $stderr.puts 'y' * 200_000; input; end",
+                        language: 'ruby', stdin: '{}', timeout_seconds: 3)
+      end
+
+      it 'finishes' do
+        expect(result).to be_success
+      end
+
+      it 'keeps everything it printed' do
+        expect([result.stdout.bytesize, result.stderr.bytesize]).to eq([200_001, 200_001])
+      end
+    end
+
     it 'enforces the timeout' do
       result = backend.execute(
         code: 'def run(input); sleep 5; input; end',

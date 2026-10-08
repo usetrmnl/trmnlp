@@ -65,13 +65,16 @@ module TRMNLP
           @on_spawn&.call(wait_thr.pid)
           stdin_io.write(stdin)
           stdin_io.close
+          # Read while it runs: a process that fills a pipe waits for its reader, so reading after it exits hangs.
+          stdout_reader = Thread.new { stdout_io.read }
+          stderr_reader = Thread.new { stderr_io.read }
 
           unless wait_thr.join(timeout_seconds)
             kill(wait_thr)
             return failure("timeout after #{timeout_seconds}s", monotonic_ms - started)
           end
 
-          build_result(stdout_io.read, stderr_io.read, wait_thr.value, output_path, monotonic_ms - started)
+          build_result(stdout_reader.value, stderr_reader.value, wait_thr.value, output_path, monotonic_ms - started)
         end
       end
 
