@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- A transform that prints more than about 64 KB no longer hangs until its timeout in `trmnlp test` and `trmnlp serve`; its output is read while it runs.
+
 ## 0.23.0
 
 - `TRMNLP::Poller#fetch_responses` is public: each polling url as TRMNL resolves it, with its live response. A tool can keep them as the mocks `trmnlp test` answers with.
