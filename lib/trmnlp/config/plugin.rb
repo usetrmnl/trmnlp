@@ -69,8 +69,10 @@ module TRMNLP
 
       def id = @config['id']
 
+      # Like TRMNL: blank is no data, and a byte order mark is not part of the JSON.
       def static_data
-        JSON.parse(@config['static_data'] || '{}')
+        text = @config['static_data'].to_s.delete_prefix("\uFEFF")
+        text.strip.empty? ? {} : JSON.parse(text)
       rescue JSON::ParserError
         raise InvalidConfig, 'invalid JSON in static_data'
       end

@@ -183,6 +183,34 @@ RSpec.describe TRMNLP::Config::Plugin do
     end
   end
 
+  describe '#static_data' do
+    before { plugin.instance_variable_set(:@config, { 'static_data' => static_data }) }
+
+    context 'when it is blank, as TRMNL saves a static plugin with no data' do
+      let(:static_data) { '  ' }
+
+      it 'is empty' do
+        expect(plugin.static_data).to eq({})
+      end
+    end
+
+    context 'when it starts with a byte order mark' do
+      let(:static_data) { "\uFEFF{\"city\": \"Lisbon\"}" }
+
+      it 'parses after it' do
+        expect(plugin.static_data).to eq('city' => 'Lisbon')
+      end
+    end
+
+    context 'when it is not JSON' do
+      let(:static_data) { '{city' }
+
+      it 'raises' do
+        expect { plugin.static_data }.to raise_error(TRMNLP::InvalidConfig, 'invalid JSON in static_data')
+      end
+    end
+  end
+
   describe '#framework_version' do
     context 'when settings.yml pins a version' do
       let(:pinned) { TRMNLP::FrameworkVersion.version_numbers.first }
