@@ -4,6 +4,7 @@
 ## Unreleased
 
 - `TRMNLP::Poller#fetch_responses` is public: each polling url as TRMNL resolves it, with its live response. A tool can keep them as the mocks `trmnlp test` answers with.
+- `it_behaves_like 'a publishable recipe'` uses the group's `data`, so a webhook plugin's examples can draw from the merge variables it stores.
 
 ## 0.22.1
 

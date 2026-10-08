@@ -228,6 +228,30 @@ RSpec.describe 'trmnlp test' do
       end
     end
 
+    context "with the group's data for a webhook plugin" do
+      let(:spec_body) do
+        <<~RUBY
+          RSpec.describe 'Greeting' do
+            let(:data) { { greeting: 'Ada' } }
+
+            it_behaves_like 'a publishable recipe', screens: [{ device: { model: 'og_test', width: 800, height: 480 } }]
+          end
+        RUBY
+      end
+
+      before do
+        File.write(File.join(plugin_dir, 'src', 'settings.yml'), "name: Greeting\nstrategy: webhook\n")
+        markup = greeting_markup.sub('</span>', "{% if greeting != 'Ada' %} undefined{% endif %}</span>")
+        %w[full half_horizontal half_vertical quadrant].each do |view|
+          File.write(File.join(plugin_dir, 'src', "#{view}.liquid"), markup)
+        end
+      end
+
+      it 'renders every view with it' do
+        expect(run_tests.first).to include('9 examples, 0 failures')
+      end
+    end
+
     context "with the group's variables and now" do
       let(:spec_body) do
         <<~RUBY
