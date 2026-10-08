@@ -425,6 +425,25 @@ RSpec.describe TRMNLP::Poller do
     end
   end
 
+  describe '#fetch_responses' do
+    subject(:poller) { described_class.new(config:, paths:, oauth_session:, reporter:, trmnl_variables:) }
+
+    let(:reporter) { TRMNLP::Reporter.new(quiet: true) }
+    let(:trmnl_variables) { -> { { 'trmnl' => { 'user' => { 'time_zone_iana' => 'Europe/Paris' } } } } }
+
+    before do
+      url = 'https://a.test/?tz={{ trmnl.user.time_zone_iana }}&key={{ api_key }}'
+      config.plugin.instance_variable_set(:@config, { 'strategy' => 'polling', 'polling_url' => url })
+      allow(config.project).to receive(:custom_fields).and_return('api_key' => 'abc')
+      stub_request(:get, 'https://a.test/?tz=Europe/Paris&key=abc').to_return(status: 201, body: '{}')
+    end
+
+    it 'answers each url as TRMNL resolves it, with its response' do
+      expect(poller.fetch_responses.map { |url, response| [url, response.status] })
+        .to eq([['https://a.test/?tz=Europe/Paris&key=abc', 201]])
+    end
+  end
+
   describe '#poll_data for an async_polling plugin' do
     subject(:poller) { described_class.new(config:, paths:, oauth_session:, reporter:, async_callback:) }
 
