@@ -283,7 +283,8 @@ The full view is also drawn with each option of every select field.
 
 The group can set its own values:
 
-- It uses the group's `mocks`, `custom_fields`, `variables` and `now` when the group defines them.
+- It uses the group's `mocks`, `custom_fields`, `variables`, `now` and `data` when the group defines them.
+- `data` gives a webhook plugin the merge variables TRMNL stored for it.
 - `screens: [{ device: 'kobo_libra_2' }, ...]` draws on other devices.
 
 It does not check overflow.

@@ -35,7 +35,8 @@ end
 RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLISHABLE_RECIPE_SCREENS|
   let(:recipe_inputs) do
     { mocks: respond_to?(:mocks) ? mocks : {}, custom_fields: respond_to?(:custom_fields) ? custom_fields : {},
-      variables: respond_to?(:variables) ? variables : {}, now: respond_to?(:now) ? now : nil }
+      variables: respond_to?(:variables) ? variables : {}, now: respond_to?(:now) ? now : nil,
+      data: respond_to?(:data) ? data : nil }
   end
 
   def draw_cleanly = have_no_problems.and(have_no_leaked_text)
