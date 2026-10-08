@@ -8,6 +8,7 @@
 - `trmnlp lint` reports a `select` form field with only Yes and No options (`yes_no_selects_are_boolean`), which should be a `boolean` switch, and separate latitude and longitude fields (`coordinates_use_lat_lon`), which should be one `lat_lon` field.
 - `trmnlp lint` reports a plugin whose `author_bio` custom field gives no email address, web link or GitHub link. TRMNL's recipe review asks for one, and a Discord link alone is not enough.
 - `trmnlp lint` reports a `title_bar` inside a `layout` (`title_bar_outside_layout`), a `layout` inside another `layout` (`no_nested_layouts`), and a `value--`, `label--`, `title--`, `description--` or `text--` class that the plugin's Framework release does not have (`framework_classes_exist`), such as `value--medium`. TRMNL renders all three wrong or not at all and says nothing. The class lists come from each release's `plugins.css`; `rake framework:classes` refreshes them.
+- `trmnlp lint` reports a QR code image loaded from an external service, such as api.qrserver.com or quickchart.io/qr, in an `<img>` src or a CSS `url()` (`no_external_qr_codes`). TRMNL asks recipes to use the built-in `qr_code` Liquid filter.
 
 ## 0.23.1
 
