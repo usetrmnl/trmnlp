@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.23.1
 
 - A transform that prints more than about 64 KB no longer hangs until its timeout in `trmnlp test` and `trmnlp serve`; its output is read while it runs.
 
