@@ -46,6 +46,16 @@ module TRMNLP
       {}
     end
 
+    # Each polling url as TRMNL resolves it, with its response, or nil when the fetch failed.
+    def fetch_responses
+      # Resolve once per attempt (it refreshes as a side effect), then share across
+      # every URL, header, and body render.
+      variables = trmnl_variables.call.merge(oauth_session.liquid_variables)
+      headers = config.plugin.polling_headers(extra_variables: variables)
+      body = config.plugin.polling_body(extra_variables: variables)
+      config.plugin.polling_urls(extra_variables: variables).map { |url| [url, fetch_one(url, headers, body)] }
+    end
+
     private
 
     attr_reader :config, :paths, :oauth_session, :trmnl_variables, :reporter, :async_callback
@@ -74,22 +84,14 @@ module TRMNLP
     end
 
     def aggregate_responses
-      fetched = fetch_all
+      fetched = fetch_responses
       # Like the hosted service: a token rejected before its expiry gets one refresh and retry.
-      fetched = fetch_all if fetched.any? { |_url, response| response&.status == 401 } && oauth_session.force_refresh!
+      token_rejected = fetched.any? { |_url, response| response&.status == 401 }
+      fetched = fetch_responses if token_rejected && oauth_session.force_refresh!
       responses = fetched.map { |url, response| response ? parse_response(response, url) : {} }
       return responses.first if responses.size == 1
 
       responses.each_with_index.with_object({}) { |(r, i), h| h["IDX_#{i}"] = r }
-    end
-
-    def fetch_all
-      # Resolve once per attempt (it refreshes as a side effect), then share across
-      # every URL, header, and body render.
-      variables = trmnl_variables.call.merge(oauth_session.liquid_variables)
-      headers = config.plugin.polling_headers(extra_variables: variables)
-      body = config.plugin.polling_body(extra_variables: variables)
-      config.plugin.polling_urls(extra_variables: variables).map { |url| [url, fetch_one(url, headers, body)] }
     end
 
     def fetch_one(url, headers, body)

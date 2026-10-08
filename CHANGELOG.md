@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `TRMNLP::Poller#fetch_responses` is public: each polling url as TRMNL resolves it, with its live response. A tool can keep them as the mocks `trmnlp test` answers with.
+
 ## 0.22.1
 
 - The Docker image runs liquid 5.14 and selenium-webdriver 4.50, as TRMNL does. It had 5.13 and 4.48, so Liquid output could differ from TRMNL. Installs of the gem already took the newer versions.
