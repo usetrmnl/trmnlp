@@ -228,6 +228,30 @@ RSpec.describe 'trmnlp test' do
       end
     end
 
+    context 'with a screen in dark mode' do
+      let(:spec_body) do
+        <<~RUBY
+          RSpec.describe 'Greeting' do
+            let(:mocks) { { 'https://api.test/*' => { json: { name: 'Ada' } } } }
+
+            it_behaves_like 'a publishable recipe',
+                            screens: [{ device: { model: 'og_test', width: 800, height: 480 }, dark_mode: true }]
+          end
+        RUBY
+      end
+
+      let(:report_dir) { File.join(plugin_dir, 'report') }
+
+      it 'names the dark mode in the example' do
+        run_tests('--report', report_dir)
+        report = JSON.parse(File.read(File.join(report_dir, 'report.json')))
+        descriptions = (report.is_a?(Array) ? report : report.values.flatten).map { it['description'] }
+
+        expect(descriptions)
+          .to include(a_string_including('draws the full view on og_test dark mode without page errors'))
+      end
+    end
+
     context "with the group's data for a webhook plugin" do
       let(:spec_body) do
         <<~RUBY
