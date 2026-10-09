@@ -39,8 +39,33 @@ namespace :framework do
   end
 end
 
+# A family class after its screen prefixes, captured as the prefixes and the class.
+FRAMEWORK_PREFIXED_CLASS = /(?<=\.)((?:[a-z0-9]+\\:)+)((?:value|label|title|description|text|content)--[\w-]+)/
+
+# The screen prefixes a plugins.css defines, grouped by the classes they cover.
+def framework_variants(css, classes)
+  classes_by_prefix = css.scan(FRAMEWORK_PREFIXED_CLASS)
+                         .group_by { |prefix, _| prefix.delete('\\').delete_suffix(':') }
+                         .transform_values { |pairs| pairs.map(&:last).uniq.sort }
+  variants = classes_by_prefix.group_by(&:last).map do |covered, pairs|
+    { 'prefixes' => pairs.map(&:first).sort, 'families' => framework_coverage(covered, classes) }
+  end
+  variants.sort_by { it['prefixes'].first }
+end
+
+# Each family the covered classes belong to, as `all` its classes, all `except` the few
+# without the prefixes, or `only` the few with them, whichever list is shorter.
+def framework_coverage(covered, classes)
+  covered.group_by { it.split('--').first }.sort.to_h do |family, names|
+    missing = classes.grep(/\A#{family}--/) - names
+    next [family, 'all'] if missing.empty?
+
+    [family, missing.size < names.size ? { 'except' => missing } : { 'only' => names }]
+  end
+end
+
 namespace :framework do
-  desc 'Sync db/data/framework_classes.yml from the plugins.css of every release'
+  desc 'Sync db/data/framework_classes.yml and framework_prefixes.yml from the plugins.css of every release'
   task :classes do
     require 'open-uri'
     require_relative 'lib/trmnlp/framework_version'
@@ -48,10 +73,27 @@ namespace :framework do
     # A family class, bare or after a screen prefix such as `md\:`.
     pattern = /(?<=\.|\\:)(?:value|label|title|description|text|content)--[\w-]+/
     classes_by_release = {}
+    variants_by_release = {}
     TRMNLP::FrameworkVersion.version_numbers.sort_by { Gem::Version.new(it) }.each do |number|
-      classes = URI.parse(TRMNLP::FrameworkVersion.new(number).css_url).read.scan(pattern).uniq.sort
+      # A class that starts with a digit, such as `1bit:`, is escaped in CSS as `\31 bit\:`.
+      css = URI.parse(TRMNLP::FrameworkVersion.new(number).css_url).read.gsub(/\\3(\d) /, '\1')
+      classes = css.scan(pattern).uniq.sort
       classes_by_release[number] = classes unless classes == classes_by_release.values.last
+
+      variants = framework_variants(css, classes)
+      variants_by_release[number] = variants unless variants == variants_by_release.values.last
     end
+
+    prefixes_destination = File.expand_path('db/data/framework_prefixes.yml', __dir__)
+    prefixes_header = <<~HEADER
+      # Mirrored from each Framework release's plugins.css: the screen prefixes it defines for
+      # value--, label--, title--, description--, text-- and content-- classes, and the classes each
+      # covers: every class in a family (`all`), all `except` some, or `only` some. A list holds
+      # until the next release listed.
+      # Refresh with `rake framework:classes` — do not edit manually.
+    HEADER
+    File.write(prefixes_destination, prefixes_header + variants_by_release.to_yaml.delete_prefix("---\n"))
+    puts "Synced #{prefixes_destination}"
 
     destination = File.expand_path('db/data/framework_classes.yml', __dir__)
     header = <<~HEADER
