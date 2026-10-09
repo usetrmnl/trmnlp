@@ -117,6 +117,8 @@ module TRMNLP
       puts VERSION
       # Keep the version first when stdout is a pipe and stderr is not.
       $stdout.flush
+      # On stderr, so a script that reads the version still gets the number alone.
+      warn "Running in Docker (#{ENV.fetch('TRMNLP_IMAGE', 'image unknown')})" if self.class.in_container?
       check_for_update(fresh: true)
     end
   end

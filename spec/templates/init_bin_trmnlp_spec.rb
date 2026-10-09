@@ -140,6 +140,11 @@ RSpec.describe 'templates/init/bin/trmnlp' do
     expect(docker_run).to include('--env CI')
   end
 
+  it 'tells trmnlp which image it runs in, for `trmnlp version`' do
+    run('version')
+    expect(docker_run).to include('--env TRMNLP_IMAGE=trmnl/trmnlp')
+  end
+
   describe 'who owns the files trmnlp writes' do
     it 'runs as the calling user on Linux' do
       run('test')

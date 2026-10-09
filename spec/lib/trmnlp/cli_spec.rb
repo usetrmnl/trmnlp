@@ -104,6 +104,40 @@ RSpec.describe TRMNLP::CLI do
       expect(output).to eq("#{TRMNLP::VERSION}\n")
     end
 
+    it 'says nothing about Docker outside a container' do
+      allow(described_class).to receive(:in_container?).and_return(false)
+
+      expect { capture_stdout { described_class.start(['version', '--quiet']) } }
+        .not_to output(/Docker/).to_stderr
+    end
+
+    context 'in a container' do
+      before { allow(described_class).to receive(:in_container?).and_return(true) }
+
+      around do |example|
+        saved = ENV.fetch('TRMNLP_IMAGE', nil)
+        example.run
+      ensure
+        ENV['TRMNLP_IMAGE'] = saved
+      end
+
+      it 'names the image on stderr and keeps stdout to the version' do
+        ENV['TRMNLP_IMAGE'] = 'trmnl/trmnlp:v0.24.0'
+        output = nil
+
+        expect { output = capture_stdout { described_class.start(['version']) } }
+          .to output("Running in Docker (trmnl/trmnlp:v0.24.0)\n").to_stderr
+        expect(output).to eq("#{TRMNLP::VERSION}\n")
+      end
+
+      it 'still says Docker when the image is run without the script' do
+        ENV.delete('TRMNLP_IMAGE')
+
+        expect { capture_stdout { described_class.start(['version']) } }
+          .to output("Running in Docker (image unknown)\n").to_stderr
+      end
+    end
+
     it 'reports a newer release' do
       expect { capture_stdout { described_class.start(['version']) } }
         .to output(/trmnl_preview 99\.0\.0 is available/).to_stderr
