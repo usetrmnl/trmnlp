@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp lint` also reports a `content--` class that the plugin's Framework release does not have (`framework_classes_exist`), such as `content--xsmall`. Rich Text sizes stop at `content--small`, and a missing one leaves the text at the default size.
+
 ## 0.24.0
 
 - `it_behaves_like 'a publishable recipe'` names a screen's palette and dark mode in its examples, so a group that draws the TRMNL X in color and in 1-bit, or in light and dark, can tell them apart.
