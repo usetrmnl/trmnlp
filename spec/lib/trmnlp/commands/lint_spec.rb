@@ -160,6 +160,21 @@ RSpec.describe TRMNLP::Commands::Lint do
                                             'snippet' => '    description: Find it at https://somewhere.com/feed' }])
       end
 
+      it 'locates a webhook recipe without a copyable_webhook_url field at its strategy' do
+        File.write(File.join(tmp_root, 'src', 'settings.yml'), <<~YAML)
+          strategy: webhook
+          custom_fields:
+            - keyname: about
+              field_type: author_bio
+              name: About
+              email_address: me@example.com
+        YAML
+        command.call
+        issue = JSON.parse(reporter.messages.first)['issues'].find { it['rule_id'] == 'webhook_url_shown' }
+        expect(issue['locations']).to eq([{ 'path' => 'src/settings.yml', 'line' => 1, 'column' => 11,
+                                            'snippet' => 'strategy: webhook' }])
+      end
+
       it 'attributes an invalid framework class to each matching file' do
         File.write(File.join(tmp_root, 'src', 'full.liquid'), '<div class="w--[192px]">Text</div>')
         File.write(File.join(tmp_root, 'src', 'shared.liquid'), '<p class="w--[192px]">Shared</p>')

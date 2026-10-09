@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp lint` reports a webhook recipe with no `copyable_webhook_url` custom field (`webhook_url_shown`), as TRMNL's recipe review does. Without it, people who install the recipe have no field to copy their webhook URL from.
+
 ## 0.26.0
 
 - `trmnlp lint` names the sizes an element has when a size class is missing (`framework_classes_exist`), such as `title--small` to `title--xxlarge` for `title--mega`, and links to the Framework's Element Sizes page. Each element has its own set of sizes.

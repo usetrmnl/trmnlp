@@ -7,7 +7,8 @@ module TRMNLP
     class Diagnostic
       SETTINGS_KEYS = {
         'title_casing' => 'name', 'title_length' => 'name',
-        'description_length' => 'description', 'recipe_overview_length' => 'recipe_overview'
+        'description_length' => 'description', 'recipe_overview_length' => 'recipe_overview',
+        'webhook_url_shown' => 'strategy'
       }.freeze
       MARKUP_PATTERNS = {
         'no_async_functions' => /async function/i,
