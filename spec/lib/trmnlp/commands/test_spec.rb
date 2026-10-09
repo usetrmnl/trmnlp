@@ -245,7 +245,7 @@ RSpec.describe 'trmnlp test' do
       it 'names the dark mode in the example' do
         run_tests('--report', report_dir)
         report = JSON.parse(File.read(File.join(report_dir, 'report.json')))
-        descriptions = (report.is_a?(Array) ? report : report.values.flatten).map { it['description'] }
+        descriptions = report['examples'].map { it['description'] }
 
         expect(descriptions)
           .to include(a_string_including('draws the full view on og_test dark mode without page errors'))
