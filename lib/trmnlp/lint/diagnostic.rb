@@ -44,6 +44,7 @@ module TRMNLP
         when 'arbitrary_values_in_range', 'framework_classes_exist', 'framework_prefixes_exist' then class_locations
         when 'layouts_have_content' then empty_view_locations
         when 'form_fields_valid' then form_field_locations
+        when 'custom_field_links_embedded' then custom_field_description_locations
         when 'custom_fields_used' then project_field_locations
         when 'no_custom_filters', 'no_unknown_filters' then filter_locations
         when 'title_bar_outside_layout', 'no_nested_layouts'
@@ -81,6 +82,12 @@ module TRMNLP
             []
           end
         end
+      end
+
+      def custom_field_description_locations
+        keyname, key = finding[:message].match(/\ACustom field '([^']*)' (\S+) has/)&.captures
+        index = source.custom_field_definitions.index { it['keyname'].to_s == keyname }
+        index ? source.yaml_location('src/settings.yml', 'custom_fields', index, key) : []
       end
 
       def project_field_locations
