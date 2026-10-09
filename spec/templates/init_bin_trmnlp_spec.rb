@@ -91,6 +91,21 @@ RSpec.describe 'templates/init/bin/trmnlp' do
     end
   end
 
+  context 'when a plugin pins a release and the script is also on the PATH as trmnlp' do
+    let(:pinned) { File.join(plugin_dir, 'trmnlp') }
+
+    before do
+      FileUtils.cp(script, File.join(path, 'trmnlp'))
+      File.write(pinned, File.read(script).sub(%r{^IMAGE=trmnl/trmnlp$}, 'IMAGE=trmnl/trmnlp:v0.24.0'))
+      File.chmod(0o755, pinned)
+    end
+
+    it 'runs the pinned image, not the one of the script on the PATH' do
+      run('lint', command: pinned)
+      expect(docker_run).to end_with(' trmnl/trmnlp:v0.24.0 lint')
+    end
+  end
+
   context 'with neither the gem nor Docker' do
     before { File.delete(File.join(path, 'docker')) }
 
