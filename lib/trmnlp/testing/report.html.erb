@@ -20,6 +20,7 @@
   pre { background: #f6f8fa; padding: 8px; overflow-x: auto; white-space: pre-wrap; }
   .screens { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; }
   figure { margin: 0; max-width: 100%; }
+  .og-vs-x { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); }
   .frame { position: relative; border: 1px solid var(--line); max-width: min(100%, 640px); }
   .frame img, .frame svg { display: block; width: 100%; height: auto; }
   .frame svg { position: absolute; inset: 0; display: none; }
@@ -47,6 +48,12 @@
   <label for="failures">failures only</label>
 </header>
 <main>
+<% if og_vs_x %>
+  <section>
+    <h2>Full view on TRMNL OG and TRMNL X, at the same height</h2>
+    <figure><img src="<%= og_vs_x %>" alt="TRMNL OG and TRMNL X side by side" class="og-vs-x"></figure>
+  </section>
+<% end %>
 <% examples.each do |example| %>
   <section class="<%= 'failed-example' if example[:status] == 'failed' %>">
     <h2 class="<%= example[:status] %>"><%= h(example[:description]) %></h2>

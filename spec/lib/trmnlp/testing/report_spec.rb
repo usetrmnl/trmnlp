@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'json'
+require 'mini_magick'
 require 'spec_helper'
 require 'tmpdir'
 require 'trmnlp/testing/report'
@@ -89,6 +90,43 @@ RSpec.describe TRMNLP::Testing::Report do
     it 'writes a page that shows the screens' do
       expect(File.read(File.join(dir, 'index.html'))).to include('shows the weather', 'images/1.png', 'og_png · full')
     end
+  end
+
+  context 'with the full view drawn on TRMNL OG and TRMNL X in landscape' do
+    def screen_on(name, width, height, view: 'full')
+      path = File.join(Dir.mktmpdir, "#{name}.png")
+      MiniMagick.convert { it << '-size' << "#{width}x#{height}" << 'xc:white' << path }
+      double('screen', png_path: path, device: Struct.new(:name, :width, :height).new(name, width, height),
+                       view:, problems: [], evaluate: [])
+    end
+
+    before do
+      example_running(passed) do
+        [screen_on('og_plus', 400, 300, view: 'quadrant'), screen_on('og_plus', 480, 800),
+         screen_on('og_plus', 800, 480), screen_on('v2', 1872, 1404)].each { report.record_screen(it) }
+      end
+      report.example_passed(passed)
+      report.close(nil)
+    end
+
+    let(:json) { JSON.parse(File.read(File.join(dir, 'report.json'))) }
+
+    it 'puts the two side by side at the same height, so a reviewer sees how much of the X the content fills' do
+      expect(MiniMagick::Image.open(File.join(dir, json['og_vs_x'])).dimensions).to eq([800 + 640, 480])
+    end
+
+    it 'shows the side by side image first on the page' do
+      page = File.read(File.join(dir, 'index.html'))
+
+      expect(page.index('og-vs-x.png')).to be < page.index('images/1.png')
+    end
+  end
+
+  it 'leaves out the side by side image without a full view on TRMNL X' do
+    example_running(passed) { report.record_screen(screen) }
+    report.close(nil)
+
+    expect(JSON.parse(File.read(File.join(dir, 'report.json')))['og_vs_x']).to be_nil
   end
 
   context 'under GitHub Actions' do
