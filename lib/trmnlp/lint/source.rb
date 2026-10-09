@@ -45,6 +45,12 @@ module TRMNLP
         @all_markup ||= view_markup.values.join + shared_markup
       end
 
+      # The files TRMNL reads from a `trmnlp push` archive.
+      def upload_files
+        [paths.plugin_config, *(VIEWS + ['shared']).map { paths.template(it) }, paths.transform_file.first]
+          .compact.select(&:exist?)
+      end
+
       # The serverless transform (src/transform.{py,rb,php,js}), or '' without one.
       # It reads custom fields from its input, so a field may be used only there.
       def transform_code

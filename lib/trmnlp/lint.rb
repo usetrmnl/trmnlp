@@ -29,6 +29,7 @@ require_relative 'lint/checks/framework_classes_exist'
 require_relative 'lint/checks/framework_prefixes_exist'
 require_relative 'lint/checks/no_external_qr_codes'
 require_relative 'lint/checks/custom_field_links_embedded'
+require_relative 'lint/checks/files_under_upload_limit'
 
 module TRMNLP
   # Markup best-practice checks behind `trmnlp lint`.
@@ -61,7 +62,8 @@ module TRMNLP
       Checks::FrameworkClassesExist,
       Checks::FrameworkPrefixesExist,
       Checks::NoExternalQrCodes,
-      Checks::CustomFieldLinksEmbedded
+      Checks::CustomFieldLinksEmbedded,
+      Checks::FilesUnderUploadLimit
     ].freeze
 
     def self.rule_id(check_type) = check_type.name.split('::').last.gsub(/([a-z\d])([A-Z])/, '\1_\2').downcase

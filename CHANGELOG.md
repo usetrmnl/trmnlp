@@ -7,6 +7,7 @@
 - The `hn-stories` example uses `title--small` in its half views. It had `title--xsmall`, which no Framework release has, so those titles rendered at the default size.
 - `trmnlp lint` reports a Framework class behind screen prefixes that its release does not define for it (`framework_prefixes_exist`): a prefix that does not exist, such as `xl:value--large`, prefixes out of order, such as `portrait:lg:value--large`, or a prefix the class has no variant for, such as `dark:value--large`. TRMNL ignores the class and says nothing. The lists come from each release's `plugins.css`; `rake framework:classes` refreshes them.
 - `trmnlp lint` reports a plain `https://` link in a custom field's description (`custom_field_links_embedded`), as TRMNL's recipe review does. An embedded `<a>` link is shorter, opens in a new tab and is plainly clickable; a link written without `https://` stays an unlinked example.
+- `trmnlp lint` reports a `settings.yml`, view or transform over 100 KB (`files_under_upload_limit`). TRMNL refuses to import such a file, so `trmnlp push` failed, even when a transform trims the data and the plugin renders in `serve`. Thanks to @barrymichaeldoyle for #252.
 
 ## 0.25.0
 
