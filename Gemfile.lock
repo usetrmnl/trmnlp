@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    trmnl_preview (0.25.0)
+    trmnl_preview (0.26.0)
       activesupport (~> 8.0)
       capybara (~> 3.40)
       cgi (~> 0.5)
