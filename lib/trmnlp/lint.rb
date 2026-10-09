@@ -18,6 +18,8 @@ require_relative 'lint/checks/highcharts_elements_unique'
 require_relative 'lint/checks/image_links_reachable'
 require_relative 'lint/checks/custom_fields_used'
 require_relative 'lint/checks/form_fields_valid'
+require_relative 'lint/checks/yes_no_selects_are_boolean'
+require_relative 'lint/checks/coordinates_use_lat_lon'
 require_relative 'lint/checks/no_custom_filters'
 require_relative 'lint/checks/no_unknown_filters'
 
@@ -42,6 +44,8 @@ module TRMNLP
       Checks::ImageLinksReachable,
       Checks::CustomFieldsUsed,
       Checks::FormFieldsValid,
+      Checks::YesNoSelectsAreBoolean,
+      Checks::CoordinatesUseLatLon,
       Checks::NoCustomFilters,
       Checks::NoUnknownFilters
     ].freeze
