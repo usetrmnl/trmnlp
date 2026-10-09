@@ -75,7 +75,8 @@ namespace :framework do
     classes_by_release = {}
     variants_by_release = {}
     TRMNLP::FrameworkVersion.version_numbers.sort_by { Gem::Version.new(it) }.each do |number|
-      css = URI.parse(TRMNLP::FrameworkVersion.new(number).css_url).read
+      # A class that starts with a digit, such as `1bit:`, is escaped in CSS as `\31 bit\:`.
+      css = URI.parse(TRMNLP::FrameworkVersion.new(number).css_url).read.gsub(/\\3(\d) /, '\1')
       classes = css.scan(pattern).uniq.sort
       classes_by_release[number] = classes unless classes == classes_by_release.values.last
 

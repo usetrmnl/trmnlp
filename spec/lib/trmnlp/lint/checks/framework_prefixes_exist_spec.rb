@@ -79,6 +79,14 @@ RSpec.describe TRMNLP::Lint::Checks::FrameworkPrefixesExist do
       end
     end
 
+    context 'with a bit depth prefix on its own' do
+      let(:markup) { '<span class="2bit:text--gray-30 4bit:text--gray-45">1</span>' }
+
+      it 'passes' do
+        expect(check.issues).to be_empty
+      end
+    end
+
     context 'with a class the Framework does not have' do
       let(:markup) { '<span class="xl:value--medium">1</span>' }
 
