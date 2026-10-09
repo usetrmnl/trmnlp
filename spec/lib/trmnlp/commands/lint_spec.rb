@@ -140,6 +140,26 @@ RSpec.describe TRMNLP::Commands::Lint do
                                             'snippet' => 'name: lowercase' }])
       end
 
+      it 'locates a plain link in the description of the custom field that has it' do
+        File.write(File.join(tmp_root, 'src', 'settings.yml'), <<~YAML)
+          custom_fields:
+            - keyname: about
+              field_type: author_bio
+              name: About
+              email_address: me@example.com
+            - keyname: feed
+              field_type: url
+              name: Feed
+              description: Find it at https://somewhere.com/feed
+        YAML
+        command.call
+        issue = JSON.parse(reporter.messages.first)['issues'].find do |finding|
+          finding['rule_id'] == 'custom_field_links_embedded'
+        end
+        expect(issue['locations']).to eq([{ 'path' => 'src/settings.yml', 'line' => 9, 'column' => 18,
+                                            'snippet' => '    description: Find it at https://somewhere.com/feed' }])
+      end
+
       it 'attributes an invalid framework class to each matching file' do
         File.write(File.join(tmp_root, 'src', 'full.liquid'), '<div class="w--[192px]">Text</div>')
         File.write(File.join(tmp_root, 'src', 'shared.liquid'), '<p class="w--[192px]">Shared</p>')
