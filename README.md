@@ -13,16 +13,18 @@ The server watches the filesystem for changes to the Liquid templates, seamlessl
 
 ## Quick Start
 
-trmnlp requires Ruby 4.0 or newer. Check with `ruby -v` before installing.
+With [Docker](https://docs.docker.com/get-docker/) installed:
 
 ```sh
-gem install trmnl_preview     # install
+mkdir -p ~/.local/bin         # install
+docker run --rm --entrypoint cat trmnl/trmnlp /app/templates/init/bin/trmnlp > ~/.local/bin/trmnlp
+chmod +x ~/.local/bin/trmnlp
 trmnlp init my_plugin         # scaffold a project
 cd my_plugin
 trmnlp serve                  # preview at http://localhost:4567
 ```
 
-No Ruby on hand? Run it through Docker instead — see [Installing via Docker](#installing-via-docker).
+Have Ruby 4.0 or newer? `gem install trmnl_preview` starts faster — see [Installing via RubyGems](#installing-via-rubygems).
 
 ## Project Structure
 
@@ -227,21 +229,7 @@ The `bin/trmnlp` script is provided as a convenience. It will use the local Ruby
 
 You can modify the `bin/trmnlp` script to set up environment variables (plugin secrets, etc.) before running the server.
 
-**Gem or Docker?** Install the gem if you already have Ruby >= 4.0 — it has the fastest startup. Use Docker for zero local setup.
-
-### Installing via RubyGems
-
-Prerequisites:
-
-- Ruby >= 4.0
-- For PNG rendering (optional):
-  - Firefox
-  - ImageMagick
-
-```sh
-gem install trmnl_preview
-trmnlp serve
-```
+**Docker or gem?** The Docker image has everything trmnlp needs, including Firefox and the tools `trmnlp test` uses. The gem starts a little faster, but needs Ruby 4.0 and those tools installed yourself.
 
 ### Installing via Docker
 
@@ -326,6 +314,24 @@ To build the Docker image from source:
 git clone https://github.com/usetrmnl/trmnlp.git
 cd trmnlp
 docker build -t trmnlp .
+```
+
+### Installing via RubyGems
+
+Prerequisites:
+
+- Ruby >= 4.0
+- For PNG rendering and `trmnlp test`:
+  - Firefox
+  - ImageMagick 7
+- For some `trmnlp test` features ([Testing](docs/testing.md)):
+  - libfaketime, for a transform's clock with `now:`
+  - zbar, for `have_qr_code`
+- Node 24, Python or PHP, for a transform in that language
+
+```sh
+gem install trmnl_preview
+trmnlp serve
 ```
 
 ## `.trmnlp.yml` Reference - Project Config
