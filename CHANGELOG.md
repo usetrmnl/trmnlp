@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.24.0
 
 - `it_behaves_like 'a publishable recipe'` names a screen's palette and dark mode in its examples, so a group that draws the TRMNL X in color and in 1-bit, or in light and dark, can tell them apart.
 - `trmnlp test --report` writes `og-vs-x.png`: the full view on TRMNL OG and TRMNL X side by side at the same height, first on the report page and as `og_vs_x` in `report.json`. It shows a recipe whose content is small on the X with a lot of empty space.
