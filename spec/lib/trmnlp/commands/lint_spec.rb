@@ -60,6 +60,16 @@ RSpec.describe TRMNLP::Commands::Lint do
         )
       end
 
+      it 'locates only the misplaced element, below multi-line Liquid' do
+        File.write(File.join(tmp_root, 'src', 'full.liquid'),
+                   "<div class=\"layout\">{{ a\n | upcase }}\n  <div class=\"title_bar\">T</div>\n</div>\n" \
+                   '<div class="title_bar">Fine</div>')
+        command.call
+        issue = JSON.parse(reporter.messages.first)['issues'].find { it['rule_id'] == 'title_bar_outside_layout' }
+        expect(issue['locations']).to eq([{ 'path' => 'src/full.liquid', 'line' => 3, 'column' => 3,
+                                            'snippet' => '  <div class="title_bar">T</div>' }])
+      end
+
       it 'attributes duplicate form-field errors to both declarations' do
         File.write(File.join(tmp_root, 'src', 'settings.yml'), <<~YAML)
           custom_fields:

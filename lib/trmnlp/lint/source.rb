@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'nokogiri'
 require 'trmnl/liquid'
 require 'yaml'
 
@@ -12,6 +13,7 @@ module TRMNLP
     # which Config::Plugin's semantic readers render away.
     class Source
       VIEWS = %w[full half_horizontal half_vertical quadrant].freeze
+      LIQUID_COMMENT = /\{%-?\s*comment\s*-?%\}.*?\{%-?\s*endcomment\s*-?%\}/m
 
       def initialize(config:, paths:)
         @config = config
@@ -58,6 +60,23 @@ module TRMNLP
         @markup_files ||= (VIEWS + ['shared']).to_h do |view|
           ["src/#{view}.liquid", raw_read(paths.template(view))]
         end
+      end
+
+      # Parsed without render data: Liquid output becomes `{{}}` and tags become spaces,
+      # so the classes of every branch count and a quote inside Liquid cannot end an attribute.
+      # Each replacement keeps the newlines it replaced, so element lines stay true.
+      def html_fragments
+        @html_fragments ||= markup_files.transform_values do |markup|
+          html = markup.gsub(LIQUID_COMMENT) { "\n" * it.count("\n") }
+                       .gsub(/\{\{.*?\}\}/m) { "{{}}#{"\n" * it.count("\n")}" }
+                       .gsub(/\{%.*?%\}/m) { " #{"\n" * it.count("\n")}" }
+          Nokogiri::HTML.fragment(html)
+        end
+      end
+
+      def element_location(path, element)
+        snippet = markup_files.fetch(path).lines[element.line - 1].to_s.chomp
+        { path:, line: element.line, column: (snippet.index(/<#{element.name}\b/i) || 0) + 1, snippet: snippet[0, 240] }
       end
 
       def locations(pattern, files: markup_files)

@@ -40,11 +40,13 @@ module TRMNLP
         return source.locations(MARKUP_PATTERNS[rule_id]) if MARKUP_PATTERNS.key?(rule_id)
 
         case rule_id
-        when 'arbitrary_values_in_range' then class_locations
+        when 'arbitrary_values_in_range', 'framework_classes_exist' then class_locations
         when 'layouts_have_content' then empty_view_locations
         when 'form_fields_valid' then form_field_locations
         when 'custom_fields_used' then project_field_locations
         when 'no_custom_filters', 'no_unknown_filters' then filter_locations
+        when 'title_bar_outside_layout', 'no_nested_layouts'
+          check.misplaced_elements.map { |path, element| source.element_location(path, element) }
         when 'image_links_reachable' then source.locations(Regexp.union(check.unreachable_urls))
         else []
         end
