@@ -1,0 +1,1216 @@
+# Mirrored from each Framework release's plugins.css: the screen prefixes it defines for
+# value--, label--, title--, description--, text-- and content-- classes, and the classes each
+# covers: every class in a family (`all`), all `except` some, or `only` some. A list holds
+# until the next release listed.
+# Refresh with `rake framework:classes` — do not edit manually.
+0.0.1: []
+2.0.0:
+- prefixes:
+  - landscape
+  - portrait
+  families:
+    label:
+      except:
+      - label--gray-out
+      - label--underline-2
+    text: all
+    value: all
+- prefixes:
+  - landscape:1bit
+  - landscape:2bit
+  - landscape:3bit
+  - landscape:4bit
+  - lg:1bit
+  - lg:2bit
+  - lg:4bit
+  - lg:landscape:1bit
+  - lg:landscape:2bit
+  - lg:landscape:3bit
+  - lg:landscape:4bit
+  - lg:portrait:1bit
+  - lg:portrait:2bit
+  - lg:portrait:3bit
+  - lg:portrait:4bit
+  - md:1bit
+  - md:2bit
+  - md:4bit
+  - md:landscape:1bit
+  - md:landscape:2bit
+  - md:landscape:3bit
+  - md:landscape:4bit
+  - md:portrait:1bit
+  - md:portrait:2bit
+  - md:portrait:3bit
+  - md:portrait:4bit
+  - portrait:1bit
+  - portrait:2bit
+  - portrait:3bit
+  - portrait:4bit
+  - sm:1bit
+  - sm:2bit
+  - sm:4bit
+  - sm:landscape:1bit
+  - sm:landscape:2bit
+  - sm:landscape:3bit
+  - sm:landscape:4bit
+  - sm:portrait:1bit
+  - sm:portrait:2bit
+  - sm:portrait:3bit
+  - sm:portrait:4bit
+  families:
+    label:
+      except:
+      - label--gray
+      - label--underline-2
+    text:
+      except:
+      - text--black
+      - text--white
+    value: all
+- prefixes:
+  - lg
+  - lg:landscape
+  - lg:portrait
+  - md
+  - md:landscape
+  - md:portrait
+  - sm
+  - sm:landscape
+  - sm:portrait
+  families:
+    label:
+      except:
+      - label--gray
+      - label--underline-2
+    text: all
+    value: all
+2.3.0:
+- prefixes:
+  - landscape
+  - lg
+  - lg:landscape
+  - lg:portrait
+  - md
+  - md:landscape
+  - md:portrait
+  - portrait
+  - sm
+  - sm:landscape
+  - sm:portrait
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label:
+      except:
+      - label--gray-out
+      - label--underline-2
+    text: all
+    title: all
+    value: all
+- prefixes:
+  - landscape:1bit
+  - landscape:2bit
+  - landscape:3bit
+  - landscape:4bit
+  - lg:1bit
+  - lg:2bit
+  - lg:4bit
+  - lg:landscape:1bit
+  - lg:landscape:2bit
+  - lg:landscape:3bit
+  - lg:landscape:4bit
+  - lg:portrait:1bit
+  - lg:portrait:2bit
+  - lg:portrait:3bit
+  - lg:portrait:4bit
+  - md:1bit
+  - md:2bit
+  - md:4bit
+  - md:landscape:1bit
+  - md:landscape:2bit
+  - md:landscape:3bit
+  - md:landscape:4bit
+  - md:portrait:1bit
+  - md:portrait:2bit
+  - md:portrait:3bit
+  - md:portrait:4bit
+  - portrait:1bit
+  - portrait:2bit
+  - portrait:3bit
+  - portrait:4bit
+  - sm:1bit
+  - sm:2bit
+  - sm:4bit
+  - sm:landscape:1bit
+  - sm:landscape:2bit
+  - sm:landscape:3bit
+  - sm:landscape:4bit
+  - sm:portrait:1bit
+  - sm:portrait:2bit
+  - sm:portrait:3bit
+  - sm:portrait:4bit
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label:
+      except:
+      - label--gray-out
+      - label--underline-2
+    text:
+      except:
+      - text--black
+      - text--white
+    title: all
+    value: all
+3.0.0:
+- prefixes:
+  - dark
+  - dark:landscape
+  - dark:lg
+  - dark:lg:landscape
+  - dark:lg:portrait
+  - dark:md
+  - dark:md:landscape
+  - dark:md:portrait
+  - dark:portrait
+  - dark:sm
+  - dark:sm:landscape
+  - dark:sm:portrait
+  families:
+    text: all
+- prefixes:
+  - dark:1bit
+  - dark:2bit
+  - dark:3bit
+  - dark:4bit
+  - dark:landscape:1bit
+  - dark:landscape:2bit
+  - dark:landscape:3bit
+  - dark:landscape:4bit
+  - dark:lg:1bit
+  - dark:lg:2bit
+  - dark:lg:3bit
+  - dark:lg:4bit
+  - dark:lg:landscape:1bit
+  - dark:lg:landscape:2bit
+  - dark:lg:landscape:3bit
+  - dark:lg:landscape:4bit
+  - dark:lg:portrait:1bit
+  - dark:lg:portrait:2bit
+  - dark:lg:portrait:3bit
+  - dark:lg:portrait:4bit
+  - dark:md:1bit
+  - dark:md:2bit
+  - dark:md:3bit
+  - dark:md:4bit
+  - dark:md:landscape:1bit
+  - dark:md:landscape:2bit
+  - dark:md:landscape:3bit
+  - dark:md:landscape:4bit
+  - dark:md:portrait:1bit
+  - dark:md:portrait:2bit
+  - dark:md:portrait:3bit
+  - dark:md:portrait:4bit
+  - dark:portrait:1bit
+  - dark:portrait:2bit
+  - dark:portrait:3bit
+  - dark:portrait:4bit
+  - dark:sm:1bit
+  - dark:sm:2bit
+  - dark:sm:3bit
+  - dark:sm:4bit
+  - dark:sm:landscape:1bit
+  - dark:sm:landscape:2bit
+  - dark:sm:landscape:3bit
+  - dark:sm:landscape:4bit
+  - dark:sm:portrait:1bit
+  - dark:sm:portrait:2bit
+  - dark:sm:portrait:3bit
+  - dark:sm:portrait:4bit
+  families:
+    text:
+      only:
+      - text--center
+      - text--justify
+      - text--left
+      - text--right
+- prefixes:
+  - landscape
+  - lg
+  - lg:landscape
+  - lg:portrait
+  - md
+  - md:landscape
+  - md:portrait
+  - portrait
+  - sm
+  - sm:landscape
+  - sm:portrait
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label:
+      except:
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text: all
+    title: all
+    value: all
+- prefixes:
+  - landscape:1bit
+  - landscape:2bit
+  - landscape:3bit
+  - landscape:4bit
+  - lg:1bit
+  - lg:2bit
+  - lg:4bit
+  - lg:landscape:1bit
+  - lg:landscape:2bit
+  - lg:landscape:3bit
+  - lg:landscape:4bit
+  - lg:portrait:1bit
+  - lg:portrait:2bit
+  - lg:portrait:3bit
+  - lg:portrait:4bit
+  - md:1bit
+  - md:2bit
+  - md:4bit
+  - md:landscape:1bit
+  - md:landscape:2bit
+  - md:landscape:3bit
+  - md:landscape:4bit
+  - md:portrait:1bit
+  - md:portrait:2bit
+  - md:portrait:3bit
+  - md:portrait:4bit
+  - portrait:1bit
+  - portrait:2bit
+  - portrait:3bit
+  - portrait:4bit
+  - sm:1bit
+  - sm:2bit
+  - sm:4bit
+  - sm:landscape:1bit
+  - sm:landscape:2bit
+  - sm:landscape:3bit
+  - sm:landscape:4bit
+  - sm:portrait:1bit
+  - sm:portrait:2bit
+  - sm:portrait:3bit
+  - sm:portrait:4bit
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label:
+      except:
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text:
+      only:
+      - text--center
+      - text--justify
+      - text--left
+      - text--right
+    title: all
+    value: all
+3.0.4:
+- prefixes:
+  - dark
+  - dark:landscape
+  - dark:lg
+  - dark:lg:landscape
+  - dark:lg:portrait
+  - dark:md
+  - dark:md:landscape
+  - dark:md:portrait
+  - dark:portrait
+  - dark:sm
+  - dark:sm:landscape
+  - dark:sm:portrait
+  families:
+    text:
+      except:
+      - text--base
+      - text--giga
+      - text--large
+      - text--mega
+      - text--peta
+      - text--small
+      - text--tera
+      - text--xlarge
+      - text--xxlarge
+      - text--xxxlarge
+- prefixes:
+  - dark:1bit
+  - dark:2bit
+  - dark:3bit
+  - dark:4bit
+  - dark:landscape:1bit
+  - dark:landscape:2bit
+  - dark:landscape:3bit
+  - dark:landscape:4bit
+  - dark:lg:1bit
+  - dark:lg:2bit
+  - dark:lg:3bit
+  - dark:lg:4bit
+  - dark:lg:landscape:1bit
+  - dark:lg:landscape:2bit
+  - dark:lg:landscape:3bit
+  - dark:lg:landscape:4bit
+  - dark:lg:portrait:1bit
+  - dark:lg:portrait:2bit
+  - dark:lg:portrait:3bit
+  - dark:lg:portrait:4bit
+  - dark:md:1bit
+  - dark:md:2bit
+  - dark:md:3bit
+  - dark:md:4bit
+  - dark:md:landscape:1bit
+  - dark:md:landscape:2bit
+  - dark:md:landscape:3bit
+  - dark:md:landscape:4bit
+  - dark:md:portrait:1bit
+  - dark:md:portrait:2bit
+  - dark:md:portrait:3bit
+  - dark:md:portrait:4bit
+  - dark:portrait:1bit
+  - dark:portrait:2bit
+  - dark:portrait:3bit
+  - dark:portrait:4bit
+  - dark:sm:1bit
+  - dark:sm:2bit
+  - dark:sm:3bit
+  - dark:sm:4bit
+  - dark:sm:landscape:1bit
+  - dark:sm:landscape:2bit
+  - dark:sm:landscape:3bit
+  - dark:sm:landscape:4bit
+  - dark:sm:portrait:1bit
+  - dark:sm:portrait:2bit
+  - dark:sm:portrait:3bit
+  - dark:sm:portrait:4bit
+  families:
+    text:
+      only:
+      - text--center
+      - text--justify
+      - text--left
+      - text--right
+- prefixes:
+  - landscape
+  - lg
+  - lg:landscape
+  - lg:portrait
+  - md
+  - md:landscape
+  - md:portrait
+  - portrait
+  - sm
+  - sm:landscape
+  - sm:portrait
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label:
+      except:
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text: all
+    title: all
+    value: all
+- prefixes:
+  - landscape:1bit
+  - landscape:2bit
+  - landscape:3bit
+  - landscape:4bit
+  - lg:1bit
+  - lg:2bit
+  - lg:4bit
+  - lg:landscape:1bit
+  - lg:landscape:2bit
+  - lg:landscape:3bit
+  - lg:landscape:4bit
+  - lg:portrait:1bit
+  - lg:portrait:2bit
+  - lg:portrait:3bit
+  - lg:portrait:4bit
+  - md:1bit
+  - md:2bit
+  - md:4bit
+  - md:landscape:1bit
+  - md:landscape:2bit
+  - md:landscape:3bit
+  - md:landscape:4bit
+  - md:portrait:1bit
+  - md:portrait:2bit
+  - md:portrait:3bit
+  - md:portrait:4bit
+  - portrait:1bit
+  - portrait:2bit
+  - portrait:3bit
+  - portrait:4bit
+  - sm:1bit
+  - sm:2bit
+  - sm:4bit
+  - sm:landscape:1bit
+  - sm:landscape:2bit
+  - sm:landscape:3bit
+  - sm:landscape:4bit
+  - sm:portrait:1bit
+  - sm:portrait:2bit
+  - sm:portrait:3bit
+  - sm:portrait:4bit
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label:
+      except:
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text:
+      only:
+      - text--base
+      - text--center
+      - text--giga
+      - text--justify
+      - text--large
+      - text--left
+      - text--mega
+      - text--peta
+      - text--right
+      - text--small
+      - text--tera
+      - text--xlarge
+      - text--xxlarge
+      - text--xxxlarge
+    title: all
+    value: all
+3.0.5:
+- prefixes:
+  - dark
+  - dark:landscape
+  - dark:lg
+  - dark:lg:landscape
+  - dark:lg:portrait
+  - dark:md
+  - dark:md:landscape
+  - dark:md:portrait
+  - dark:portrait
+  - dark:sm
+  - dark:sm:landscape
+  - dark:sm:portrait
+  families:
+    text:
+      except:
+      - text--base
+      - text--giga
+      - text--large
+      - text--mega
+      - text--peta
+      - text--small
+      - text--tera
+      - text--xlarge
+      - text--xxlarge
+      - text--xxxlarge
+- prefixes:
+  - dark:1bit
+  - dark:2bit
+  - dark:3bit
+  - dark:4bit
+  - dark:landscape:1bit
+  - dark:landscape:2bit
+  - dark:landscape:3bit
+  - dark:landscape:4bit
+  - dark:lg:1bit
+  - dark:lg:2bit
+  - dark:lg:3bit
+  - dark:lg:4bit
+  - dark:lg:landscape:1bit
+  - dark:lg:landscape:2bit
+  - dark:lg:landscape:3bit
+  - dark:lg:landscape:4bit
+  - dark:lg:portrait:1bit
+  - dark:lg:portrait:2bit
+  - dark:lg:portrait:3bit
+  - dark:lg:portrait:4bit
+  - dark:md:1bit
+  - dark:md:2bit
+  - dark:md:3bit
+  - dark:md:4bit
+  - dark:md:landscape:1bit
+  - dark:md:landscape:2bit
+  - dark:md:landscape:3bit
+  - dark:md:landscape:4bit
+  - dark:md:portrait:1bit
+  - dark:md:portrait:2bit
+  - dark:md:portrait:3bit
+  - dark:md:portrait:4bit
+  - dark:portrait:1bit
+  - dark:portrait:2bit
+  - dark:portrait:3bit
+  - dark:portrait:4bit
+  - dark:sm:1bit
+  - dark:sm:2bit
+  - dark:sm:3bit
+  - dark:sm:4bit
+  - dark:sm:landscape:1bit
+  - dark:sm:landscape:2bit
+  - dark:sm:landscape:3bit
+  - dark:sm:landscape:4bit
+  - dark:sm:portrait:1bit
+  - dark:sm:portrait:2bit
+  - dark:sm:portrait:3bit
+  - dark:sm:portrait:4bit
+  families:
+    text:
+      except:
+      - text--base
+      - text--default
+      - text--giga
+      - text--inverse
+      - text--large
+      - text--mega
+      - text--muted
+      - text--peta
+      - text--small
+      - text--tera
+      - text--xlarge
+      - text--xxlarge
+      - text--xxxlarge
+- prefixes:
+  - landscape
+  - lg
+  - lg:landscape
+  - lg:portrait
+  - md
+  - md:landscape
+  - md:portrait
+  - portrait
+  - sm
+  - sm:landscape
+  - sm:portrait
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label:
+      except:
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text: all
+    title: all
+    value: all
+- prefixes:
+  - landscape:1bit
+  - landscape:2bit
+  - landscape:3bit
+  - landscape:4bit
+  - lg:1bit
+  - lg:2bit
+  - lg:4bit
+  - lg:landscape:1bit
+  - lg:landscape:2bit
+  - lg:landscape:3bit
+  - lg:landscape:4bit
+  - lg:portrait:1bit
+  - lg:portrait:2bit
+  - lg:portrait:3bit
+  - lg:portrait:4bit
+  - md:1bit
+  - md:2bit
+  - md:4bit
+  - md:landscape:1bit
+  - md:landscape:2bit
+  - md:landscape:3bit
+  - md:landscape:4bit
+  - md:portrait:1bit
+  - md:portrait:2bit
+  - md:portrait:3bit
+  - md:portrait:4bit
+  - portrait:1bit
+  - portrait:2bit
+  - portrait:3bit
+  - portrait:4bit
+  - sm:1bit
+  - sm:2bit
+  - sm:4bit
+  - sm:landscape:1bit
+  - sm:landscape:2bit
+  - sm:landscape:3bit
+  - sm:landscape:4bit
+  - sm:portrait:1bit
+  - sm:portrait:2bit
+  - sm:portrait:3bit
+  - sm:portrait:4bit
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label:
+      except:
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text:
+      except:
+      - text--default
+      - text--inverse
+      - text--muted
+    title: all
+    value: all
+- prefixes:
+  - lg:3bit
+  - md:3bit
+  - sm:3bit
+  families:
+    text:
+      except:
+      - text--base
+      - text--center
+      - text--default
+      - text--giga
+      - text--inverse
+      - text--justify
+      - text--large
+      - text--left
+      - text--mega
+      - text--muted
+      - text--peta
+      - text--right
+      - text--small
+      - text--tera
+      - text--xlarge
+      - text--xxlarge
+      - text--xxxlarge
+3.1.0:
+- prefixes:
+  - dark
+  - dark:landscape
+  - dark:lg
+  - dark:lg:landscape
+  - dark:lg:portrait
+  - dark:md
+  - dark:md:landscape
+  - dark:md:portrait
+  - dark:portrait
+  - dark:sm
+  - dark:sm:landscape
+  - dark:sm:portrait
+  families:
+    text:
+      except:
+      - text--base
+      - text--giga
+      - text--large
+      - text--mega
+      - text--peta
+      - text--small
+      - text--tera
+      - text--xlarge
+      - text--xxlarge
+      - text--xxxlarge
+- prefixes:
+  - dark:1bit
+  - dark:2bit
+  - dark:3bit
+  - dark:4bit
+  - dark:landscape:1bit
+  - dark:landscape:2bit
+  - dark:landscape:3bit
+  - dark:landscape:4bit
+  - dark:lg:1bit
+  - dark:lg:2bit
+  - dark:lg:3bit
+  - dark:lg:4bit
+  - dark:lg:landscape:1bit
+  - dark:lg:landscape:2bit
+  - dark:lg:landscape:3bit
+  - dark:lg:landscape:4bit
+  - dark:lg:portrait:1bit
+  - dark:lg:portrait:2bit
+  - dark:lg:portrait:3bit
+  - dark:lg:portrait:4bit
+  - dark:md:1bit
+  - dark:md:2bit
+  - dark:md:3bit
+  - dark:md:4bit
+  - dark:md:landscape:1bit
+  - dark:md:landscape:2bit
+  - dark:md:landscape:3bit
+  - dark:md:landscape:4bit
+  - dark:md:portrait:1bit
+  - dark:md:portrait:2bit
+  - dark:md:portrait:3bit
+  - dark:md:portrait:4bit
+  - dark:portrait:1bit
+  - dark:portrait:2bit
+  - dark:portrait:3bit
+  - dark:portrait:4bit
+  - dark:sm:1bit
+  - dark:sm:2bit
+  - dark:sm:3bit
+  - dark:sm:4bit
+  - dark:sm:landscape:1bit
+  - dark:sm:landscape:2bit
+  - dark:sm:landscape:3bit
+  - dark:sm:landscape:4bit
+  - dark:sm:portrait:1bit
+  - dark:sm:portrait:2bit
+  - dark:sm:portrait:3bit
+  - dark:sm:portrait:4bit
+  families:
+    text:
+      only:
+      - text--center
+      - text--justify
+      - text--left
+      - text--right
+- prefixes:
+  - landscape
+  - lg
+  - lg:landscape
+  - lg:portrait
+  - md
+  - md:landscape
+  - md:portrait
+  - portrait
+  - sm
+  - sm:landscape
+  - sm:portrait
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label:
+      except:
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text: all
+    title: all
+    value: all
+- prefixes:
+  - landscape:1bit
+  - landscape:2bit
+  - landscape:3bit
+  - landscape:4bit
+  - lg:1bit
+  - lg:2bit
+  - lg:4bit
+  - lg:landscape:1bit
+  - lg:landscape:2bit
+  - lg:landscape:3bit
+  - lg:landscape:4bit
+  - lg:portrait:1bit
+  - lg:portrait:2bit
+  - lg:portrait:3bit
+  - lg:portrait:4bit
+  - md:1bit
+  - md:2bit
+  - md:4bit
+  - md:landscape:1bit
+  - md:landscape:2bit
+  - md:landscape:3bit
+  - md:landscape:4bit
+  - md:portrait:1bit
+  - md:portrait:2bit
+  - md:portrait:3bit
+  - md:portrait:4bit
+  - portrait:1bit
+  - portrait:2bit
+  - portrait:3bit
+  - portrait:4bit
+  - sm:1bit
+  - sm:2bit
+  - sm:4bit
+  - sm:landscape:1bit
+  - sm:landscape:2bit
+  - sm:landscape:3bit
+  - sm:landscape:4bit
+  - sm:portrait:1bit
+  - sm:portrait:2bit
+  - sm:portrait:3bit
+  - sm:portrait:4bit
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label:
+      except:
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text:
+      only:
+      - text--base
+      - text--center
+      - text--giga
+      - text--justify
+      - text--large
+      - text--left
+      - text--mega
+      - text--peta
+      - text--right
+      - text--small
+      - text--tera
+      - text--xlarge
+      - text--xxlarge
+      - text--xxxlarge
+    title: all
+    value: all
+3.1.1:
+- prefixes:
+  - dark
+  - dark:landscape
+  - dark:lg
+  - dark:lg:landscape
+  - dark:lg:portrait
+  - dark:md
+  - dark:md:landscape
+  - dark:md:portrait
+  - dark:portrait
+  - dark:sm
+  - dark:sm:landscape
+  - dark:sm:portrait
+  families:
+    text:
+      except:
+      - text--base
+      - text--giga
+      - text--large
+      - text--mega
+      - text--peta
+      - text--small
+      - text--tera
+      - text--xlarge
+      - text--xxlarge
+      - text--xxxlarge
+- prefixes:
+  - dark:1bit
+  - dark:2bit
+  - dark:3bit
+  - dark:4bit
+  - dark:landscape:1bit
+  - dark:landscape:2bit
+  - dark:landscape:3bit
+  - dark:landscape:4bit
+  - dark:lg:1bit
+  - dark:lg:2bit
+  - dark:lg:3bit
+  - dark:lg:4bit
+  - dark:lg:landscape:1bit
+  - dark:lg:landscape:2bit
+  - dark:lg:landscape:3bit
+  - dark:lg:landscape:4bit
+  - dark:lg:portrait:1bit
+  - dark:lg:portrait:2bit
+  - dark:lg:portrait:3bit
+  - dark:lg:portrait:4bit
+  - dark:md:1bit
+  - dark:md:2bit
+  - dark:md:3bit
+  - dark:md:4bit
+  - dark:md:landscape:1bit
+  - dark:md:landscape:2bit
+  - dark:md:landscape:3bit
+  - dark:md:landscape:4bit
+  - dark:md:portrait:1bit
+  - dark:md:portrait:2bit
+  - dark:md:portrait:3bit
+  - dark:md:portrait:4bit
+  - dark:portrait:1bit
+  - dark:portrait:2bit
+  - dark:portrait:3bit
+  - dark:portrait:4bit
+  - dark:sm:1bit
+  - dark:sm:2bit
+  - dark:sm:3bit
+  - dark:sm:4bit
+  - dark:sm:landscape:1bit
+  - dark:sm:landscape:2bit
+  - dark:sm:landscape:3bit
+  - dark:sm:landscape:4bit
+  - dark:sm:portrait:1bit
+  - dark:sm:portrait:2bit
+  - dark:sm:portrait:3bit
+  - dark:sm:portrait:4bit
+  families:
+    text:
+      except:
+      - text--base
+      - text--default
+      - text--giga
+      - text--inverse
+      - text--large
+      - text--mega
+      - text--muted
+      - text--peta
+      - text--small
+      - text--tera
+      - text--xlarge
+      - text--xxlarge
+      - text--xxxlarge
+- prefixes:
+  - landscape
+  - lg
+  - lg:landscape
+  - lg:portrait
+  - md
+  - md:landscape
+  - md:portrait
+  - portrait
+  - sm
+  - sm:landscape
+  - sm:portrait
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label:
+      except:
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text: all
+    title: all
+    value: all
+- prefixes:
+  - landscape:1bit
+  - landscape:2bit
+  - landscape:3bit
+  - landscape:4bit
+  - lg:1bit
+  - lg:2bit
+  - lg:4bit
+  - lg:landscape:1bit
+  - lg:landscape:2bit
+  - lg:landscape:3bit
+  - lg:landscape:4bit
+  - lg:portrait:1bit
+  - lg:portrait:2bit
+  - lg:portrait:3bit
+  - lg:portrait:4bit
+  - md:1bit
+  - md:2bit
+  - md:4bit
+  - md:landscape:1bit
+  - md:landscape:2bit
+  - md:landscape:3bit
+  - md:landscape:4bit
+  - md:portrait:1bit
+  - md:portrait:2bit
+  - md:portrait:3bit
+  - md:portrait:4bit
+  - portrait:1bit
+  - portrait:2bit
+  - portrait:3bit
+  - portrait:4bit
+  - sm:1bit
+  - sm:2bit
+  - sm:4bit
+  - sm:landscape:1bit
+  - sm:landscape:2bit
+  - sm:landscape:3bit
+  - sm:landscape:4bit
+  - sm:portrait:1bit
+  - sm:portrait:2bit
+  - sm:portrait:3bit
+  - sm:portrait:4bit
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label:
+      except:
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text:
+      except:
+      - text--default
+      - text--inverse
+      - text--muted
+    title: all
+    value: all
+- prefixes:
+  - lg:3bit
+  - md:3bit
+  - sm:3bit
+  families:
+    text:
+      except:
+      - text--base
+      - text--center
+      - text--default
+      - text--giga
+      - text--inverse
+      - text--justify
+      - text--large
+      - text--left
+      - text--mega
+      - text--muted
+      - text--peta
+      - text--right
+      - text--small
+      - text--tera
+      - text--xlarge
+      - text--xxlarge
+      - text--xxxlarge
+3.2.0:
+- prefixes:
+  - dark
+  - dark:1bit
+  - dark:2bit
+  - dark:4bit
+  - dark:landscape
+  - dark:landscape:1bit
+  - dark:landscape:2bit
+  - dark:landscape:4bit
+  - dark:lg
+  - dark:lg:1bit
+  - dark:lg:2bit
+  - dark:lg:4bit
+  - dark:lg:landscape
+  - dark:lg:landscape:1bit
+  - dark:lg:landscape:2bit
+  - dark:lg:landscape:4bit
+  - dark:lg:portrait
+  - dark:lg:portrait:1bit
+  - dark:lg:portrait:2bit
+  - dark:lg:portrait:4bit
+  - dark:md
+  - dark:md:1bit
+  - dark:md:2bit
+  - dark:md:4bit
+  - dark:md:landscape
+  - dark:md:landscape:1bit
+  - dark:md:landscape:2bit
+  - dark:md:landscape:4bit
+  - dark:md:portrait
+  - dark:md:portrait:1bit
+  - dark:md:portrait:2bit
+  - dark:md:portrait:4bit
+  - dark:portrait
+  - dark:portrait:1bit
+  - dark:portrait:2bit
+  - dark:portrait:4bit
+  - dark:sm
+  - dark:sm:1bit
+  - dark:sm:2bit
+  - dark:sm:4bit
+  - dark:sm:landscape
+  - dark:sm:landscape:1bit
+  - dark:sm:landscape:2bit
+  - dark:sm:landscape:4bit
+  - dark:sm:portrait
+  - dark:sm:portrait:1bit
+  - dark:sm:portrait:2bit
+  - dark:sm:portrait:4bit
+  families:
+    text:
+      except:
+      - text--bold
+      - text--regular
+- prefixes:
+  - landscape
+  - landscape:1bit
+  - landscape:2bit
+  - landscape:4bit
+  - lg
+  - lg:1bit
+  - lg:2bit
+  - lg:4bit
+  - lg:landscape
+  - lg:landscape:1bit
+  - lg:landscape:2bit
+  - lg:landscape:4bit
+  - lg:portrait
+  - lg:portrait:1bit
+  - lg:portrait:2bit
+  - lg:portrait:4bit
+  - md
+  - md:1bit
+  - md:2bit
+  - md:4bit
+  - md:landscape
+  - md:landscape:1bit
+  - md:landscape:2bit
+  - md:landscape:4bit
+  - md:portrait
+  - md:portrait:1bit
+  - md:portrait:2bit
+  - md:portrait:4bit
+  - portrait
+  - portrait:1bit
+  - portrait:2bit
+  - portrait:4bit
+  - sm
+  - sm:1bit
+  - sm:2bit
+  - sm:4bit
+  - sm:landscape
+  - sm:landscape:1bit
+  - sm:landscape:2bit
+  - sm:landscape:4bit
+  - sm:portrait
+  - sm:portrait:1bit
+  - sm:portrait:2bit
+  - sm:portrait:4bit
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description: all
+    label: all
+    text: all
+    title: all
+    value: all

@@ -26,6 +26,7 @@ require_relative 'lint/checks/author_contact_method'
 require_relative 'lint/checks/title_bar_outside_layout'
 require_relative 'lint/checks/no_nested_layouts'
 require_relative 'lint/checks/framework_classes_exist'
+require_relative 'lint/checks/framework_prefixes_exist'
 require_relative 'lint/checks/no_external_qr_codes'
 
 module TRMNLP
@@ -57,6 +58,7 @@ module TRMNLP
       Checks::TitleBarOutsideLayout,
       Checks::NoNestedLayouts,
       Checks::FrameworkClassesExist,
+      Checks::FrameworkPrefixesExist,
       Checks::NoExternalQrCodes
     ].freeze
 
