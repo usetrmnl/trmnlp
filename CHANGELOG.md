@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp lint` names the sizes an element has when a size class is missing (`framework_classes_exist`), such as `title--small` to `title--xxlarge` for `title--mega`, and links to the Framework's Element Sizes page. Each element has its own set of sizes.
+
 ## 0.25.0
 
 - `trmnlp lint` also reports a `content--` class that the plugin's Framework release does not have (`framework_classes_exist`), such as `content--xsmall`. Rich Text sizes stop at `content--small`, and a missing one leaves the text at the default size.

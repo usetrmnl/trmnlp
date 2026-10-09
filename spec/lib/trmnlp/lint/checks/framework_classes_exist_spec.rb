@@ -33,6 +33,39 @@ RSpec.describe TRMNLP::Lint::Checks::FrameworkClassesExist do
       end
     end
 
+    context 'with a size the element does not have' do
+      let(:markup) { '<span class="title title--mega">1</span>' }
+
+      it 'names the sizes the element has' do
+        expect(check.issues.first[:message])
+          .to include('title--small, title--base, title--large, title--xlarge, title--xxlarge')
+      end
+    end
+
+    context 'with a size name the Framework does not use' do
+      let(:markup) { '<span class="description description--medium">1</span>' }
+
+      it 'names the sizes the element has' do
+        expect(check.issues.first[:message]).to include('description--base, description--large')
+      end
+    end
+
+    context 'with a size the element does not have, for the docs link' do
+      let(:markup) { '<span class="label label--xxxlarge">1</span>' }
+
+      it 'links to the element sizes page' do
+        expect(check.issues.first[:learn_more]).to eq('https://trmnl.com/framework/docs/element_sizes')
+      end
+    end
+
+    context 'with a missing class that is not a size' do
+      let(:markup) { '<span class="label label--blue">1</span>' }
+
+      it 'does not list sizes' do
+        expect(check.issues.first[:message]).not_to include('label--small')
+      end
+    end
+
     context 'with Framework classes, screen prefixes and custom classes' do
       let :markup do
         '<b class="value value--xxsmall md:portrait:title--large text--gray-50 content--center my-value--medium">1</b>'
