@@ -3,6 +3,7 @@
 require 'erb'
 require 'fileutils'
 require 'json'
+require 'mini_magick'
 require 'rspec/core'
 
 module TRMNLP
@@ -12,6 +13,7 @@ module TRMNLP
     # DIR/report.json. Under GitHub Actions the counts and failures go to the step summary too.
     class Report
       TEMPLATE = File.expand_path('report.html.erb', __dir__)
+      OG_VS_X = 'og-vs-x.png'
       OUTLINES_SCRIPT = <<~JS
         (() => [...document.querySelectorAll('.view *')].slice(0, 3000).map((el) => {
           const box = el.getBoundingClientRect();
@@ -28,12 +30,17 @@ module TRMNLP
         @dir = "#{dir}#{ENV.fetch('TEST_ENV_NUMBER', '')}" # parallel_tests: report, report2, report3...
         @examples = {}
         @images = 0
+        @full_landscape_images = {}
       end
 
       def record_screen(screen)
-        entry&.fetch(:screens)&.push(
+        return unless entry
+
+        image = copy_image(screen.png_path)
+        remember_full_landscape(screen, image)
+        entry[:screens].push(
           label: "#{screen.device.name} · #{screen.view}", width: screen.device.width, height: screen.device.height,
-          image: copy_image(screen.png_path), outlines: screen.evaluate(OUTLINES_SCRIPT), problems: screen.problems
+          image:, outlines: screen.evaluate(OUTLINES_SCRIPT), problems: screen.problems
         )
       end
 
@@ -50,7 +57,8 @@ module TRMNLP
 
       def close(_notification)
         FileUtils.mkdir_p(@dir)
-        File.write(File.join(@dir, 'report.json'), JSON.pretty_generate(examples: examples))
+        write_og_vs_x
+        File.write(File.join(@dir, 'report.json'), JSON.pretty_generate(og_vs_x:, examples:))
         File.write(File.join(@dir, 'index.html'), ERB.new(File.read(TEMPLATE)).result(binding))
         write_step_summary if ENV['GITHUB_STEP_SUMMARY']
       end
@@ -73,6 +81,24 @@ module TRMNLP
         FileUtils.mkdir_p(File.join(@dir, 'images'))
         File.binwrite(File.join(@dir, name), File.binread(path)) # not cp, which keeps the screen's private 0600 mode
         name
+      end
+
+      def remember_full_landscape(screen, image)
+        return unless screen.view == 'full' && screen.device.width > screen.device.height
+
+        @full_landscape_images[screen.device.name] ||= image
+      end
+
+      def og_vs_x = (OG_VS_X if @full_landscape_images.values_at('og_plus', 'v2').all?)
+
+      # Both at the OG's height, so content that fills the OG but is small on the X shows at a glance.
+      def write_og_vs_x
+        return unless og_vs_x
+
+        MiniMagick.convert do |convert|
+          @full_landscape_images.values_at('og_plus', 'v2').each { convert << File.join(@dir, it) }
+          convert << '-resize' << 'x480' << '+append' << '+repage' << File.join(@dir, OG_VS_X)
+        end
       end
 
       def count(status) = examples.count { it[:status] == status }
