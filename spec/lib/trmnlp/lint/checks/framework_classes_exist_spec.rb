@@ -25,8 +25,18 @@ RSpec.describe TRMNLP::Lint::Checks::FrameworkClassesExist do
       end
     end
 
+    context 'with a Rich Text size the Framework does not have' do
+      let(:markup) { '<div class="content content--xsmall">1</div>' }
+
+      it 'reports it' do
+        expect(check.issues.map { it[:message][/\A'([^']+)'/, 1] }).to eq(%w[content--xsmall])
+      end
+    end
+
     context 'with Framework classes, screen prefixes and custom classes' do
-      let(:markup) { '<b class="value value--xxsmall md:portrait:title--large text--gray-50 my-value--medium">1</b>' }
+      let :markup do
+        '<b class="value value--xxsmall md:portrait:title--large text--gray-50 content--center my-value--medium">1</b>'
+      end
 
       it 'passes' do
         expect(check.issues).to be_empty

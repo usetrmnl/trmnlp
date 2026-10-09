@@ -46,7 +46,7 @@ namespace :framework do
     require_relative 'lib/trmnlp/framework_version'
 
     # A family class, bare or after a screen prefix such as `md\:`.
-    pattern = /(?<=\.|\\:)(?:value|label|title|description|text)--[\w-]+/
+    pattern = /(?<=\.|\\:)(?:value|label|title|description|text|content)--[\w-]+/
     classes_by_release = {}
     TRMNLP::FrameworkVersion.version_numbers.sort_by { Gem::Version.new(it) }.each do |number|
       classes = URI.parse(TRMNLP::FrameworkVersion.new(number).css_url).read.scan(pattern).uniq.sort
@@ -56,7 +56,7 @@ namespace :framework do
     destination = File.expand_path('db/data/framework_classes.yml', __dir__)
     header = <<~HEADER
       # Mirrored from each Framework release's plugins.css: its value--, label--, title--,
-      # description-- and text-- classes. A list holds until the next release listed.
+      # description--, text-- and content-- classes. A list holds until the next release listed.
       # Refresh with `rake framework:classes` — do not edit manually.
     HEADER
     File.write(destination, header + classes_by_release.to_yaml.delete_prefix("---\n"))

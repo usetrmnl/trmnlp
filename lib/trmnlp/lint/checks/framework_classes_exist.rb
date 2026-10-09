@@ -10,7 +10,7 @@ module TRMNLP
       # Reports classes in the Framework's own families that the plugin's release does
       # not define, such as `value--medium`. They match no rule, so they do nothing.
       class FrameworkClassesExist < Check
-        FAMILY_PATTERN = /\A(?:value|label|title|description|text)--/
+        FAMILY_PATTERN = /\A(?:value|label|title|description|text|content)--/
         DATA_PATH = File.expand_path('../../../../db/data/framework_classes.yml', __dir__)
 
         # Release number => the family classes its plugins.css defines, from that release until the next one listed.

@@ -1,7 +1,10 @@
 # Mirrored from each Framework release's plugins.css: its value--, label--, title--,
-# description-- and text-- classes. A list holds until the next release listed.
+# description--, text-- and content-- classes. A list holds until the next release listed.
 # Refresh with `rake framework:classes` — do not edit manually.
 0.0.1:
+- content--center
+- content--large
+- content--long
 - label--outline
 - label--simple
 - label--small
@@ -12,6 +15,21 @@
 - value--small
 - value--xsmall
 0.0.2:
+- content--center
+- content--large
+- content--long
+- label--small
+- label--underline
+- label--underline-2
+- title--small
+- value--large
+- value--small
+- value--xsmall
+0.0.3:
+- content--center
+- content--large
+- content--long
+- content--small
 - label--small
 - label--underline
 - label--underline-2
@@ -20,6 +38,27 @@
 - value--small
 - value--xsmall
 0.0.5:
+- content--center
+- content--large
+- content--long
+- content--small
+- label--large
+- label--outline
+- label--small
+- label--underline
+- label--underline-2
+- text--center
+- text--left
+- text--right
+- title--small
+- value--large
+- value--small
+- value--xlarge
+- value--xsmall
+- value--xxlarge
+0.0.6:
+- content--center
+- content--small
 - label--large
 - label--outline
 - label--small
@@ -35,6 +74,8 @@
 - value--xsmall
 - value--xxlarge
 0.0.7:
+- content--center
+- content--small
 - label--large
 - label--outline
 - label--small
@@ -53,6 +94,8 @@
 - value--xxsmall
 - value--xxxlarge
 1.0.0:
+- content--center
+- content--small
 - label--gray-out
 - label--inverted
 - label--large
@@ -73,6 +116,8 @@
 - value--xxsmall
 - value--xxxlarge
 1.0.1:
+- content--center
+- content--small
 - label--gray-out
 - label--inverted
 - label--large
@@ -94,6 +139,43 @@
 - value--xxsmall
 - value--xxxlarge
 1.0.2:
+- content--center
+- content--small
+- label--gray-out
+- label--inverted
+- label--large
+- label--outline
+- label--small
+- label--underline
+- label--underline-2
+- text--black
+- text--center
+- text--gray-1
+- text--gray-2
+- text--gray-3
+- text--gray-4
+- text--gray-5
+- text--gray-6
+- text--gray-7
+- text--justify
+- text--left
+- text--right
+- text--white
+- title--small
+- value--large
+- value--small
+- value--tnums
+- value--xlarge
+- value--xsmall
+- value--xxlarge
+- value--xxsmall
+- value--xxxlarge
+1.1.0:
+- content--center
+- content--large
+- content--left
+- content--right
+- content--small
 - label--gray-out
 - label--inverted
 - label--large
@@ -124,6 +206,11 @@
 - value--xxsmall
 - value--xxxlarge
 2.0.0:
+- content--center
+- content--large
+- content--left
+- content--right
+- content--small
 - label--gray
 - label--gray-out
 - label--inverted
@@ -168,6 +255,15 @@
 - value--xxsmall
 - value--xxxlarge
 2.3.0:
+- content--base
+- content--center
+- content--large
+- content--left
+- content--right
+- content--small
+- content--xlarge
+- content--xxlarge
+- content--xxxlarge
 - description--base
 - description--large
 - description--xlarge
@@ -229,6 +325,15 @@
 - value--xxsmall
 - value--xxxlarge
 3.0.0:
+- content--base
+- content--center
+- content--large
+- content--left
+- content--right
+- content--small
+- content--xlarge
+- content--xxlarge
+- content--xxxlarge
 - description--base
 - description--large
 - description--xlarge
@@ -452,6 +557,15 @@
 - value--xxsmall
 - value--xxxlarge
 3.0.4:
+- content--base
+- content--center
+- content--large
+- content--left
+- content--right
+- content--small
+- content--xlarge
+- content--xxlarge
+- content--xxxlarge
 - description--base
 - description--large
 - description--xlarge
@@ -685,6 +799,15 @@
 - value--xxsmall
 - value--xxxlarge
 3.2.0:
+- content--base
+- content--center
+- content--large
+- content--left
+- content--right
+- content--small
+- content--xlarge
+- content--xxlarge
+- content--xxxlarge
 - description--base
 - description--large
 - description--xlarge
