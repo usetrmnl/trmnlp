@@ -4,6 +4,7 @@
 ## Unreleased
 
 - `trmnlp lint` names the sizes an element has when a size class is missing (`framework_classes_exist`), such as `title--small` to `title--xxlarge` for `title--mega`, and links to the Framework's Element Sizes page. Each element has its own set of sizes.
+- The `hn-stories` example uses `title--small` in its half views. It had `title--xsmall`, which no Framework release has, so those titles rendered at the default size.
 
 ## 0.25.0
 
