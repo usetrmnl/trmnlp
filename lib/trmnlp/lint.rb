@@ -22,6 +22,7 @@ require_relative 'lint/checks/yes_no_selects_are_boolean'
 require_relative 'lint/checks/coordinates_use_lat_lon'
 require_relative 'lint/checks/no_custom_filters'
 require_relative 'lint/checks/no_unknown_filters'
+require_relative 'lint/checks/author_contact_method'
 
 module TRMNLP
   # Markup best-practice checks behind `trmnlp lint`.
@@ -47,7 +48,8 @@ module TRMNLP
       Checks::YesNoSelectsAreBoolean,
       Checks::CoordinatesUseLatLon,
       Checks::NoCustomFilters,
-      Checks::NoUnknownFilters
+      Checks::NoUnknownFilters,
+      Checks::AuthorContactMethod
     ].freeze
 
     def self.rule_id(check_type) = check_type.name.split('::').last.gsub(/([a-z\d])([A-Z])/, '\1_\2').downcase
