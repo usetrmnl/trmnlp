@@ -25,6 +25,7 @@ module TRMNLP
       def recipe_overview = settings['recipe_overview'].to_s
       def framework_version = config.plugin.framework_version
       def settings = config.plugin.settings
+      def static_data = config.plugin.static_data
       def custom_field_values = config.project.custom_fields
       def custom_field_definitions = config.plugin.custom_field_definitions
 

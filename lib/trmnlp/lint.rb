@@ -27,6 +27,7 @@ require_relative 'lint/checks/title_bar_outside_layout'
 require_relative 'lint/checks/no_nested_layouts'
 require_relative 'lint/checks/framework_classes_exist'
 require_relative 'lint/checks/no_external_qr_codes'
+require_relative 'lint/checks/static_data_size'
 
 module TRMNLP
   # Markup best-practice checks behind `trmnlp lint`.
@@ -57,7 +58,8 @@ module TRMNLP
       Checks::TitleBarOutsideLayout,
       Checks::NoNestedLayouts,
       Checks::FrameworkClassesExist,
-      Checks::NoExternalQrCodes
+      Checks::NoExternalQrCodes,
+      Checks::StaticDataSize
     ].freeze
 
     def self.rule_id(check_type) = check_type.name.split('::').last.gsub(/([a-z\d])([A-Z])/, '\1_\2').downcase

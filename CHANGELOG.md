@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp lint` reports `static_data` over 100 KB (`static_data_size`). TRMNL refuses to save it, but a transform that trims the data let the recipe render in `trmnlp serve` and `trmnlp test` without a warning.
+
 ## 0.25.0
 
 - `trmnlp lint` also reports a `content--` class that the plugin's Framework release does not have (`framework_classes_exist`), such as `content--xsmall`. Rich Text sizes stop at `content--small`, and a missing one leaves the text at the default size.
