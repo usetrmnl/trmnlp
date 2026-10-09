@@ -13,6 +13,7 @@ module TRMNLP
         'no_async_functions' => /async function/i,
         'no_opacity' => Checks::NoOpacity::PATTERN,
         'no_size_classes' => Checks::NoSizeClasses::PATTERN,
+        'no_external_qr_codes' => Checks::NoExternalQrCodes::PATTERN,
         'waits_for_dom_load' => Regexp.new(Regexp.union(Checks::WaitsForDomLoad::FORBIDDEN).source, Regexp::IGNORECASE),
         'limited_inline_styles' => /\sstyle\s*=/i,
         'highcharts_animations_disabled' => /highcharts/i,
