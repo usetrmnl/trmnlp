@@ -39,6 +39,31 @@ namespace :framework do
   end
 end
 
+namespace :framework do
+  desc 'Sync db/data/framework_classes.yml from the plugins.css of every release'
+  task :classes do
+    require 'open-uri'
+    require_relative 'lib/trmnlp/framework_version'
+
+    # A family class, bare or after a screen prefix such as `md\:`.
+    pattern = /(?<=\.|\\:)(?:value|label|title|description|text)--[\w-]+/
+    classes_by_release = {}
+    TRMNLP::FrameworkVersion.version_numbers.sort_by { Gem::Version.new(it) }.each do |number|
+      classes = URI.parse(TRMNLP::FrameworkVersion.new(number).css_url).read.scan(pattern).uniq.sort
+      classes_by_release[number] = classes unless classes == classes_by_release.values.last
+    end
+
+    destination = File.expand_path('db/data/framework_classes.yml', __dir__)
+    header = <<~HEADER
+      # Mirrored from each Framework release's plugins.css: its value--, label--, title--,
+      # description-- and text-- classes. A list holds until the next release listed.
+      # Refresh with `rake framework:classes` — do not edit manually.
+    HEADER
+    File.write(destination, header + classes_by_release.to_yaml.delete_prefix("---\n"))
+    puts "Synced #{destination}"
+  end
+end
+
 # TRMNL's config.i18n.available_locales; trmnlp offers one locale per file in db/data/locales.
 TRMNL_AVAILABLE_LOCALES = %w[en zh-CN cs da de de-AT nl en-AU en-GB es-ES fr he hu zh-HK id is it ja ko lt
                              no pl pt-BR ro ru sk sv uk raw].freeze

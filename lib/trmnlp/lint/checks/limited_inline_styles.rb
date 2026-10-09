@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../check'
+require_relative '../source'
 require 'crass'
 require 'nokogiri'
 
@@ -25,7 +26,7 @@ module TRMNLP
         end
 
         def markup_without_liquid_comments
-          source.all_markup.gsub(/\{%-?\s*comment\s*-?%\}.*?\{%-?\s*endcomment\s*-?%\}/m, '')
+          source.all_markup.gsub(Source::LIQUID_COMMENT, '')
         end
       end
     end

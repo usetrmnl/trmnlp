@@ -23,6 +23,9 @@ require_relative 'lint/checks/coordinates_use_lat_lon'
 require_relative 'lint/checks/no_custom_filters'
 require_relative 'lint/checks/no_unknown_filters'
 require_relative 'lint/checks/author_contact_method'
+require_relative 'lint/checks/title_bar_outside_layout'
+require_relative 'lint/checks/no_nested_layouts'
+require_relative 'lint/checks/framework_classes_exist'
 
 module TRMNLP
   # Markup best-practice checks behind `trmnlp lint`.
@@ -49,7 +52,10 @@ module TRMNLP
       Checks::CoordinatesUseLatLon,
       Checks::NoCustomFilters,
       Checks::NoUnknownFilters,
-      Checks::AuthorContactMethod
+      Checks::AuthorContactMethod,
+      Checks::TitleBarOutsideLayout,
+      Checks::NoNestedLayouts,
+      Checks::FrameworkClassesExist
     ].freeze
 
     def self.rule_id(check_type) = check_type.name.split('::').last.gsub(/([a-z\d])([A-Z])/, '\1_\2').downcase
