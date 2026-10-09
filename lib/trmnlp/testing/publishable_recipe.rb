@@ -43,7 +43,8 @@ RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLI
 
   TRMNLP::Testing::PUBLISHABLE_RECIPE_VIEWS.product(screens).each do |view, screen|
     device = screen[:device].is_a?(Hash) ? screen[:device][:model] : screen[:device]
-    screen_name = [device, screen[:orientation]].compact.join(' ')
+    dark_mode = 'dark mode' if screen[:dark_mode]
+    screen_name = [device, screen[:orientation], screen[:palette], dark_mode].compact.join(' ')
 
     it "draws the #{view} view on #{screen_name} without page errors" do
       expect(trmnl.render(view:, **screen, **recipe_inputs)).to draw_cleanly

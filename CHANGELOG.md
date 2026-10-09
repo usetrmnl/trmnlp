@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `it_behaves_like 'a publishable recipe'` names a screen's palette and dark mode in its examples, so a group that draws the TRMNL X in color and in 1-bit, or in light and dark, can tell them apart.
+
 ## 0.23.1
 
 - A transform that prints more than about 64 KB no longer hangs until its timeout in `trmnlp test` and `trmnlp serve`; its output is read while it runs.
