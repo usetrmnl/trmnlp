@@ -10,7 +10,7 @@ IMAGE=trmnl/trmnlp
 # Saved on the PATH as `trmnlp`, this script is what `command -v trmnlp` finds: not a gem. Nor is
 # another copy of it there (it names run_in_docker): that one would run its own image, not the one above.
 GEM="$(command -v trmnlp)"
-if [ -n "$GEM" ] && ! [ "$GEM" -ef "$0" ] && [[ "$(< "$GEM")" != *run_in_docker* ]] 2> /dev/null
+if [ -n "$GEM" ] && ! [ "$GEM" -ef "$0" ] && ! grep -qs run_in_docker "$GEM"
 then
     exec "$GEM" "$@"
 fi

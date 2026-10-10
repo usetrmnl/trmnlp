@@ -26,7 +26,7 @@ RSpec.describe 'templates/init/bin/trmnlp' do
 
   before do
     FileUtils.mkdir_p([path, plugin_dir])
-    %w[cat dirname env find id mkdir mv rm].each { |tool| File.symlink(which(tool), File.join(path, tool)) }
+    %w[cat dirname env find grep id mkdir mv rm].each { |tool| File.symlink(which(tool), File.join(path, tool)) }
     # The script finds bash on this PATH. A script that runs itself would start processes until the
     # machine is out of memory, so this bash counts its starts and gives up after 20.
     stand_in('bash', <<~SH)
