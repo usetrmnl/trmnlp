@@ -60,6 +60,7 @@ exec docker run \
     "${ARGS[@]}" \
     --env CI \
     --env TRMNL_API_KEY \
+    --env TRMNLP_IMAGE="$IMAGE" \
     --volume "$CONFIG_DIR:$CONTAINER_HOME/.config/trmnlp" \
     --volume "$CACHE_DIR:$CONTAINER_HOME/.cache/trmnl" \
     --volume "$(pwd):/plugin" \
