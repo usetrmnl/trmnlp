@@ -1,9 +1,11 @@
 
 # Changelog
 
-## Unreleased
+## 0.27.0
 
 - `trmnlp lint` reports a webhook recipe with no `copyable_webhook_url` custom field (`webhook_url_shown`), as TRMNL's recipe review does. Without it, people who install the recipe have no field to copy their webhook URL from.
+- A release pinned in a plugin's `bin/trmnlp`, such as `IMAGE=trmnl/trmnlp:v0.24.0`, is used when another copy of the script is on the PATH as `trmnlp`. The plugin ran the PATH copy's image instead. To get the fix in an existing plugin, run `trmnlp init` there and overwrite only `bin/trmnlp`.
+- `trmnlp version` says when it runs in Docker, and in which image, on a second line on stderr. The version stays alone on stdout.
 
 ## 0.26.0
 
