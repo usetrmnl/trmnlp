@@ -26,7 +26,7 @@ RSpec.describe 'templates/init/bin/trmnlp' do
 
   before do
     FileUtils.mkdir_p([path, plugin_dir])
-    %w[cat dirname env find id mkdir mv rm].each { |tool| File.symlink(which(tool), File.join(path, tool)) }
+    %w[cat dirname env find grep id mkdir mv rm].each { |tool| File.symlink(which(tool), File.join(path, tool)) }
     # The script finds bash on this PATH. A script that runs itself would start processes until the
     # machine is out of memory, so this bash counts its starts and gives up after 20.
     stand_in('bash', <<~SH)
@@ -88,6 +88,21 @@ RSpec.describe 'templates/init/bin/trmnlp' do
     it 'runs the Docker image and not itself over and over' do
       run('lint', command: File.join(path, 'trmnlp'))
       expect(docker_run).to end_with(' trmnl/trmnlp lint')
+    end
+  end
+
+  context 'when a plugin pins a release and the script is also on the PATH as trmnlp' do
+    let(:pinned) { File.join(plugin_dir, 'trmnlp') }
+
+    before do
+      FileUtils.cp(script, File.join(path, 'trmnlp'))
+      File.write(pinned, File.read(script).sub(%r{^IMAGE=trmnl/trmnlp$}, 'IMAGE=trmnl/trmnlp:v0.24.0'))
+      File.chmod(0o755, pinned)
+    end
+
+    it 'runs the pinned image, not the one of the script on the PATH' do
+      run('lint', command: pinned)
+      expect(docker_run).to end_with(' trmnl/trmnlp:v0.24.0 lint')
     end
   end
 
