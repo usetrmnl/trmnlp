@@ -10,7 +10,7 @@ module TRMNLP
       class WebhookUrlShown < Check
         MESSAGE = 'Add a custom field with field_type copyable_webhook_url, so people who install this webhook ' \
                   'recipe can copy their webhook URL. TRMNL fills it in with the URL of each install.'
-        LEARN_MORE = 'https://help.trmnl.com/en/articles/10513740-custom-plugin-form-builder'
+        LEARN_MORE = 'https://help.trmnl.com/en/articles/10513740-custom-plugin-form-builder#h_431c22552a'
 
         private
 
