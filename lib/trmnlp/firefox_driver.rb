@@ -10,8 +10,16 @@ module TRMNLP
 
     def build
       Selenium::WebDriver.for(:firefox, options:).tap do |driver|
+        # Exit hooks run newest first, so this quits Firefox before Selenium's hook stops geckodriver and orphans it.
+        at_exit { quit(driver) }
         driver.manage.window.maximize
       end
+    end
+
+    def quit(driver)
+      driver.quit
+    rescue StandardError
+      nil
     end
 
     def options
