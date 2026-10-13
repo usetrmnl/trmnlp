@@ -1,47 +1,66 @@
-# Mirrored from each Framework release's plugins.css: its value--, label--, title--,
-# description--, text-- and content-- classes. A list holds until the next release listed.
+# Mirrored from each Framework release's plugins.css: its value, label, title, description
+# and content elements and their value--, label--, title--, description--, text-- and
+# content-- classes. A list holds until the next release listed.
 # Refresh with `rake framework:classes` — do not edit manually.
 0.0.1:
+- content
 - content--center
 - content--large
 - content--long
+- description
+- label
 - label--outline
 - label--simple
 - label--small
 - label--underline
 - label--underline-2
+- title
 - title--small
+- value
 - value--large
 - value--small
 - value--xsmall
 0.0.2:
+- content
 - content--center
 - content--large
 - content--long
+- description
+- label
 - label--small
 - label--underline
 - label--underline-2
+- title
 - title--small
+- value
 - value--large
 - value--small
 - value--xsmall
 0.0.3:
+- content
 - content--center
 - content--large
 - content--long
 - content--small
+- description
+- label
 - label--small
 - label--underline
 - label--underline-2
+- title
 - title--small
+- value
 - value--large
 - value--small
 - value--xsmall
 0.0.5:
+- content
 - content--center
 - content--large
 - content--long
 - content--small
+- description
+- label
 - label--large
 - label--outline
 - label--small
@@ -50,15 +69,20 @@
 - text--center
 - text--left
 - text--right
+- title
 - title--small
+- value
 - value--large
 - value--small
 - value--xlarge
 - value--xsmall
 - value--xxlarge
 0.0.6:
+- content
 - content--center
 - content--small
+- description
+- label
 - label--large
 - label--outline
 - label--small
@@ -67,15 +91,20 @@
 - text--center
 - text--left
 - text--right
+- title
 - title--small
+- value
 - value--large
 - value--small
 - value--xlarge
 - value--xsmall
 - value--xxlarge
 0.0.7:
+- content
 - content--center
 - content--small
+- description
+- label
 - label--large
 - label--outline
 - label--small
@@ -84,7 +113,9 @@
 - text--center
 - text--left
 - text--right
+- title
 - title--small
+- value
 - value--large
 - value--small
 - value--tnums
@@ -94,8 +125,11 @@
 - value--xxsmall
 - value--xxxlarge
 1.0.0:
+- content
 - content--center
 - content--small
+- description
+- label
 - label--gray-out
 - label--inverted
 - label--large
@@ -106,7 +140,9 @@
 - text--center
 - text--left
 - text--right
+- title
 - title--small
+- value
 - value--large
 - value--small
 - value--tnums
@@ -116,8 +152,11 @@
 - value--xxsmall
 - value--xxxlarge
 1.0.1:
+- content
 - content--center
 - content--small
+- description
+- label
 - label--gray-out
 - label--inverted
 - label--large
@@ -129,7 +168,9 @@
 - text--justify
 - text--left
 - text--right
+- title
 - title--small
+- value
 - value--large
 - value--small
 - value--tnums
@@ -139,8 +180,11 @@
 - value--xxsmall
 - value--xxxlarge
 1.0.2:
+- content
 - content--center
 - content--small
+- description
+- label
 - label--gray-out
 - label--inverted
 - label--large
@@ -161,7 +205,9 @@
 - text--left
 - text--right
 - text--white
+- title
 - title--small
+- value
 - value--large
 - value--small
 - value--tnums
@@ -171,11 +217,14 @@
 - value--xxsmall
 - value--xxxlarge
 1.1.0:
+- content
 - content--center
 - content--large
 - content--left
 - content--right
 - content--small
+- description
+- label
 - label--gray-out
 - label--inverted
 - label--large
@@ -196,7 +245,9 @@
 - text--left
 - text--right
 - text--white
+- title
 - title--small
+- value
 - value--large
 - value--small
 - value--tnums
@@ -206,11 +257,14 @@
 - value--xxsmall
 - value--xxxlarge
 2.0.0:
+- content
 - content--center
 - content--large
 - content--left
 - content--right
 - content--small
+- description
+- label
 - label--gray
 - label--gray-out
 - label--inverted
@@ -245,7 +299,9 @@
 - text--left
 - text--right
 - text--white
+- title
 - title--small
+- value
 - value--large
 - value--small
 - value--tnums
@@ -255,6 +311,7 @@
 - value--xxsmall
 - value--xxxlarge
 2.3.0:
+- content
 - content--base
 - content--center
 - content--large
@@ -264,10 +321,12 @@
 - content--xlarge
 - content--xxlarge
 - content--xxxlarge
+- description
 - description--base
 - description--large
 - description--xlarge
 - description--xxlarge
+- label
 - label--base
 - label--gray
 - label--gray-out
@@ -306,11 +365,13 @@
 - text--left
 - text--right
 - text--white
+- title
 - title--base
 - title--large
 - title--small
 - title--xlarge
 - title--xxlarge
+- value
 - value--base
 - value--giga
 - value--large
@@ -325,6 +386,7 @@
 - value--xxsmall
 - value--xxxlarge
 3.0.0:
+- content
 - content--base
 - content--center
 - content--large
@@ -334,10 +396,12 @@
 - content--xlarge
 - content--xxlarge
 - content--xxxlarge
+- description
 - description--base
 - description--large
 - description--xlarge
 - description--xxlarge
+- label
 - label--base
 - label--error
 - label--filled
@@ -538,11 +602,13 @@
 - text--yellow-65
 - text--yellow-70
 - text--yellow-75
+- title
 - title--base
 - title--large
 - title--small
 - title--xlarge
 - title--xxlarge
+- value
 - value--base
 - value--giga
 - value--large
@@ -557,6 +623,7 @@
 - value--xxsmall
 - value--xxxlarge
 3.0.4:
+- content
 - content--base
 - content--center
 - content--large
@@ -566,10 +633,12 @@
 - content--xlarge
 - content--xxlarge
 - content--xxxlarge
+- description
 - description--base
 - description--large
 - description--xlarge
 - description--xxlarge
+- label
 - label--base
 - label--error
 - label--filled
@@ -780,11 +849,13 @@
 - text--yellow-65
 - text--yellow-70
 - text--yellow-75
+- title
 - title--base
 - title--large
 - title--small
 - title--xlarge
 - title--xxlarge
+- value
 - value--base
 - value--giga
 - value--large
@@ -799,6 +870,7 @@
 - value--xxsmall
 - value--xxxlarge
 3.2.0:
+- content
 - content--base
 - content--center
 - content--large
@@ -808,10 +880,12 @@
 - content--xlarge
 - content--xxlarge
 - content--xxxlarge
+- description
 - description--base
 - description--large
 - description--xlarge
 - description--xxlarge
+- label
 - label--base
 - label--error
 - label--filled
@@ -1023,11 +1097,13 @@
 - text--yellow-65
 - text--yellow-70
 - text--yellow-75
+- title
 - title--base
 - title--large
 - title--small
 - title--xlarge
 - title--xxlarge
+- value
 - value--base
 - value--giga
 - value--large

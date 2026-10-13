@@ -1,5 +1,6 @@
-# Mirrored from each Framework release's plugins.css: the screen prefixes it defines for
-# value--, label--, title--, description--, text-- and content-- classes, and the classes each
+# Mirrored from each Framework release's plugins.css: the screen prefixes it defines for the
+# value, label, title, description and content elements and their value--, label--, title--,
+# description--, text-- and content-- classes, and the classes each
 # covers: every class in a family (`all`), all `except` some, or `only` some. A list holds
 # until the next release listed.
 # Refresh with `rake framework:classes` — do not edit manually.
@@ -14,6 +15,7 @@
   families:
     label:
       except:
+      - label
       - label--gray-out
       - label--underline-2
     text: all
@@ -23,6 +25,7 @@
   families:
     label:
       except:
+      - label
       - label--gray-out
       - label--underline-2
     text:
@@ -75,6 +78,7 @@
   families:
     label:
       except:
+      - label
       - label--gray
       - label--underline-2
     text:
@@ -95,6 +99,7 @@
   families:
     label:
       except:
+      - label
       - label--gray
       - label--underline-2
     text: all
@@ -105,29 +110,26 @@
   - 2bit
   - 4bit
   - landscape
-  - lg
-  - lg:landscape
-  - lg:portrait
-  - md
-  - md:landscape
-  - md:portrait
   - portrait
-  - sm
-  - sm:landscape
-  - sm:portrait
   families:
     content:
       except:
+      - content
       - content--center
       - content--left
       - content--right
-    description: all
+    description:
+      except:
+      - description
     label:
       except:
+      - label
       - label--gray-out
       - label--underline-2
     text: all
-    title: all
+    title:
+      except:
+      - title
     value: all
 - prefixes:
   - 3bit
@@ -175,19 +177,54 @@
   families:
     content:
       except:
+      - content
       - content--center
       - content--left
       - content--right
-    description: all
+    description:
+      except:
+      - description
     label:
       except:
+      - label
       - label--gray-out
       - label--underline-2
     text:
       except:
       - text--black
       - text--white
-    title: all
+    title:
+      except:
+      - title
+    value: all
+- prefixes:
+  - lg
+  - lg:landscape
+  - lg:portrait
+  - md
+  - md:landscape
+  - md:portrait
+  - sm
+  - sm:landscape
+  - sm:portrait
+  families:
+    content:
+      except:
+      - content--center
+      - content--left
+      - content--right
+    description:
+      except:
+      - description
+    label:
+      except:
+      - label
+      - label--gray-out
+      - label--underline-2
+    text: all
+    title:
+      except:
+      - title
     value: all
 3.0.0:
 - prefixes:
@@ -239,12 +276,16 @@
   families:
     content:
       except:
+      - content
       - content--center
       - content--left
       - content--right
-    description: all
+    description:
+      except:
+      - description
     label:
       except:
+      - label
       - label--gray-out
       - label--inverted
       - label--underline-2
@@ -254,7 +295,9 @@
       - text--justify
       - text--left
       - text--right
-    title: all
+    title:
+      except:
+      - title
     value: all
 - prefixes:
   - dark
@@ -329,13 +372,35 @@
       - text--right
 - prefixes:
   - landscape
+  - portrait
+  families:
+    content:
+      except:
+      - content
+      - content--center
+      - content--left
+      - content--right
+    description:
+      except:
+      - description
+    label:
+      except:
+      - label
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text: all
+    title:
+      except:
+      - title
+    value: all
+- prefixes:
   - lg
   - lg:landscape
   - lg:portrait
   - md
   - md:landscape
   - md:portrait
-  - portrait
   - sm
   - sm:landscape
   - sm:portrait
@@ -345,14 +410,19 @@
       - content--center
       - content--left
       - content--right
-    description: all
+    description:
+      except:
+      - description
     label:
       except:
+      - label
       - label--gray-out
       - label--inverted
       - label--underline-2
     text: all
-    title: all
+    title:
+      except:
+      - title
     value: all
 3.0.4:
 - prefixes:
@@ -404,12 +474,16 @@
   families:
     content:
       except:
+      - content
       - content--center
       - content--left
       - content--right
-    description: all
+    description:
+      except:
+      - description
     label:
       except:
+      - label
       - label--gray-out
       - label--inverted
       - label--underline-2
@@ -429,7 +503,9 @@
       - text--xlarge
       - text--xxlarge
       - text--xxxlarge
-    title: all
+    title:
+      except:
+      - title
     value: all
 - prefixes:
   - dark
@@ -515,13 +591,35 @@
       - text--right
 - prefixes:
   - landscape
+  - portrait
+  families:
+    content:
+      except:
+      - content
+      - content--center
+      - content--left
+      - content--right
+    description:
+      except:
+      - description
+    label:
+      except:
+      - label
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text: all
+    title:
+      except:
+      - title
+    value: all
+- prefixes:
   - lg
   - lg:landscape
   - lg:portrait
   - md
   - md:landscape
   - md:portrait
-  - portrait
   - sm
   - sm:landscape
   - sm:portrait
@@ -531,14 +629,19 @@
       - content--center
       - content--left
       - content--right
-    description: all
+    description:
+      except:
+      - description
     label:
       except:
+      - label
       - label--gray-out
       - label--inverted
       - label--underline-2
     text: all
-    title: all
+    title:
+      except:
+      - title
     value: all
 3.0.5:
 - prefixes:
@@ -590,12 +693,16 @@
   families:
     content:
       except:
+      - content
       - content--center
       - content--left
       - content--right
-    description: all
+    description:
+      except:
+      - description
     label:
       except:
+      - label
       - label--gray-out
       - label--inverted
       - label--underline-2
@@ -604,7 +711,9 @@
       - text--default
       - text--inverse
       - text--muted
-    title: all
+    title:
+      except:
+      - title
     value: all
 - prefixes:
   - dark
@@ -699,13 +808,35 @@
       - text--xxxlarge
 - prefixes:
   - landscape
+  - portrait
+  families:
+    content:
+      except:
+      - content
+      - content--center
+      - content--left
+      - content--right
+    description:
+      except:
+      - description
+    label:
+      except:
+      - label
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text: all
+    title:
+      except:
+      - title
+    value: all
+- prefixes:
   - lg
   - lg:landscape
   - lg:portrait
   - md
   - md:landscape
   - md:portrait
-  - portrait
   - sm
   - sm:landscape
   - sm:portrait
@@ -715,14 +846,19 @@
       - content--center
       - content--left
       - content--right
-    description: all
+    description:
+      except:
+      - description
     label:
       except:
+      - label
       - label--gray-out
       - label--inverted
       - label--underline-2
     text: all
-    title: all
+    title:
+      except:
+      - title
     value: all
 - prefixes:
   - lg:3bit
@@ -798,12 +934,16 @@
   families:
     content:
       except:
+      - content
       - content--center
       - content--left
       - content--right
-    description: all
+    description:
+      except:
+      - description
     label:
       except:
+      - label
       - label--gray-out
       - label--inverted
       - label--underline-2
@@ -823,7 +963,9 @@
       - text--xlarge
       - text--xxlarge
       - text--xxxlarge
-    title: all
+    title:
+      except:
+      - title
     value: all
 - prefixes:
   - dark
@@ -909,13 +1051,35 @@
       - text--right
 - prefixes:
   - landscape
+  - portrait
+  families:
+    content:
+      except:
+      - content
+      - content--center
+      - content--left
+      - content--right
+    description:
+      except:
+      - description
+    label:
+      except:
+      - label
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text: all
+    title:
+      except:
+      - title
+    value: all
+- prefixes:
   - lg
   - lg:landscape
   - lg:portrait
   - md
   - md:landscape
   - md:portrait
-  - portrait
   - sm
   - sm:landscape
   - sm:portrait
@@ -925,14 +1089,19 @@
       - content--center
       - content--left
       - content--right
-    description: all
+    description:
+      except:
+      - description
     label:
       except:
+      - label
       - label--gray-out
       - label--inverted
       - label--underline-2
     text: all
-    title: all
+    title:
+      except:
+      - title
     value: all
 3.1.1:
 - prefixes:
@@ -984,12 +1153,16 @@
   families:
     content:
       except:
+      - content
       - content--center
       - content--left
       - content--right
-    description: all
+    description:
+      except:
+      - description
     label:
       except:
+      - label
       - label--gray-out
       - label--inverted
       - label--underline-2
@@ -998,7 +1171,9 @@
       - text--default
       - text--inverse
       - text--muted
-    title: all
+    title:
+      except:
+      - title
     value: all
 - prefixes:
   - dark
@@ -1093,13 +1268,35 @@
       - text--xxxlarge
 - prefixes:
   - landscape
+  - portrait
+  families:
+    content:
+      except:
+      - content
+      - content--center
+      - content--left
+      - content--right
+    description:
+      except:
+      - description
+    label:
+      except:
+      - label
+      - label--gray-out
+      - label--inverted
+      - label--underline-2
+    text: all
+    title:
+      except:
+      - title
+    value: all
+- prefixes:
   - lg
   - lg:landscape
   - lg:portrait
   - md
   - md:landscape
   - md:portrait
-  - portrait
   - sm
   - sm:landscape
   - sm:portrait
@@ -1109,14 +1306,19 @@
       - content--center
       - content--left
       - content--right
-    description: all
+    description:
+      except:
+      - description
     label:
       except:
+      - label
       - label--gray-out
       - label--inverted
       - label--underline-2
     text: all
-    title: all
+    title:
+      except:
+      - title
     value: all
 - prefixes:
   - lg:3bit
@@ -1194,13 +1396,20 @@
   families:
     content:
       except:
+      - content
       - content--center
       - content--left
       - content--right
-    description: all
-    label: all
+    description:
+      except:
+      - description
+    label:
+      except:
+      - label
     text: all
-    title: all
+    title:
+      except:
+      - title
     value: all
 - prefixes:
   - dark

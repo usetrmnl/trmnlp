@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp lint` reports a screen prefix on a bare `title`, `label` or `description` (`framework_prefixes_exist`), such as `lg:title`. No Framework release defines one, unlike `lg:value`, so TRMNL ignores the class and the text keeps its size; the message names the prefixed base size, such as `lg:title--base`. A finding's location no longer also points at longer classes that start with it, such as `lg:title--small`.
+
 ## 0.27.0
 
 - `trmnlp lint` reports a webhook recipe with no `copyable_webhook_url` custom field (`webhook_url_shown`), as TRMNL's recipe review does. Without it, people who install the recipe have no field to copy their webhook URL from.

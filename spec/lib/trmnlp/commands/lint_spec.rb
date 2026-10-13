@@ -185,6 +185,18 @@ RSpec.describe TRMNLP::Commands::Lint do
         expect(issue['locations'].map { |location| location['path'] }).to eq(%w[src/full.liquid src/shared.liquid])
       end
 
+      it 'locates a prefixed element class without its prefixed sizes' do
+        File.write(File.join(tmp_root, 'src', 'full.liquid'), <<~HTML)
+          <span class="title lg:title--small">Big</span>
+          <span class="title lg:title">Bigger</span>
+        HTML
+        command.call
+        issue = JSON.parse(reporter.messages.first)['issues'].find do |finding|
+          finding['rule_id'] == 'framework_prefixes_exist'
+        end
+        expect(issue['locations'].map { |location| location['line'] }).to eq([2])
+      end
+
       it 'names each missing view when Shared provides no fallback content' do
         File.write(File.join(tmp_root, 'src', 'shared.liquid'), '')
         command.call
