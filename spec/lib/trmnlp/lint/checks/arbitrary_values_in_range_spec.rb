@@ -60,6 +60,27 @@ RSpec.describe TRMNLP::Lint::Checks::ArbitraryValuesInRange do
       end
     end
 
+    context 'when a width is a percentage' do
+      let(:markup) { '<div class="w--[40%]"></div>' }
+
+      it 'names the unit' do
+        expect(messages).to eq(["'w--[40%]' has no effect: the Framework has no '%' values for 'w--'."])
+      end
+    end
+
+    context 'when a margin or padding has a bracket value' do
+      let(:markup) { '<img class="mt--[2px]"><div class="lg:px--[3px] p--[10px]"></div>' }
+
+      it 'reports each one with the spacing steps' do
+        expect(messages.map { it[/\A'[^']+'/] }).to eq(["'mt--[2px]'", "'lg:px--[3px]'", "'p--[10px]'"])
+        expect(messages.first).to eq(
+          "'mt--[2px]' has no effect: the Framework has no bracket values for 'mt--', " \
+          "only spacing steps such as 'mt--1' for 4px."
+        )
+        expect(check.issues.map { |issue| issue[:learn_more] }.uniq).to eq(['https://trmnl.com/framework/docs/spacing'])
+      end
+    end
+
     context 'when a gap carries a screen prefix' do
       let(:markup) { '<div class="md:gap--[20px]"></div>' }
 

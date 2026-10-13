@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp lint` reports a margin or padding class with a bracket value (`arbitrary_values_in_range`), such as `mt--[2px]` or `lg:px--[3px]`, and a bracket value in percent, such as `w--[40%]`. No Framework 3 release generates either, so TRMNL ignores the class and says nothing; margin and padding come only in spacing steps such as `mt--1` for 4px.
+
 ## 0.27.0
 
 - `trmnlp lint` reports a webhook recipe with no `copyable_webhook_url` custom field (`webhook_url_shown`), as TRMNL's recipe review does. Without it, people who install the recipe have no field to copy their webhook URL from.
