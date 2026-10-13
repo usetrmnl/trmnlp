@@ -75,6 +75,17 @@ RSpec::Matchers.define :have_no_transform_error do
   failure_message { |screen| "expected the transform to run without error, but: #{screen.result.error}" }
 end
 
+# A request no mock answers gets status 599, which draws the plugin's error screen as if its API failed.
+RSpec::Matchers.define :have_a_mock_for_every_request do
+  def unmocked(run) = run.requests.reject { it[:mocked] }.map { "#{it[:method]} #{it[:url].split('?', 2).first}" }.uniq
+
+  match { |run| unmocked(run).empty? }
+  failure_message do |run|
+    "expected a mock for every request, but none answers: #{unmocked(run).join(', ')}. " \
+      'Add them to tests/mocks.json; without one the screen shows the error state.'
+  end
+end
+
 RSpec::Matchers.define :have_no_problems do
   match { |screen| screen.problems.empty? }
   failure_message { |screen| "expected no problems on #{screen.inspect}, but: #{screen.problems.join('; ')}" }

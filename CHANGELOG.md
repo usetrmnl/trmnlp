@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp test`'s publishable recipe group fails "has a mock for every request it makes" when the polling or the transform asks for a url no mock answers, and names each url without its query. Such a request is answered with status 599, so the screens drew the error state as if the API had failed. The matcher is `have_a_mock_for_every_request`.
+
 ## 0.28.0
 
 - `trmnlp test`, `serve` and `build --png` close their headless Firefox when they exit. Each run left one running, with nothing left to stop it, and a loop of runs could fill memory and swap.
