@@ -54,6 +54,7 @@ module TRMNLP
         when 'gray_text_has_one_bit_class' then gray_text_locations
         when 'image_links_reachable' then source.locations(Regexp.union(check.unreachable_urls))
         when 'select_options_split_label_and_value' then split_option_locations
+        when 'no_style_restyling_framework' then style_block_locations
         else []
         end
       end
@@ -88,6 +89,11 @@ module TRMNLP
         classes = finding[:message][/\A'([^']+)'/, 1]
         check.offending_elements.select { |_, element| Checks::GrayTextHasOneBitClass.class_list(element) == classes }
              .map { |path, element| source.element_location(path, element) }
+      end
+
+      def style_block_locations
+        kind = Checks::NoStyleRestylingFramework::KINDS.find { |_, (message, _)| message == finding[:message] }&.first
+        check.occurrences.fetch(kind, []).map { |path, offset| source.offset_location(path, offset) }
       end
 
       def form_field_locations
