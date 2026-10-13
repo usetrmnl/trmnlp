@@ -13,6 +13,7 @@ require_relative 'lint/checks/limited_inline_styles'
 require_relative 'lint/checks/no_size_classes'
 require_relative 'lint/checks/arbitrary_values_in_range'
 require_relative 'lint/checks/no_opacity'
+require_relative 'lint/checks/gray_text_has_one_bit_class'
 require_relative 'lint/checks/highcharts_animations_disabled'
 require_relative 'lint/checks/highcharts_elements_unique'
 require_relative 'lint/checks/image_links_reachable'
@@ -49,6 +50,7 @@ module TRMNLP
       Checks::NoSizeClasses,
       Checks::ArbitraryValuesInRange,
       Checks::NoOpacity,
+      Checks::GrayTextHasOneBitClass,
       Checks::HighchartsAnimationsDisabled,
       Checks::HighchartsElementsUnique,
       Checks::ImageLinksReachable,
