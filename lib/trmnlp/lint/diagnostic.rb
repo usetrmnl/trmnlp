@@ -51,6 +51,7 @@ module TRMNLP
         when 'title_bar_outside_layout', 'no_nested_layouts'
           check.misplaced_elements.map { |path, element| source.element_location(path, element) }
         when 'image_links_reachable' then source.locations(Regexp.union(check.unreachable_urls))
+        when 'select_options_split_label_and_value' then split_option_locations
         else []
         end
       end
@@ -71,6 +72,12 @@ module TRMNLP
           if markup.length < Checks::LayoutsHaveContent::MIN_CONTENT_LENGTH
             { path: "src/#{view}.liquid", line: 1, column: 1, snippet: markup }
           end
+        end
+      end
+
+      def split_option_locations
+        check.split_options.flat_map do |field, option|
+          source.yaml_location('src/settings.yml', 'custom_fields', field, 'options', option)
         end
       end
 
