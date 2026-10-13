@@ -18,6 +18,9 @@ module TRMNLP
     }.freeze
     # A field with more options than this is drawn with its first and last.
     PUBLISHABLE_RECIPE_MAX_OPTIONS = 20
+    # Share of a layout's ink its dark mode render must keep. Of 17 recipes measured on 10-13, those that draw
+    # well in dark mode kept 85% or more; those whose text turned black on black kept 0% to 15%.
+    DARK_MODE_MIN_INK_KEPT = 0.5
 
     # Each select field's keyname and the values its options save, from the plugin's settings.yml.
     def self.select_field_values
@@ -32,7 +35,8 @@ module TRMNLP
 end
 
 # rubocop:disable-next Metrics/BlockLength -- one shared group, one check per example
-RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLISHABLE_RECIPE_SCREENS|
+RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLISHABLE_RECIPE_SCREENS,
+                                                 dark_mode_screen: { device: 'v2' }|
   let(:recipe_inputs) do
     { mocks: respond_to?(:mocks) ? mocks : {}, custom_fields: respond_to?(:custom_fields) ? custom_fields : {},
       variables: respond_to?(:variables) ? variables : {}, now: respond_to?(:now) ? now : nil,
@@ -48,6 +52,13 @@ RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLI
 
     it "draws the #{view} view on #{screen_name} without page errors" do
       expect(trmnl.render(view:, **screen, **recipe_inputs)).to draw_cleanly
+    end
+  end
+
+  TRMNLP::Testing::PUBLISHABLE_RECIPE_VIEWS.each do |view|
+    it "keeps the #{view} view's content in dark mode" do
+      light = trmnl.render(view:, **dark_mode_screen, **recipe_inputs)
+      expect(trmnl.render(view:, **dark_mode_screen, **recipe_inputs, dark_mode: true)).to keep_the_content_of(light)
     end
   end
 

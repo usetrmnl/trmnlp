@@ -10,6 +10,7 @@ require_relative '../browser_pool'
 require_relative '../firefox_driver'
 require_relative 'browser'
 require_relative 'certificate_authority'
+require_relative 'ink_count'
 require_relative 'page_server'
 require_relative 'plugin'
 require_relative 'report'
@@ -83,6 +84,22 @@ RSpec::Matchers.define :have_a_mock_for_every_request do
   failure_message do |run|
     "expected a mock for every request, but none answers: #{unmocked(run).join(', ')}. " \
       'Add them to tests/mocks.json; without one the screen shows the error state.'
+  end
+end
+
+# Dark mode recolors the Framework's text and lines; anything drawn in a fixed black stays black on the black screen.
+RSpec::Matchers.define :keep_the_content_of do |light|
+  match do |dark|
+    @light, @dark = [light, dark].map { TRMNLP::Testing::InkCount.new(it.png_path, area: content_box(it)).pixels }
+    @light.zero? || @dark >= @light * TRMNLP::Testing::DARK_MODE_MIN_INK_KEPT
+  end
+  # The layout only: a mashup slot's frame is too faint to count on white but stands out on black.
+  def content_box(screen) = screen.has_css?('.layout', wait: false) ? screen.box('.layout') : nil
+
+  failure_message do |dark|
+    "expected #{dark.inspect} in dark mode to keep its content, but it keeps #{(100 * @dark / @light).round}% of " \
+      "it (#{@dark} of #{@light} pixels that stand out): text, lines or icons drawn in a fixed black (#000, black) " \
+      'stay black on the black screen. Use currentColor or Framework classes.'
   end
 end
 
