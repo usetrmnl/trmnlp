@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- `trmnlp lint` reports a custom field that sets how often the content changes (`no_refresh_rate_field`), such as a "New passage: Daily / Every 6 hours" select. The refresh rate and the playlist already decide that.
 - `trmnlp lint` reports `<style>` rules that redo framework work (`no_style_restyling_framework`): `font-size` in px or pt (use the element sizes with `lg:` steps), `-webkit-line-clamp` (use `data-clamp`) and `@media (orientation …)` (use `portrait:`). CSS for SVG text and charts is left alone.
 - `trmnlp lint` reports small gray text with no `1bit:` class (`gray_text_has_one_bit_class`), such as `label--small text--gray-30`. On a 1-bit screen it breaks up into dots; `1bit:text--black` keeps it readable.
 - `trmnlp lint` reports a select option written as one quoted string, `'Voyager 1: voyager1'` (`select_options_split_label_and_value`). TRMNL saves such an option as its lowercased label, `voyager_1:_voyager1`, so the markup never sees `voyager1`.

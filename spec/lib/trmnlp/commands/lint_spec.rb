@@ -178,6 +178,22 @@ RSpec.describe TRMNLP::Commands::Lint do
                                             'snippet' => '    description: Find it at https://somewhere.com/feed' }])
       end
 
+      it 'locates a field that repeats the refresh rate at its entry in custom_fields' do
+        File.write(File.join(tmp_root, 'src', 'settings.yml'), <<~YAML)
+          custom_fields:
+            - keyname: rotation
+              field_type: select
+              name: New passage
+              options:
+                - Daily: daily
+                - Every 6 hours: six_hours
+        YAML
+        command.call
+        issue = JSON.parse(reporter.messages.first)['issues'].find { it['rule_id'] == 'no_refresh_rate_field' }
+        expect(issue['locations']).to eq([{ 'path' => 'src/settings.yml', 'line' => 2, 'column' => 5,
+                                            'snippet' => '  - keyname: rotation' }])
+      end
+
       it 'locates a webhook recipe without a copyable_webhook_url field at its strategy' do
         File.write(File.join(tmp_root, 'src', 'settings.yml'), <<~YAML)
           strategy: webhook
