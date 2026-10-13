@@ -10,6 +10,7 @@ require_relative 'lint/checks/layouts_have_content'
 require_relative 'lint/checks/no_async_functions'
 require_relative 'lint/checks/waits_for_dom_load'
 require_relative 'lint/checks/limited_inline_styles'
+require_relative 'lint/checks/no_style_restyling_framework'
 require_relative 'lint/checks/no_size_classes'
 require_relative 'lint/checks/arbitrary_values_in_range'
 require_relative 'lint/checks/no_opacity'
@@ -47,6 +48,7 @@ module TRMNLP
       Checks::NoAsyncFunctions,
       Checks::WaitsForDomLoad,
       Checks::LimitedInlineStyles,
+      Checks::NoStyleRestylingFramework,
       Checks::NoSizeClasses,
       Checks::ArbitraryValuesInRange,
       Checks::NoOpacity,

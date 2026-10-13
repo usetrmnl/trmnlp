@@ -87,14 +87,15 @@ module TRMNLP
 
       def locations(pattern, files: markup_files)
         files.flat_map do |path, contents|
-          contents.to_enum(:scan, pattern).map do
-            offset = Regexp.last_match.begin(0)
-            prefix = contents[0...offset]
-            line = prefix.count("\n") + 1
-            { path:, line:, column: offset - (prefix.rindex("\n") || -1),
-              snippet: contents.lines[line - 1].to_s.chomp[0, 240] }
-          end
+          contents.to_enum(:scan, pattern).map { offset_location(path, Regexp.last_match.begin(0), contents:) }
         end.uniq
+      end
+
+      def offset_location(path, offset, contents: markup_files.fetch(path))
+        prefix = contents[0...offset]
+        line = prefix.count("\n") + 1
+        { path:, line:, column: offset - (prefix.rindex("\n") || -1),
+          snippet: contents.lines[line - 1].to_s.chomp[0, 240] }
       end
 
       def yaml_location(file, *keys)

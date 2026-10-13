@@ -69,6 +69,15 @@ RSpec.describe TRMNLP::Commands::Lint do
         expect(issue['locations'].map { it['line'] }).to eq([2, 3])
       end
 
+      it 'locates each fixed font size in a <style> block' do
+        File.write(File.join(tmp_root, 'src', 'shared.liquid'),
+                   "<style>\n  .a { color: red; }\n  .b { font-size: 22px; }\n</style>")
+        command.call
+        issue = JSON.parse(reporter.messages.first)['issues'].find { it['rule_id'] == 'no_style_restyling_framework' }
+        expect(issue['locations']).to eq([{ 'path' => 'src/shared.liquid', 'line' => 3, 'column' => 8,
+                                            'snippet' => '  .b { font-size: 22px; }' }])
+      end
+
       it 'locates only the misplaced element, below multi-line Liquid' do
         File.write(File.join(tmp_root, 'src', 'full.liquid'),
                    "<div class=\"layout\">{{ a\n | upcase }}\n  <div class=\"title_bar\">T</div>\n</div>\n" \
