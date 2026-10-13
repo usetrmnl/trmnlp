@@ -9,10 +9,11 @@ module TRMNLP
   module Lint
     module Checks
       # Reports a Framework class behind screen prefixes that the plugin's release does not
-      # define for it, such as `xl:value--large` or `dark:value--large`. The class matches no
-      # rule, so it does nothing. Classes the release lacks entirely are left to FrameworkClassesExist.
+      # define for it, such as `xl:value--large`, `dark:value--large` or `lg:title`. The class
+      # matches no rule, so it does nothing. Classes the release lacks entirely are left to
+      # FrameworkClassesExist.
       class FrameworkPrefixesExist < Check
-        PREFIXED_PATTERN = /\A(?<prefix>.+):(?<name>(?:value|label|title|description|text|content)--.+)\z/
+        PREFIXED_PATTERN = /\A(?<prefix>.+):(?<name>(?:value|label|title|description|text|content)(?:--.+)?)\z/
         DATA_PATH = File.expand_path('../../../../db/data/framework_prefixes.yml', __dir__)
         LEARN_MORE = 'https://trmnl.com/framework/docs/responsive'
 
@@ -42,7 +43,9 @@ module TRMNLP
 
         def reason(prefix, name)
           version = "Framework v#{source.framework_version}"
-          return "#{name} has no '#{prefix}:' variant in #{version}." if families_by_prefix.key?(prefix)
+          if families_by_prefix.key?(prefix)
+            return "#{name} has no '#{prefix}:' variant in #{version}.#{base_size_hint(prefix, name)}"
+          end
 
           reordered = families_by_prefix.keys.find do |known|
             known.split(':').sort == prefix.split(':').sort && covers?(known, name)
@@ -50,6 +53,13 @@ module TRMNLP
           return "#{version} has no '#{prefix}:' prefix. Write it as '#{reordered}:#{name}'." if reordered
 
           "#{version} has no '#{prefix}:' prefix."
+        end
+
+        # A bare element such as `title` can lack a prefix that its sizes have: `lg:title--base`
+        # is the base size on large screens.
+        def base_size_hint(prefix, name)
+          base = "#{name}--base"
+          " Use '#{prefix}:#{base}' for its base size." if !name.include?('--') && covers?(prefix, base)
         end
 
         # A family is covered as `all` its classes, all `except` some, or `only` some.

@@ -39,8 +39,11 @@ namespace :framework do
   end
 end
 
-# A family class after its screen prefixes, captured as the prefixes and the class.
-FRAMEWORK_PREFIXED_CLASS = /(?<=\.)((?:[a-z0-9]+\\:)+)((?:value|label|title|description|text|content)--[\w-]+)/
+# An element or family class after its screen prefixes, captured as the prefixes and the class.
+FRAMEWORK_PREFIXED_CLASS = /
+  (?<=\.)((?:[a-z0-9]+\\:)+)
+  ((?:value|label|title|description|text|content)(?:--[\w-]+)?)(?![\w-])
+/x
 
 # The screen prefixes a plugins.css defines, grouped by the classes they cover.
 def framework_variants(css, classes)
@@ -54,10 +57,11 @@ def framework_variants(css, classes)
 end
 
 # Each family the covered classes belong to, as `all` its classes, all `except` the few
-# without the prefixes, or `only` the few with them, whichever list is shorter.
+# without the prefixes, or `only` the few with them, whichever list is shorter. A family
+# includes its bare element class, such as `value`.
 def framework_coverage(covered, classes)
   covered.group_by { it.split('--').first }.sort.to_h do |family, names|
-    missing = classes.grep(/\A#{family}--/) - names
+    missing = classes.grep(/\A#{family}(?:--|\z)/) - names
     next [family, 'all'] if missing.empty?
 
     [family, missing.size < names.size ? { 'except' => missing } : { 'only' => names }]
@@ -70,8 +74,8 @@ namespace :framework do
     require 'open-uri'
     require_relative 'lib/trmnlp/framework_version'
 
-    # A family class, bare or after a screen prefix such as `md\:`.
-    pattern = /(?<=\.|\\:)(?:value|label|title|description|text|content)--[\w-]+/
+    # An element or family class, bare or after a screen prefix such as `md\:`.
+    pattern = /(?<=\.|\\:)(?:value|label|title|description|text|content)(?:--[\w-]+)?(?![\w-])/
     classes_by_release = {}
     variants_by_release = {}
     TRMNLP::FrameworkVersion.version_numbers.sort_by { Gem::Version.new(it) }.each do |number|
@@ -86,8 +90,9 @@ namespace :framework do
 
     prefixes_destination = File.expand_path('db/data/framework_prefixes.yml', __dir__)
     prefixes_header = <<~HEADER
-      # Mirrored from each Framework release's plugins.css: the screen prefixes it defines for
-      # value--, label--, title--, description--, text-- and content-- classes, and the classes each
+      # Mirrored from each Framework release's plugins.css: the screen prefixes it defines for the
+      # value, label, title, description and content elements and their value--, label--, title--,
+      # description--, text-- and content-- classes, and the classes each
       # covers: every class in a family (`all`), all `except` some, or `only` some. A list holds
       # until the next release listed.
       # Refresh with `rake framework:classes` — do not edit manually.
@@ -97,8 +102,9 @@ namespace :framework do
 
     destination = File.expand_path('db/data/framework_classes.yml', __dir__)
     header = <<~HEADER
-      # Mirrored from each Framework release's plugins.css: its value--, label--, title--,
-      # description--, text-- and content-- classes. A list holds until the next release listed.
+      # Mirrored from each Framework release's plugins.css: its value, label, title, description
+      # and content elements and their value--, label--, title--, description--, text-- and
+      # content-- classes. A list holds until the next release listed.
       # Refresh with `rake framework:classes` — do not edit manually.
     HEADER
     File.write(destination, header + classes_by_release.to_yaml.delete_prefix("---\n"))

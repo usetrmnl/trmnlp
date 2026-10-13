@@ -58,7 +58,8 @@ module TRMNLP
 
       def class_locations
         css_class = finding[:message][/\A'([^']+)'/, 1]
-        css_class ? source.locations(Regexp.new(Regexp.escape(css_class))) : []
+        # Up to the end of the class, so `lg:title` does not also find `lg:title--small`.
+        css_class ? source.locations(Regexp.new("#{Regexp.escape(css_class)}(?![\\w-])")) : []
       end
 
       def filter_locations

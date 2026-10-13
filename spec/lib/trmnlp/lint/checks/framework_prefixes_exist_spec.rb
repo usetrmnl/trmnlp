@@ -87,6 +87,25 @@ RSpec.describe TRMNLP::Lint::Checks::FrameworkPrefixesExist do
       end
     end
 
+    context 'with a prefix on an element that only its sizes have' do
+      let(:markup) { '<span class="title lg:title">1</span>' }
+
+      it 'reports it and names the base size' do
+        expect(check.issues.map { it[:message] }).to eq(
+          ["'lg:title' has no effect: title has no 'lg:' variant in Framework v3.4.0. " \
+           "Use 'lg:title--base' for its base size."]
+        )
+      end
+    end
+
+    context 'with prefixes on elements that have them' do
+      let(:markup) { '<span class="value lg:value portrait:value">1</span>' }
+
+      it 'passes' do
+        expect(check.issues).to be_empty
+      end
+    end
+
     context 'with a class the Framework does not have' do
       let(:markup) { '<span class="xl:value--medium">1</span>' }
 
