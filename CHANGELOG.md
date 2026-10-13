@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp lint` reports a select option written as one quoted string, `'Voyager 1: voyager1'` (`select_options_split_label_and_value`). TRMNL saves such an option as its lowercased label, `voyager_1:_voyager1`, so the markup never sees `voyager1`.
+
 ## 0.27.0
 
 - `trmnlp lint` reports a webhook recipe with no `copyable_webhook_url` custom field (`webhook_url_shown`), as TRMNL's recipe review does. Without it, people who install the recipe have no field to copy their webhook URL from.
