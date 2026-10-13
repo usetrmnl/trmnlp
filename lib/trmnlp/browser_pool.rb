@@ -9,8 +9,6 @@ module TRMNLP
       @available = Queue.new
       @mutex = Mutex.new
       @shutdown = false
-
-      at_exit { shutdown }
     end
 
     def with_driver
