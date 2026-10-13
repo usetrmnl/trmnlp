@@ -7,7 +7,8 @@ module TRMNLP
     module Checks
       # Reports bracketed Framework classes the Framework never generates, one
       # finding per class. They match no rule, so they do nothing, and nothing
-      # says so: `lg:w--[192px]` leaves the element at its smaller width.
+      # says so: `lg:w--[192px]` leaves the element at its smaller width, and
+      # `mt--[2px]` or `w--[40%]` leave it where it was.
       #
       # The ranges mirror the loops in the Framework's utilities/_size.scss,
       # _gap.scss and _rounded.scss, and hold for every 3.x release's
@@ -24,6 +25,11 @@ module TRMNLP
           [family, { 'px' => 128, (family.start_with?('w') ? 'cqw' : 'cqh') => 100 }]
         end.merge('gap--' => { 'px' => 50 }, 'rounded--' => { 'px' => 50 }).freeze
 
+        # Margin and padding come only in spacing steps (`mt--1` is 4px), never
+        # in brackets, in every 3.x release.
+        SPACING_FAMILIES = %w[m mt mr mb ml mx my p pt pr pb pl px py].map { "#{it}--" }.freeze
+        SPACING_LEARN_MORE = 'https://trmnl.com/framework/docs/spacing'
+
         # `gap--[Npx]` and `rounded--[Npx]` exist only without a screen prefix.
         PREFIXABLE = SIZE_FAMILIES
 
@@ -33,8 +39,8 @@ module TRMNLP
         PATTERN = /
           (?<![\w:-])
           (?<prefix>(?:[a-z0-9-]+:)*)
-          (?<family>w--min-|w--max-|h--min-|h--max-|w--|h--|gap--|rounded--)
-          \[(?<value>[\d.]+)(?<unit>[a-z]+)\]
+          (?<family>w--min-|w--max-|h--min-|h--max-|w--|h--|gap--|rounded--|[mp][trblxy]?--)
+          \[(?<value>[\d.]+)(?<unit>[a-z%]+)\]
         /x
 
         def issues
@@ -42,6 +48,8 @@ module TRMNLP
 
           source.all_markup.scan(PATTERN).uniq.filter_map do |prefix, family, value, unit|
             css_class = "#{prefix}#{family}[#{value}#{unit}]"
+            next spacing_issue(css_class, family) if SPACING_FAMILIES.include?(family)
+
             reason = problem(prefix, family, value, unit)
             { message: "'#{css_class}' has no effect: #{reason}." } if reason
           end
@@ -50,6 +58,12 @@ module TRMNLP
         private
 
         def version = @version ||= Gem::Version.new(source.framework_version.number)
+
+        def spacing_issue(css_class, family)
+          { message: "'#{css_class}' has no effect: the Framework has no bracket values for '#{family}', " \
+                     "only spacing steps such as '#{family}1' for 4px.",
+            learn_more: SPACING_LEARN_MORE }
+        end
 
         def problem(prefix, family, value, unit)
           max = RANGES.dig(family, unit)
