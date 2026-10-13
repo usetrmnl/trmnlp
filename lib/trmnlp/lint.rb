@@ -22,6 +22,7 @@ require_relative 'lint/checks/custom_fields_used'
 require_relative 'lint/checks/form_fields_valid'
 require_relative 'lint/checks/yes_no_selects_are_boolean'
 require_relative 'lint/checks/select_options_split_label_and_value'
+require_relative 'lint/checks/no_refresh_rate_field'
 require_relative 'lint/checks/coordinates_use_lat_lon'
 require_relative 'lint/checks/no_custom_filters'
 require_relative 'lint/checks/no_unknown_filters'
@@ -60,6 +61,7 @@ module TRMNLP
       Checks::FormFieldsValid,
       Checks::YesNoSelectsAreBoolean,
       Checks::SelectOptionsSplitLabelAndValue,
+      Checks::NoRefreshRateField,
       Checks::CoordinatesUseLatLon,
       Checks::NoCustomFilters,
       Checks::NoUnknownFilters,
