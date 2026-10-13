@@ -60,6 +60,15 @@ RSpec.describe TRMNLP::Commands::Lint do
         )
       end
 
+      it 'locates every element with small gray text and no 1bit: class' do
+        File.write(File.join(tmp_root, 'src', 'full.liquid'),
+                   "<div class=\"layout\">\n  <span class=\"label label--small text--gray-30\">A</span>\n  " \
+                   "<span class=\"label label--small text--gray-30\">B</span>\n</div>")
+        command.call
+        issue = JSON.parse(reporter.messages.first)['issues'].find { it['rule_id'] == 'gray_text_has_one_bit_class' }
+        expect(issue['locations'].map { it['line'] }).to eq([2, 3])
+      end
+
       it 'locates only the misplaced element, below multi-line Liquid' do
         File.write(File.join(tmp_root, 'src', 'full.liquid'),
                    "<div class=\"layout\">{{ a\n | upcase }}\n  <div class=\"title_bar\">T</div>\n</div>\n" \

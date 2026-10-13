@@ -37,6 +37,7 @@ module TRMNLP
 
       def rule_id = Lint.rule_id(check.class)
 
+      # rubocop:disable-next Metrics/CyclomaticComplexity -- one branch per rule that locates its own findings
       def locations
         return source.yaml_location('src/settings.yml', SETTINGS_KEYS[rule_id]) if SETTINGS_KEYS.key?(rule_id)
         return source.locations(MARKUP_PATTERNS[rule_id]) if MARKUP_PATTERNS.key?(rule_id)
@@ -50,6 +51,7 @@ module TRMNLP
         when 'no_custom_filters', 'no_unknown_filters' then filter_locations
         when 'title_bar_outside_layout', 'no_nested_layouts'
           check.misplaced_elements.map { |path, element| source.element_location(path, element) }
+        when 'gray_text_has_one_bit_class' then gray_text_locations
         when 'image_links_reachable' then source.locations(Regexp.union(check.unreachable_urls))
         when 'select_options_split_label_and_value' then split_option_locations
         else []
@@ -80,6 +82,12 @@ module TRMNLP
         check.split_options.flat_map do |field, option|
           source.yaml_location('src/settings.yml', 'custom_fields', field, 'options', option)
         end
+      end
+
+      def gray_text_locations
+        classes = finding[:message][/\A'([^']+)'/, 1]
+        check.offending_elements.select { |_, element| Checks::GrayTextHasOneBitClass.class_list(element) == classes }
+             .map { |path, element| source.element_location(path, element) }
       end
 
       def form_field_locations
