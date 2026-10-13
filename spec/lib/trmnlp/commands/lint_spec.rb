@@ -175,6 +175,24 @@ RSpec.describe TRMNLP::Commands::Lint do
                                             'snippet' => 'strategy: webhook' }])
       end
 
+      it 'locates a select option written as one quoted string at that option' do
+        File.write(File.join(tmp_root, 'src', 'settings.yml'), <<~YAML)
+          custom_fields:
+            - keyname: probe
+              field_type: select
+              name: Probe
+              options:
+                - 'Random: random'
+                - 'Voyager 1: voyager1'
+        YAML
+        command.call
+        issue = JSON.parse(reporter.messages.first)['issues'].find do |finding|
+          finding['rule_id'] == 'select_options_split_label_and_value'
+        end
+        expect(issue['locations']).to eq([{ 'path' => 'src/settings.yml', 'line' => 6, 'column' => 9,
+                                            'snippet' => "      - 'Random: random'" }])
+      end
+
       it 'attributes an invalid framework class to each matching file' do
         File.write(File.join(tmp_root, 'src', 'full.liquid'), '<div class="w--[192px]">Text</div>')
         File.write(File.join(tmp_root, 'src', 'shared.liquid'), '<p class="w--[192px]">Shared</p>')
