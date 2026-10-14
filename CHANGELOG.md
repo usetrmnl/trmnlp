@@ -1,9 +1,12 @@
 
 # Changelog
 
-## 0.30.3
+## 0.30.4
 
 - `trmnlp lint` reports a margin, padding, gap or position class with a leading minus (`no_negative_spacing`), such as `-mt--2` or `lg:-top--1`. Tailwind writes negative values this way, but no Framework release defines a class that starts with a minus, so TRMNL ignores it and says nothing: an icon nudged up with `-mt--1` stays where it was.
+
+## 0.30.3
+
 - `trmnlp test` serves the Framework's stylesheets, scripts and fonts from a cache in `~/.cache/trmnl/assets`, downloaded from trmnl.com once and kept as long as trmnl.com says. A run no longer fails when trmnl.com is slow or down, as long as the files were fetched before; when a file is due for a refresh and trmnl.com cannot be reached, the copy on disk is used.
 - `trmnlp test` also serves the Google Fonts stylesheet the Framework links for Inter, and its font files, from the same cache, asked for as Firefox asks so Google sends the same fonts. A test page now loads nothing from outside unless the recipe itself does.
 
