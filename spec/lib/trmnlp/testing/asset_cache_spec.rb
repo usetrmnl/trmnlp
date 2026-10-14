@@ -33,6 +33,12 @@ RSpec.describe TRMNLP::Testing::AssetCache do
                                       %(<script src="#{cache.url}/js/3.4.2/plugins.js"></script>))
     end
 
+    it "points the Framework's Google Fonts stylesheet at the cache" do
+      html = '<link href="https://fonts.googleapis.com/css2?family=Inter&amp;display=swap">'
+      expect(cache.point_framework_links_at_cache(html))
+        .to eq(%(<link href="#{cache.url}/fonts.googleapis.com/css2?family=Inter&amp;display=swap">))
+    end
+
     it 'leaves other trmnl.com addresses alone' do
       html = '<img src="https://trmnl.com/images/plugins/weather.svg"><a href="https://trmnl.com/css">x</a>'
       expect(cache.point_framework_links_at_cache(html)).to eq(html)
@@ -75,6 +81,39 @@ RSpec.describe TRMNLP::Testing::AssetCache do
     it 'answers 502 when trmnl.com cannot be reached' do
       stub_request(:get, css_url).to_raise(SocketError)
       expect(get('/css/3.4.2/plugins.css').code).to eq('502')
+    end
+  end
+
+  context 'with a Google Fonts stylesheet' do
+    let(:google_css_url) { 'https://fonts.googleapis.com/css2?family=Inter&display=swap' }
+    let(:firefox) { 'Mozilla/5.0 (Macintosh; rv:157.0) Gecko/20100101 Firefox/157.0' }
+    let(:google_css) { '@font-face { src: url(https://fonts.gstatic.com/s/inter/v20/a.woff2) format("woff2"); }' }
+
+    def get_as_firefox(path)
+      Net::HTTP.start('127.0.0.1', URI(cache.url).port) { it.get(path, 'User-Agent' => firefox) }
+    end
+
+    before do
+      stub_request(:get, google_css_url).with(headers: { 'User-Agent' => firefox })
+                                        .to_return(body: google_css, headers: { 'content-type' => 'text/css' })
+      stub_request(:get, 'https://fonts.gstatic.com/s/inter/v20/a.woff2')
+        .to_return(body: 'inter', headers: { 'content-type' => 'font/woff2' })
+    end
+
+    it 'asks Google as Firefox does, and points its font files at the cache' do
+      expect(get_as_firefox('/fonts.googleapis.com/css2?family=Inter&display=swap').body)
+        .to include("url(#{cache.url}/fonts.gstatic.com/s/inter/v20/a.woff2)")
+    end
+
+    it 'keeps each family apart' do
+      stub_request(:get, 'https://fonts.googleapis.com/css2?family=Lora')
+        .to_return(body: 'lora', headers: { 'content-type' => 'text/css' })
+      get_as_firefox('/fonts.googleapis.com/css2?family=Inter&display=swap')
+      expect(get_as_firefox('/fonts.googleapis.com/css2?family=Lora').body).to eq('lora')
+    end
+
+    it 'serves the font files' do
+      expect(get('/fonts.gstatic.com/s/inter/v20/a.woff2').body).to eq('inter')
     end
   end
 
