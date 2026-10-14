@@ -8,6 +8,7 @@ require 'capybara/rspec/matchers' # after rspec/expectations, or its matchers lo
 require_relative '../../trmnlp'
 require_relative '../browser_pool'
 require_relative '../firefox_driver'
+require_relative 'asset_cache'
 require_relative 'browser'
 require_relative 'certificate_authority'
 require_relative 'ink_count'
@@ -33,6 +34,11 @@ module TRMNLP
       @browser_pool ||= BrowserPool.new(driver_factory: FirefoxDriver.method(:build), max_size: 1)
     end
 
+    def self.asset_cache
+      @asset_cache ||= AssetCache.new(dir: Paths.new(plugin_dir).cache_dir.join('assets')).start
+                                 .tap { |cache| at_exit { cache.stop } }
+    end
+
     def self.page_server
       @page_server ||= PageServer.new.start.tap { |server| at_exit { server.stop } }
     end
@@ -41,7 +47,8 @@ module TRMNLP
       def trmnl = @trmnl ||= Plugin.new(Testing.plugin_dir, browser: trmnl_browser, authority: Testing.authority)
 
       def trmnl_browser
-        @trmnl_browser ||= Browser.new(pool: Testing.browser_pool, page_server: Testing.page_server)
+        @trmnl_browser ||= Browser.new(pool: Testing.browser_pool, page_server: Testing.page_server,
+                                       asset_cache: Testing.asset_cache)
       end
     end
   end

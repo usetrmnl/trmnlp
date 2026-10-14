@@ -13,9 +13,10 @@ module TRMNLP
     # The Firefox one example renders in, checked out of the pool on first use and back in by #release.
     # Pages are drawn through ScreenGenerator and Screenshot like `trmnlp build --png`'s, but opened from page_server.
     class Browser
-      def initialize(pool:, page_server:)
+      def initialize(pool:, page_server:, asset_cache:)
         @pool = pool
         @page_server = page_server
+        @asset_cache = asset_cache
         @screenshot = Screenshot.new(pool:)
         @pages = {}.compare_by_identity
         @fresh_browsers = []
@@ -24,13 +25,15 @@ module TRMNLP
       # A Firefox of its own, with nothing cached, closed when this browser is released.
       def fresh
         pool = BrowserPool.new(driver_factory: FirefoxDriver.method(:build), max_size: 1)
-        self.class.new(pool:, page_server: @page_server).tap { @fresh_browsers << [it, pool] }
+        browser = self.class.new(pool:, page_server: @page_server, asset_cache: @asset_cache)
+        browser.tap { @fresh_browsers << [it, pool] }
       end
 
       # Loads the screen's page; its picture is only taken when a test asks for it.
       def load(screen)
         generator = generator(screen)
-        @pages[screen] = [generator.html, generator.width, generator.height, @page_server.add(generator.html)]
+        html = @asset_cache.point_framework_links_at_cache(generator.html)
+        @pages[screen] = [html, generator.width, generator.height, @page_server.add(html)]
         show(screen)
       end
 
