@@ -51,6 +51,20 @@ RSpec.describe TRMNLP::BrowserPool do
 
       expect(built_drivers.size).to eq(2)
     end
+
+    it 'quits the driver it recycles' do
+      pool.with_driver { |d| d.title_raises = true }
+      pool.with_driver { |_| }
+
+      expect(built_drivers.first.quit_called).to be(true)
+    end
+
+    it 'recycles the driver even when quitting it raises' do
+      pool.with_driver { |d| d.title_raises = true }
+      allow(built_drivers.first).to receive(:quit).and_raise('detached')
+
+      expect(pool.checkout).to be(built_drivers.last)
+    end
   end
 
   describe '#shutdown' do

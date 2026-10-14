@@ -23,11 +23,7 @@ module TRMNLP
         return if @shutdown
 
         @shutdown = true
-        @drivers.each do |driver|
-          driver.quit
-        rescue StandardError
-          nil
-        end
+        @drivers.each { quit(it) }
         @drivers.clear
       end
     end
@@ -72,9 +68,15 @@ module TRMNLP
 
     def recycle(driver)
       @mutex.synchronize do
-        @drivers.delete(driver)
+        quit(@drivers.delete(driver))
         @driver_factory.call.tap { |d| @drivers << d }
       end
+    end
+
+    def quit(driver)
+      driver&.quit
+    rescue StandardError
+      nil
     end
   end
 end
