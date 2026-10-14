@@ -34,6 +34,21 @@ module TRMNLP
       window.onresize = null;
     JS
 
+    # TRMNL lays out a device it scales (TRMNL X, most BYOD screens) at its CSS size while the page's scripts
+    # run, then scales the frozen page for the capture, so a script that measures sees what the device shows.
+    LAYOUT_PASS_STYLE = '<style id="trmnlp-layout-pass">.trmnl .screen { --pixel-ratio: 1 !important; }</style>'
+    APPLY_CAPTURE_SCALE = <<~JS
+      document.getElementById('trmnlp-layout-pass')?.remove();
+      document.documentElement.offsetHeight;
+    JS
+    # A map redraws its canvas at the capture scale before the timers it needs are frozen, for 8s at most.
+    REFRESH_MAPS = <<~JS
+      const done = arguments[arguments.length - 1];
+      if (typeof window.TRMNLMaps?.refresh !== 'function') return done(false);
+      const timeout = new Promise((resolve) => setTimeout(resolve, 8000));
+      Promise.race([window.TRMNLMaps.refresh(), timeout]).then(() => done(true), () => done(false));
+    JS
+
     def initialize(pool:, viewport_timeout: 5, fonts_timeout: FONTS_TIMEOUT_SECONDS)
       @pool = pool
       @viewport_timeout = viewport_timeout
@@ -123,6 +138,14 @@ module TRMNLP
         document.documentElement.style.overflow = 'hidden';
         document.body.style.overflow = 'hidden';
       JS
+      freeze_at_capture_scale(driver, html)
+    end
+
+    def freeze_at_capture_scale(driver, html)
+      return driver.execute_script(FREEZE_TIMERS + APPLY_CAPTURE_SCALE) unless html.match?(MAPS_DOCUMENT_PATTERN)
+
+      driver.execute_script(APPLY_CAPTURE_SCALE)
+      driver.execute_async_script(REFRESH_MAPS)
       driver.execute_script(FREEZE_TIMERS)
     end
 

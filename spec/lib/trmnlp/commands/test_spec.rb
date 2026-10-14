@@ -472,6 +472,44 @@ RSpec.describe 'trmnlp test' do
     end
   end
 
+  context 'on a device the Framework scales' do
+    let(:spec_body) do
+      <<~'RUBY'
+        device = { width: 1872, height: 1404, bit_depth: 4, screen_classes: 'screen screen--4bit screen--v2 screen--lg' }
+        unscaled = '<style>.trmnl .screen { --pixel-ratio: 1 !important; }</style>'
+        rows = (1..20).map { "<tr><td><span class='label'>Row #{it}</span></td></tr>" }.join
+        table = %(<div class="layout"><table class="table" data-table-limit="true"><tbody>#{rows}</tbody></table></div>)
+        clamp = %(<div class="layout"><div style="width: 200px"><span class="description" data-clamp="2">#{'word ' * 60}</span></div></div>)
+        shown = '[...document.querySelectorAll(".view")].map((view) => view.innerText).join()'
+
+        RSpec.describe 'Scaling' do
+          def shown_on(device, markup, head: nil) = trmnl.render(device:, data: { markup: }, transform: false, head:)
+
+          it 'limits a table to the rows the device shows' do
+            expect(shown_on(device, table).evaluate(shown)).to eq(shown_on(device, table, head: unscaled).evaluate(shown))
+          end
+
+          it 'clamps text to the lines the device shows' do
+            expect(shown_on(device, clamp).evaluate(shown)).to eq(shown_on(device, clamp, head: unscaled).evaluate(shown))
+          end
+
+          it 'draws the screen at the size of the device' do
+            expect(shown_on(device, table).evaluate('document.querySelector(".screen").getBoundingClientRect().width'))
+              .to eq(1872)
+          end
+        end
+      RUBY
+    end
+
+    before do
+      File.write(File.join(plugin_dir, 'src', 'full.liquid'), '{{ markup }}')
+    end
+
+    it 'lays the page out at its CSS size while its scripts run' do
+      expect(run_tests.first).to include('3 examples, 0 failures')
+    end
+  end
+
   context 'with boxes that cut what they hold' do
     let(:spec_body) do
       <<~'RUBY'

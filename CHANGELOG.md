@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- A screen on a device TRMNL scales, as the TRMNL X or a Kobo, runs its scripts at the CSS size and is scaled only for the picture, as TRMNL does. Before, the scripts measured the scaled page, so a table cut rows the device shows (7 of 14 on a TRMNL X) and clamped text kept lines the device cuts.
 - `trmnlp test` quits a Firefox that stopped answering before it starts a new one. The old geckodriver kept running until something killed it.
 - `trmnlp test`'s dark mode check also fails a view where an image, SVG or canvas that shows something in light mode shows nothing in dark mode, such as a checkbox icon drawn in a fixed black, and names it. Before, a view lost to dark mode only when most of its content went, so one lost icon passed.
 

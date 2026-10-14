@@ -80,6 +80,16 @@ RSpec.describe TRMNLP::ScreenGenerator do
     end
   end
 
+  describe 'scaled devices' do
+    let(:html) { '<html><head></head><body></body></html>' }
+
+    it 'lays the page out unscaled until the capture' do
+      generator.process
+      expect(screenshot).to have_received(:call)
+        .with(hash_including(html: "<html><head>#{TRMNLP::Screenshot::LAYOUT_PASS_STYLE}</head><body></body></html>"))
+    end
+  end
+
   describe 'chart libraries' do
     let(:html) { '<script src="https://code.highcharts.com/highcharts.js"></script>' }
 

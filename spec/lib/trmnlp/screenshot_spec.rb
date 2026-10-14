@@ -35,6 +35,8 @@ RSpec.describe TRMNLP::Screenshot do
       @readiness_answers.empty? || @readiness_answers.shift if script.include?('TRMNL_PLUGINS_READY')
     end
 
+    def execute_async_script(script) = @scripts_run << script
+
     def bidi = self
     def window_handle = 'context-1'
 
@@ -126,9 +128,9 @@ RSpec.describe TRMNLP::Screenshot do
       expect(driver.scripts_run.count { |script| script.include?('TRMNL_PLUGINS_READY') }).to eq(3)
     end
 
-    it 'freezes timers as the last step before capture' do
+    it 'freezes timers, then scales the page for the capture' do
       result
-      expect(driver.scripts_run.last).to include('requestAnimationFrame')
+      expect(driver.scripts_run.last).to match(/requestAnimationFrame.+trmnlp-layout-pass/m)
     end
 
     context 'when the page never signals readiness' do
@@ -170,6 +172,12 @@ RSpec.describe TRMNLP::Screenshot do
 
     context 'when the page draws a map' do
       before { allow(Selenium::WebDriver::Wait).to receive(:new).and_call_original }
+
+      it 'scales the page and redraws the maps before freezing timers' do
+        screenshot.call(html: '<script>TRMNLMaps.create()</script>', width: 800, height: 480)
+        expect(driver.scripts_run.last(3)).to match([include('trmnlp-layout-pass'), include('TRMNLMaps.refresh()'),
+                                                     include('requestAnimationFrame')])
+      end
 
       it 'waits up to the longer maps readiness timeout' do
         screenshot.call(html: '<script>TRMNLMaps.create()</script>', width: 800, height: 480)
