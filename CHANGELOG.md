@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp test` quits a Firefox that stopped answering before it starts a new one. The old geckodriver kept running until something killed it.
+
 ## 0.29.0
 
 - `trmnlp test` fails a screen that draws text over other text, or content text under the title bar, and names both texts, such as a name printed across the last line of a quote. Only glyphs that share inked pixels count, so a unit tucked against a number passes.
