@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.30.2
 
 - `trmnlp serve`'s HTML preview of a device TRMNL scales runs the page's scripts at the CSS size too, then shows the page at the device's size and stops its timers, as the PNG and the device do. Before, a table showed 8 of 20 rows on a TRMNL X where the device shows 15.
 
