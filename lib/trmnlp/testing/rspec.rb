@@ -111,6 +111,14 @@ RSpec::Matchers.define :have_no_text_clamped_with_room_to_spare do
   end
 end
 
+RSpec::Matchers.define :have_no_overlapping_text do
+  match { |screen| screen.overlapping_text.empty? }
+  failure_message do |screen|
+    "expected no text drawn over other text on #{screen.inspect}, but it draws #{screen.overlapping_text.join('; ')} " \
+      'over each other.'
+  end
+end
+
 RSpec::Matchers.define :have_no_problems do
   match { |screen| screen.problems.empty? }
   failure_message { |screen| "expected no problems on #{screen.inspect}, but: #{screen.problems.join('; ')}" }

@@ -355,6 +355,17 @@ RSpec.describe 'trmnlp test' do
         expect(run_tests.first).to include('14 examples, 0 failures')
       end
     end
+
+    context 'when a view draws text over other text' do
+      let(:quadrant) do
+        '<div class="layout"><div style="position: relative"><span class="title">{{ greeting }}</span>' \
+          '<span class="title" style="position: absolute; left: 0; top: 0">Over it</span></div></div>'
+      end
+
+      it 'names both texts' do
+        expect(run_tests.first).to include('draws "Hello Ada" and "Over it" over each other')
+      end
+    end
   end
 
   context 'with a QR code on the screen' do
