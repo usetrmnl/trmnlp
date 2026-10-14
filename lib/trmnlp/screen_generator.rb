@@ -24,8 +24,11 @@ module TRMNLP
       @requested_color_depth = opts[:color_depth]
     end
 
-    # The page as it is shown: chart libraries swapped for TRMNL's copies.
-    def html = CHART_LIBRARIES.reduce(@input) { |page, (from, to)| page.gsub(from, to) }
+    # The page as it is shown: chart libraries swapped for TRMNL's copies, laid out unscaled until the capture.
+    def html
+      CHART_LIBRARIES.reduce(@input) { |page, (from, to)| page.gsub(from, to) }
+                     .sub('</head>', "#{Screenshot::LAYOUT_PASS_STYLE}</head>")
+    end
 
     def process
       output = @screenshot.call(html:, width:, height:)

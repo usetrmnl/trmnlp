@@ -22,6 +22,7 @@ Known, written-down differences (keep them written down if they change):
 
 - `trmnlp test` opens pages from `http://127.0.0.1:<port>/pages/<id>`; core writes into `about:blank`. Firefox prefs block storage, cookies and the Referer to match.
 - Core keeps warm browser slots; trmnlp starts Firefox per run.
+- On a scaled device both lay the page out at `--pixel-ratio: 1` while its scripts run (`Screenshot::LAYOUT_PASS_STYLE`; core's `css_layout_override`), but core also shrinks the viewport to the CSS size for that pass. trmnlp keeps the physical viewport, so only a script that reads `innerWidth` or `innerHeight` sees a difference.
 
 Steps:
 
