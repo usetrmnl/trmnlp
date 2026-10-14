@@ -4,6 +4,7 @@
 ## Unreleased
 
 - `trmnlp test` serves the Framework's stylesheets, scripts and fonts from a cache in `~/.cache/trmnl/assets`, downloaded from trmnl.com once and kept as long as trmnl.com says. A run no longer fails when trmnl.com is slow or down, as long as the files were fetched before; when a file is due for a refresh and trmnl.com cannot be reached, the copy on disk is used.
+- `trmnlp test` also serves the Google Fonts stylesheet the Framework links for Inter, and its font files, from the same cache, asked for as Firefox asks so Google sends the same fonts. A test page now loads nothing from outside unless the recipe itself does.
 
 ## 0.30.2
 
