@@ -103,6 +103,28 @@ RSpec::Matchers.define :keep_the_content_of do |light|
   end
 end
 
+# Each image, SVG and canvas that stands out in light mode must still show in dark mode.
+RSpec::Matchers.define :keep_each_image_of do |light|
+  def ink(screen, box) = TRMNLP::Testing::InkCount.new(screen.png_path, area: box).pixels
+
+  def lost_images(light, dark)
+    light.drawn_images.zip(dark.drawn_images).filter_map do |(name, light_box), (dark_name, dark_box)|
+      next unless name == dark_name
+
+      light_ink = ink(light, light_box)
+      lost = light_ink >= TRMNLP::Testing::DARK_MODE_MIN_LIGHT_IMAGE_INK_PIXELS &&
+             ink(dark, dark_box) < light_ink * TRMNLP::Testing::DARK_MODE_MIN_IMAGE_INK_KEPT
+      "#{name} at #{light_box.left.round},#{light_box.top.round}" if lost
+    end
+  end
+
+  match { |dark| (@lost = lost_images(light, dark)).empty? }
+  failure_message do |dark|
+    "expected #{dark.inspect} in dark mode to keep each image, but #{@lost.join(', ')} shows nothing in dark " \
+      'mode: it is drawn in a fixed black (#000, black). Use currentColor, or image--adaptive on an <img>.'
+  end
+end
+
 RSpec::Matchers.define :have_no_text_clamped_with_room_to_spare do
   match { |screen| screen.clamped_with_room.empty? }
   failure_message do |screen|

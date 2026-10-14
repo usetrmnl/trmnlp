@@ -219,6 +219,51 @@ RSpec.describe 'trmnlp test' do
       end
     end
 
+    context 'when one icon is drawn in a fixed black' do
+      let(:quadrant) do
+        '<div class="layout layout--col"><span class="title">{{ greeting }}, {{ greeting }}, {{ greeting }}</span>' \
+          '<svg class="icon" width="40" height="40"><circle cx="20" cy="20" r="15" stroke="black" stroke-width="4" ' \
+          'fill="none"/></svg></div>'
+      end
+
+      it 'names the icon that turns black on black' do
+        expect(run_tests.first).to include("keeps the quadrant view's content in dark mode")
+          .and include('svg.icon')
+      end
+    end
+
+    context 'when an icon follows dark mode' do
+      let(:quadrant) do
+        '<div class="layout layout--col"><span class="title">{{ greeting }}</span>' \
+          '<svg width="40" height="40"><circle cx="20" cy="20" r="15" stroke="currentColor" stroke-width="4" ' \
+          'fill="none"/></svg></div>'
+      end
+
+      it 'keeps it' do
+        expect(run_tests.first).to include('14 examples, 0 failures')
+      end
+    end
+
+    context "when the Framework's adaptive icon fails to load in dark mode" do
+      let(:quadrant) do
+        <<~HTML
+          <div class="layout layout--col"><span class="title">{{ greeting }}, {{ greeting }}, {{ greeting }}</span>
+          <img id="icon" class="image--adaptive" data-adaptive width="40" height="40"></div>
+          <script>
+            const svg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E" +
+              "%3Ccircle cx='20' cy='20' r='15' stroke='black' stroke-width='5' fill='none'/%3E%3C/svg%3E";
+            const dark = document.querySelector('.screen--dark-mode');
+            icon.src = svg;
+            icon.style.setProperty('--framework-icon-src', dark ? 'url("http://127.0.0.1:1/icon.svg")' : `url("${svg}")`);
+          </script>
+        HTML
+      end
+
+      it 'leaves it out, since its color follows dark mode' do
+        expect(run_tests.first).to include('14 examples, 0 failures')
+      end
+    end
+
     context 'when a view shows a leaked value' do
       let(:quadrant) { greeting_markup.sub('{{ greeting }}', '{{ greeting }} undefined') }
 

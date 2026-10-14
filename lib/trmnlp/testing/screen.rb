@@ -115,6 +115,24 @@ module TRMNLP
       # to what its clipping parents show; two count when their glyphs share inked pixels.
       OVERLAPPING_TEXT_SCRIPT = File.read(File.join(__dir__, 'overlapping_text.js')).freeze
 
+      # Each drawn image, SVG and canvas in the view but the Framework's adaptive icon, its box cut to the screen.
+      DRAWN_IMAGES_SCRIPT = <<~JS
+        const screen = document.documentElement.getBoundingClientRect();
+        const describe = (el) => el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') +
+          (el.classList.length ? '.' + [...el.classList].join('.') : '');
+        return [...document.querySelectorAll('.view img, .view svg, .view canvas')]
+          .filter((el) => !el.parentElement.closest('svg') && !el.matches('img.image--adaptive[data-adaptive]') &&
+            el.checkVisibility({ opacityProperty: true }))
+          .map((el) => {
+            const box = el.getBoundingClientRect();
+            const left = Math.max(box.left, 0);
+            const top = Math.max(box.top, 0);
+            const right = Math.min(box.right, screen.right);
+            const bottom = Math.min(box.bottom, screen.bottom);
+            return { name: describe(el), left, top, right, bottom, width: right - left, height: bottom - top };
+          }).filter((image) => image.width >= 1 && image.height >= 1);
+      JS
+
       HIDDEN_MARK = 'data-trmnlp-hidden'
       # The DOM with every element Firefox does not draw marked, so Capybara's visible text is what is on screen.
       DRAWN_DOM_SCRIPT = <<~JS.freeze
@@ -153,6 +171,12 @@ module TRMNLP
       def evaluate(expression) = @browser.on(self) { it.execute_script("return (#{expression});") }
 
       def overflowing(except: nil) = @browser.on(self) { it.execute_script(OVERFLOW_SCRIPT, except) }
+
+      def drawn_images
+        @browser.on(self) { it.execute_script(DRAWN_IMAGES_SCRIPT) }.map do |image|
+          [image['name'], Box.new(**image.slice(*Box.members.map(&:to_s)).transform_keys(&:to_sym))]
+        end
+      end
 
       def clamped_with_room = @browser.on(self) { it.execute_script(CLAMPED_WITH_ROOM_SCRIPT) }
       def overlapping_text = @browser.on(self) { it.execute_script(OVERLAPPING_TEXT_SCRIPT) }

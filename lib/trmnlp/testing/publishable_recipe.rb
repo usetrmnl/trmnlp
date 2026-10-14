@@ -21,6 +21,9 @@ module TRMNLP
     # Share of a layout's ink its dark mode render must keep. Of 17 recipes measured on 10-13, those that draw
     # well in dark mode kept 85% or more; those whose text turned black on black kept 0% to 15%.
     DARK_MODE_MIN_INK_KEPT = 0.5
+    DARK_MODE_MIN_LIGHT_IMAGE_INK_PIXELS = 16
+    # Share of an image's ink its dark mode render must keep: lost icons kept 0%, the lowest one shown 17% (10-14).
+    DARK_MODE_MIN_IMAGE_INK_KEPT = 0.05
 
     # Each select field's keyname and the values its options save, from the plugin's settings.yml.
     def self.select_field_values
@@ -61,7 +64,8 @@ RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLI
   TRMNLP::Testing::PUBLISHABLE_RECIPE_VIEWS.each do |view|
     it "keeps the #{view} view's content in dark mode" do
       light = trmnl.render(view:, **dark_mode_screen, **recipe_inputs)
-      expect(trmnl.render(view:, **dark_mode_screen, **recipe_inputs, dark_mode: true)).to keep_the_content_of(light)
+      expect(trmnl.render(view:, **dark_mode_screen, **recipe_inputs, dark_mode: true))
+        .to keep_the_content_of(light).and keep_each_image_of(light)
     end
   end
 
