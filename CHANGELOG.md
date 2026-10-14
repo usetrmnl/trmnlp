@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp test` serves the Framework's stylesheets, scripts and fonts from a cache in `~/.cache/trmnl/assets`, downloaded from trmnl.com once and kept as long as trmnl.com says. A run no longer fails when trmnl.com is slow or down, as long as the files were fetched before; when a file is due for a refresh and trmnl.com cannot be reached, the copy on disk is used.
+
 ## 0.30.2
 
 - `trmnlp serve`'s HTML preview of a device TRMNL scales runs the page's scripts at the CSS size too, then shows the page at the device's size and stops its timers, as the PNG and the device do. Before, a table showed 8 of 20 rows on a TRMNL X where the device shows 15.
