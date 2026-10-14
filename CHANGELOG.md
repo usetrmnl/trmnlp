@@ -4,6 +4,7 @@
 ## Unreleased
 
 - `trmnlp test`'s publishable recipe group fails "has a mock for every request it makes" when the polling or the transform asks for a url no mock answers, and names each url without its query. Such a request is answered with status 599, so the screens drew the error state as if the API had failed. The matcher is `have_a_mock_for_every_request`.
+- `trmnlp test` checks each view in dark mode on the TRMNL X: a view fails when its layout keeps less than half its content, as when text, lines or icons are drawn in a fixed black and stay black on the black screen. Pass `dark_mode_screen:` to the shared group to check another screen.
 
 ## 0.28.0
 
