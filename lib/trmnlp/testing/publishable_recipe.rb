@@ -43,7 +43,10 @@ RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLI
       data: respond_to?(:data) ? data : nil }
   end
 
-  def draw_cleanly = have_no_problems.and(have_no_leaked_text).and(have_no_text_clamped_with_room_to_spare)
+  def draw_cleanly
+    have_no_problems.and(have_no_leaked_text)
+                    .and(have_no_text_clamped_with_room_to_spare).and(have_no_overlapping_text)
+  end
 
   TRMNLP::Testing::PUBLISHABLE_RECIPE_VIEWS.product(screens).each do |view, screen|
     device = screen[:device].is_a?(Hash) ? screen[:device][:model] : screen[:device]

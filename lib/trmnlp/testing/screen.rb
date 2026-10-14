@@ -111,6 +111,10 @@ module TRMNLP
         }).map((el) => `"${el.innerText.trim()}" (all of "${el.getAttribute('data-clamp-original').trim()}" fits)`);
       JS
 
+      # Pairs of text whose ink is drawn over each other, and text drawn under the title bar. Each line's ink is cut
+      # to what its clipping parents show; two count when their glyphs share inked pixels.
+      OVERLAPPING_TEXT_SCRIPT = File.read(File.join(__dir__, 'overlapping_text.js')).freeze
+
       HIDDEN_MARK = 'data-trmnlp-hidden'
       # The DOM with every element Firefox does not draw marked, so Capybara's visible text is what is on screen.
       DRAWN_DOM_SCRIPT = <<~JS.freeze
@@ -151,6 +155,7 @@ module TRMNLP
       def overflowing(except: nil) = @browser.on(self) { it.execute_script(OVERFLOW_SCRIPT, except) }
 
       def clamped_with_room = @browser.on(self) { it.execute_script(CLAMPED_WITH_ROOM_SCRIPT) }
+      def overlapping_text = @browser.on(self) { it.execute_script(OVERLAPPING_TEXT_SCRIPT) }
 
       # Script errors, unhandled rejections, console.error lines and files that failed to load.
       def problems = evaluate('window.__trmnlpProblems || []')
