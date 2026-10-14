@@ -30,6 +30,13 @@ jobs:
       - name: Install PHP CLI, libfaketime, ImageMagick and zbar
         run: sudo apt-get update && sudo apt-get install -y php-cli libfaketime imagemagick zbar-tools
 
+      # The Framework files test pages load, kept between runs so a run does not need trmnl.com to be up.
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/trmnl/assets
+          key: framework-assets-${{ github.run_id }}
+          restore-keys: framework-assets-
+
       - name: Run specs
         run: bundle exec rspec --profile 10
 
