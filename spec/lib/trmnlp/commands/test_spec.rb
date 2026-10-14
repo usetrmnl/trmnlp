@@ -195,7 +195,19 @@ RSpec.describe 'trmnlp test' do
     end
 
     it 'draws every view, runs the transform, and draws when the API fails' do
-      expect(run_tests.first).to include('9 examples, 0 failures')
+      expect(run_tests.first).to include('10 examples, 0 failures')
+    end
+
+    context 'when the plugin asks for a url its mocks do not answer' do
+      before do
+        File.write(File.join(plugin_dir, 'src', 'settings.yml'),
+                   "name: Greeting\nstrategy: polling\npolling_url: https://other.test/person?key=secret\n")
+      end
+
+      it 'names the url without its query, once' do
+        expect(run_tests.first).to include('has a mock for every request it makes')
+          .and include('GET https://other.test/person').and(satisfy { !it.include?('key=secret') })
+      end
     end
 
     context 'when a view shows a leaked value' do
@@ -224,7 +236,7 @@ RSpec.describe 'trmnlp test' do
 
       it 'draws the full view with each option, and names the one that breaks' do
         expect(run_tests.first)
-          .to include('draws the full view with mood set to loud').and include('11 examples, 1 failure')
+          .to include('draws the full view with mood set to loud').and include('12 examples, 1 failure')
       end
     end
 
@@ -272,7 +284,7 @@ RSpec.describe 'trmnlp test' do
       end
 
       it 'renders every view with it' do
-        expect(run_tests.first).to include('9 examples, 0 failures')
+        expect(run_tests.first).to include('10 examples, 0 failures')
       end
     end
 
@@ -299,7 +311,7 @@ RSpec.describe 'trmnlp test' do
       end
 
       it 'renders with them' do
-        expect(run_tests.first).to include('9 examples, 0 failures')
+        expect(run_tests.first).to include('10 examples, 0 failures')
       end
     end
 
@@ -307,7 +319,7 @@ RSpec.describe 'trmnlp test' do
       let(:quadrant) { greeting_markup.sub('{{ greeting }}', 'Ada ' * 200).sub('">', '" style="white-space: nowrap">') }
 
       it 'leaves overflow to the recipe' do
-        expect(run_tests.first).to include('9 examples, 0 failures')
+        expect(run_tests.first).to include('10 examples, 0 failures')
       end
     end
   end

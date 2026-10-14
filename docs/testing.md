@@ -191,6 +191,7 @@ A hash answer can use these keys:
 | `have_no_problems` | The page has no problems. |
 | `have_no_leaked_text` | The drawn text has no leaked values. |
 | `have_no_transform_error` | The transform of a render ran without error. |
+| `have_a_mock_for_every_request` | A mock answered every request of a transform or render. |
 | `have_qr_code` | A QR code scans in the PNG. |
 | `fit_image_size_limit` | The PNG fits the model's size limit. |
 
@@ -264,6 +265,8 @@ Every view must draw without page errors on these screens:
 - The TRMNL X, in landscape and portrait.
 
 The transform must run without error and within TRMNL's limits.
+
+Every request the polling or the transform makes must have a mock. A request with no mock gets status 599, so the screens would show the error state as if the API had failed.
 
 Every screen is checked for leaked values:
 

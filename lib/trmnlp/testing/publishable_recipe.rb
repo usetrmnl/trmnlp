@@ -67,6 +67,10 @@ RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLI
     end
   end
 
+  it 'has a mock for every request it makes' do
+    expect(trmnl.transform(device: screens.first[:device], **recipe_inputs)).to have_a_mock_for_every_request
+  end
+
   it 'runs its transform without error' do
     expect(trmnl.transform(device: screens.first[:device], **recipe_inputs).error).to be_nil
   end
