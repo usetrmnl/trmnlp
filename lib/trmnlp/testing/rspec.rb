@@ -103,6 +103,14 @@ RSpec::Matchers.define :keep_the_content_of do |light|
   end
 end
 
+RSpec::Matchers.define :have_no_text_clamped_with_room_to_spare do
+  match { |screen| screen.clamped_with_room.empty? }
+  failure_message do |screen|
+    "expected no text cut short with room to spare on #{screen.inspect}, but it cuts: " \
+      "#{screen.clamped_with_room.join('; ')}."
+  end
+end
+
 RSpec::Matchers.define :have_no_problems do
   match { |screen| screen.problems.empty? }
   failure_message { |screen| "expected no problems on #{screen.inspect}, but: #{screen.problems.join('; ')}" }

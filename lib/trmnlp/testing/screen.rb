@@ -87,6 +87,30 @@ module TRMNLP
         }).map(describe);
       JS
 
+      # Each element the Framework clamped although its full text fits on one line of the width its parent gives it.
+      CLAMPED_WITH_ROOM_SCRIPT = <<~JS
+        const textMeasuringContext = document.createElement('canvas').getContext('2d');
+        const px = (value) => parseFloat(value) || 0;
+        const sharesItsRow = (style) => style.display.includes('grid') ||
+          (style.display.includes('flex') && !style.flexDirection.startsWith('column'));
+        const fullTextWidth = (el, text) => {
+          const style = getComputedStyle(el);
+          textMeasuringContext.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+          const shown = style.textTransform === 'uppercase' ? text.toUpperCase() : text;
+          return textMeasuringContext.measureText(shown).width + px(style.letterSpacing) * shown.length +
+            px(style.paddingLeft) + px(style.paddingRight) + px(style.marginLeft) + px(style.marginRight);
+        };
+        return [...document.querySelectorAll('.view [data-clamp-original]')].filter((el) => {
+          const original = el.getAttribute('data-clamp-original').trim();
+          const parent = el.parentElement;
+          if (!original || el.innerText.trim() === original || !el.getClientRects().length || !parent) return false;
+          const parentStyle = getComputedStyle(parent);
+          if (sharesItsRow(parentStyle)) return false;
+          const room = parent.clientWidth - px(parentStyle.paddingLeft) - px(parentStyle.paddingRight);
+          return fullTextWidth(el, original) <= room - 2;
+        }).map((el) => `"${el.innerText.trim()}" (all of "${el.getAttribute('data-clamp-original').trim()}" fits)`);
+      JS
+
       HIDDEN_MARK = 'data-trmnlp-hidden'
       # The DOM with every element Firefox does not draw marked, so Capybara's visible text is what is on screen.
       DRAWN_DOM_SCRIPT = <<~JS.freeze
@@ -125,6 +149,8 @@ module TRMNLP
       def evaluate(expression) = @browser.on(self) { it.execute_script("return (#{expression});") }
 
       def overflowing(except: nil) = @browser.on(self) { it.execute_script(OVERFLOW_SCRIPT, except) }
+
+      def clamped_with_room = @browser.on(self) { it.execute_script(CLAMPED_WITH_ROOM_SCRIPT) }
 
       # Script errors, unhandled rejections, console.error lines and files that failed to load.
       def problems = evaluate('window.__trmnlpProblems || []')

@@ -331,6 +331,30 @@ RSpec.describe 'trmnlp test' do
         expect(run_tests.first).to include('14 examples, 0 failures')
       end
     end
+
+    context 'when the Framework clamped text that fits the width its parent gives it' do
+      let(:quadrant) do
+        '<div class="layout"><div class="w--full"><span class="label" ' \
+          'data-clamp-original="{{ greeting }} Lovelace">{{ greeting }}...</span></div></div>'
+      end
+
+      it 'names the text it cut' do
+        expect(run_tests.first)
+          .to include('cut short with room to spare').and include('(all of "Hello Ada Lovelace" fits)')
+      end
+    end
+
+    context 'when the Framework clamped text too long for its line' do
+      let(:long_text) { 'Ada ' * 200 }
+      let(:quadrant) do
+        %(<div class="layout"><div class="w--full">
+          <span class="label" data-clamp-original="#{long_text}">Ada...</span></div></div>)
+      end
+
+      it 'passes' do
+        expect(run_tests.first).to include('14 examples, 0 failures')
+      end
+    end
   end
 
   context 'with a QR code on the screen' do
