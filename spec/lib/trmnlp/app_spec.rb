@@ -7,6 +7,7 @@ require 'rack/test'
 # spec the routes without booting the full Sinatra reloader.
 require 'trmnlp/app'
 require 'trmnlp/browser_pool'
+require 'trmnlp/firefox_driver'
 
 require 'fileutils'
 require 'tmpdir'
@@ -156,6 +157,66 @@ RSpec.describe TRMNLP::App do
       get '/full'
 
       expect(last_response.body).to include('payload-size payload-size--over')
+    end
+  end
+
+  describe 'GET /render/:view.html on a device the Framework scales' do
+    let(:project_dir) { Dir.mktmpdir('trmnlp-live-preview-') }
+    let(:context) { TRMNLP::Context.new(project_dir).tap { allow(it.poller).to receive(:poll_data) } }
+    let(:pool) { TRMNLP::BrowserPool.new(driver_factory: TRMNLP::FirefoxDriver.method(:build), max_size: 1) }
+    let(:screenshot) { TRMNLP::Screenshot.new(pool:) }
+    let(:device) { { width: 1872, height: 1404, screen_classes: 'screen screen--4bit screen--v2 screen--lg' } }
+    let(:shown) { '[...document.querySelectorAll(".view")].map((view) => view.innerText).join()' }
+    let(:rows) { (1..20).map { "<tr><td><span class='label'>Row #{it}</span></td></tr>" }.join }
+    let(:table) { %(<table class="table" data-table-limit="true"><tbody>#{rows}</tbody></table>) }
+    let(:clamp) { %(<div style="width: 200px"><span class="description" data-clamp="2">#{'word ' * 60}</span></div>) }
+
+    after do
+      pool.shutdown
+      FileUtils.remove_entry(project_dir)
+    end
+
+    def preview(markup)
+      FileUtils.mkdir_p(File.join(project_dir, 'src'))
+      File.write(File.join(project_dir, '.trmnlp.yml'), '{}')
+      File.write(File.join(project_dir, 'src', 'settings.yml'), "framework_version: '#{TRMNLP::FrameworkVersion.latest}'\n")
+      File.write(File.join(project_dir, 'src', 'full.liquid'), %(<div class="layout">#{markup}</div>))
+      get '/render/full.html', device
+      last_response.body
+    end
+
+    # The page as a device shows it: laid out unscaled for good, where its scripts measure the CSS size.
+    def unscaled(page)
+      html = page.sub('</head>', '<style>.trmnl .screen { --pixel-ratio: 1 !important; }</style></head>')
+      pool.with_driver do |driver|
+        screenshot.show(driver, html, device[:width], device[:height])
+        driver.execute_script("return #{shown}")
+      end
+    end
+
+    def in_browser(page)
+      pool.with_driver do |driver|
+        screenshot.show(driver, '<html></html>', device[:width], device[:height])
+        driver.navigate.to('about:blank')
+        driver.execute_script('document.open(); document.write(arguments[0]); document.close();', page)
+        Selenium::WebDriver::Wait.new(timeout: 20).until { driver.execute_script("return !document.getElementById('trmnlp-layout-pass')") }
+        yield driver
+      end
+    end
+
+    it 'limits a table to the rows the device shows' do
+      page = preview(table)
+      expect(in_browser(page) { it.execute_script("return #{shown}") }).to eq(unscaled(page))
+    end
+
+    it 'clamps text to the lines the device shows' do
+      page = preview(clamp)
+      expect(in_browser(page) { it.execute_script("return #{shown}") }).to eq(unscaled(page))
+    end
+
+    it 'shows the screen at the size of the device' do
+      width = 'return document.querySelector(".screen").getBoundingClientRect().width'
+      expect(in_browser(preview(table)) { it.execute_script(width) }).to eq(1872)
     end
   end
 

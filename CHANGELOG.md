@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp serve`'s HTML preview of a device TRMNL scales runs the page's scripts at the CSS size too, then shows the page at the device's size and stops its timers, as the PNG and the device do. Before, a table showed 8 of 20 rows on a TRMNL X where the device shows 15.
+
 ## 0.30.1
 
 - A screen on a device TRMNL scales, as the TRMNL X or a Kobo, runs its scripts at the CSS size and is scaled only for the picture, as TRMNL does. Before, the scripts measured the scaled page, so a table cut rows the device shows (7 of 14 on a TRMNL X) and clamped text kept lines the device cuts.

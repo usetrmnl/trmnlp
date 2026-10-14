@@ -49,6 +49,31 @@ module TRMNLP
       Promise.race([window.TRMNLMaps.refresh(), timeout]).then(() => done(true), () => done(false));
     JS
 
+    # The live preview settles in the page as a capture does, then stays still, as the device shows it.
+    SETTLE_LIVE_PREVIEW = <<~JS.freeze
+      (async () => {
+        const wait = window.setTimeout.bind(window);
+        const sleep = (ms) => new Promise((resolve) => wait(resolve, ms));
+        const ready = () => { #{READINESS_CHECK_SCRIPT} };
+        const readyBy = Date.now() + 1000 * %d;
+        while (!ready() && Date.now() < readyBy) await sleep(50);
+        if (document.fonts) await Promise.race([document.fonts.ready, sleep(#{FONTS_TIMEOUT_SECONDS * 1000})]);
+        if (typeof window.TRMNLMaps?.refresh !== 'function') {
+          #{FREEZE_TIMERS}
+          #{APPLY_CAPTURE_SCALE}
+          return;
+        }
+        #{APPLY_CAPTURE_SCALE}
+        await Promise.race([window.TRMNLMaps.refresh(), sleep(8000)]).catch(() => {});
+        #{FREEZE_TIMERS}
+      })();
+    JS
+
+    def self.live_preview(html)
+      timeout = html.match?(MAPS_DOCUMENT_PATTERN) ? READINESS_TIMEOUT_WITH_MAPS_SECONDS : READINESS_TIMEOUT_SECONDS
+      html.sub('</head>', "#{LAYOUT_PASS_STYLE}<script>#{format(SETTLE_LIVE_PREVIEW, timeout)}</script></head>")
+    end
+
     def initialize(pool:, viewport_timeout: 5, fonts_timeout: FONTS_TIMEOUT_SECONDS)
       @pool = pool
       @viewport_timeout = viewport_timeout

@@ -213,7 +213,7 @@ module TRMNLP
       end
 
       get "/render/#{view}.html" do
-        @renderer.render_full_page(view, params)
+        Screenshot.live_preview(@renderer.render_full_page(view, params))
       end
 
       get "/render/#{view}.png" do
