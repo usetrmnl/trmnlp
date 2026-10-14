@@ -88,13 +88,19 @@ RSpec.describe 'trmnlp test' do
     src = File.join(plugin_dir, 'src')
     FileUtils.mkdir_p([src, File.join(plugin_dir, 'tests')])
     File.write(File.join(plugin_dir, '.trmnlp.yml'), '{}')
-    File.write(File.join(src, 'settings.yml'), "name: Greeting\nstrategy: polling\npolling_url: https://api.test/person\n")
+    write_settings("name: Greeting\nstrategy: polling\npolling_url: https://api.test/person\n")
     File.write(File.join(src, 'transform.rb'), "def run(input) = { 'greeting' => \"Hello \#{input['name']}\" }")
     File.write(File.join(src, 'full.liquid'), '<div class="layout"><span class="title">{{ greeting }}</span></div>')
     File.write(File.join(plugin_dir, 'tests', 'greeting_spec.rb'), spec_body)
   end
 
   after { FileUtils.remove_entry(plugin_dir) }
+
+  # Pinned to the bundled release: the run reads the published manifest, whose latest trmnl.com may not serve yet.
+  def write_settings(yaml)
+    pinned = "framework_version: '#{TRMNLP::FrameworkVersion.latest}'\n"
+    File.write(File.join(plugin_dir, 'src', 'settings.yml'), pinned + yaml)
+  end
 
   def run_tests(*options)
     Open3.capture2e({ 'CI' => nil }, RbConfig.ruby, trmnlp, 'test', '--dir', plugin_dir, *options)
@@ -200,8 +206,7 @@ RSpec.describe 'trmnlp test' do
 
     context 'when the plugin asks for a url its mocks do not answer' do
       before do
-        File.write(File.join(plugin_dir, 'src', 'settings.yml'),
-                   "name: Greeting\nstrategy: polling\npolling_url: https://other.test/person?key=secret\n")
+        write_settings("name: Greeting\nstrategy: polling\npolling_url: https://other.test/person?key=secret\n")
       end
 
       it 'names the url without its query, once' do
@@ -274,7 +279,7 @@ RSpec.describe 'trmnlp test' do
 
     context 'with a select field' do
       before do
-        File.write(File.join(plugin_dir, 'src', 'settings.yml'), <<~YAML)
+        write_settings(<<~YAML)
           name: Greeting
           strategy: polling
           polling_url: https://api.test/person
@@ -330,7 +335,7 @@ RSpec.describe 'trmnlp test' do
       end
 
       before do
-        File.write(File.join(plugin_dir, 'src', 'settings.yml'), "name: Greeting\nstrategy: webhook\n")
+        write_settings("name: Greeting\nstrategy: webhook\n")
         markup = greeting_markup.sub('</span>', "{% if greeting != 'Ada' %} undefined{% endif %}</span>")
         %w[full half_horizontal half_vertical quadrant].each do |view|
           File.write(File.join(plugin_dir, 'src', "#{view}.liquid"), markup)
