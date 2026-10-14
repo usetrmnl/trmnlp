@@ -43,7 +43,8 @@ module TRMNLP
         return source.locations(MARKUP_PATTERNS[rule_id]) if MARKUP_PATTERNS.key?(rule_id)
 
         case rule_id
-        when 'arbitrary_values_in_range', 'framework_classes_exist', 'framework_prefixes_exist' then class_locations
+        when 'arbitrary_values_in_range', 'no_negative_spacing', 'framework_classes_exist', 'framework_prefixes_exist'
+          class_locations
         when 'layouts_have_content' then empty_view_locations
         when 'form_fields_valid' then form_field_locations
         when 'custom_field_links_embedded' then custom_field_description_locations
