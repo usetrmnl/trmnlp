@@ -544,6 +544,47 @@ RSpec.describe 'trmnlp test' do
     end
   end
 
+  context 'with text set close to other text' do
+    let(:spec_body) do
+      <<~'RUBY'
+        RSpec.describe 'Overlap' do
+          def overlapping(markup)
+            trmnl.render(device: { width: 800, height: 480 }, data: { markup: }, transform: false).overlapping_text
+          end
+
+          def at(top, size, text) = %(<div style="position: absolute; left: 10px; top: #{top}px; font-family: Inter; ) +
+                                    %(font-size: #{size}px; line-height: 1">#{text}</div>)
+
+          it 'reports a name that touches the bottom of the line above' do
+            quote = '<blockquote class="text--xxxlarge">artistic?</blockquote>'
+            name = '<p class="text--xxlarge" style="margin-top: -40px; padding-left: 100px">Marge Simpson</p>'
+            markup = %(<div class="layout layout--col layout--left layout--top">#{quote}#{name}</div>)
+            screen = trmnl.render(device: 'v2', data: { markup: }, transform: false)
+            expect(screen.overlapping_text).to eq(['"artistic?" and "Marge Simpson"'])
+          end
+
+          it 'passes a line set just under the descenders of the line above' do
+            expect(overlapping(at(0, 60, 'gypsy') + at(62, 20, 'HOMER SIMPSON'))).to be_empty
+          end
+
+          it 'passes a unit tucked against a number without touching it' do
+            number = '<span style="font-family: Inter; font-size: 120px; line-height: 1">12</span>'
+            unit = '<span style="font-size: 20px; vertical-align: top">°C</span>'
+            expect(overlapping("<div>#{number}#{unit}</div>")).to be_empty
+          end
+        end
+      RUBY
+    end
+
+    before do
+      File.write(File.join(plugin_dir, 'src', 'full.liquid'), '<div>{{ markup }}</div>')
+    end
+
+    it 'reports text whose ink touches and passes text that only sits close' do
+      expect(run_tests.first).to include('3 examples, 0 failures')
+    end
+  end
+
   context 'when a test does not hold' do
     let(:spec_body) do
       "RSpec.describe('Greeting') { it('shows the name') { expect(trmnl.render(device: { width: 800, height: 480 }, " \

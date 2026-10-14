@@ -5,6 +5,7 @@ require 'delegate'
 require 'nokogiri'
 
 require_relative 'qr_scanner'
+require_relative 'text_ink'
 
 module TRMNLP
   module Testing
@@ -111,8 +112,7 @@ module TRMNLP
         }).map((el) => `"${el.innerText.trim()}" (all of "${el.getAttribute('data-clamp-original').trim()}" fits)`);
       JS
 
-      # Pairs of text whose ink is drawn over each other, and text drawn under the title bar. Each line's ink is cut
-      # to what its clipping parents show; two count when their glyphs share inked pixels.
+      # Pairs of text near enough to touch, and text drawn under the title bar. TextInk decides which pairs touch.
       OVERLAPPING_TEXT_SCRIPT = File.read(File.join(__dir__, 'overlapping_text.js')).freeze
 
       # Each drawn image, SVG and canvas in the view but the Framework's adaptive icon, its box cut to the screen.
@@ -179,7 +179,13 @@ module TRMNLP
       end
 
       def clamped_with_room = @browser.on(self) { it.execute_script(CLAMPED_WITH_ROOM_SCRIPT) }
-      def overlapping_text = @browser.on(self) { it.execute_script(OVERLAPPING_TEXT_SCRIPT) }
+
+      def overlapping_text
+        @browser.on(self) do |driver|
+          found = driver.execute_script(OVERLAPPING_TEXT_SCRIPT)
+          TextInk.new(driver).overlapping(found['candidates']) + found['under_title_bar']
+        end
+      end
 
       # Script errors, unhandled rejections, console.error lines and files that failed to load.
       def problems = evaluate('window.__trmnlpProblems || []')
