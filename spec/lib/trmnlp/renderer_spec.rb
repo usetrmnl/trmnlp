@@ -53,6 +53,14 @@ RSpec.describe TRMNLP::Renderer do
         .to raise_error(TRMNLP::RenderError, /Large payload received \(\d+ bytes\), should be less than 100kb/)
     end
 
+    it 'draws the shared markup alone when the view has no file, as TRMNL does' do
+      shared = Pathname.new(Dir.mktmpdir).join('shared.liquid')
+      shared.write('<p>shared {{ 1 | plus: 1 }}</p>')
+      allow(paths).to receive(:shared_template).and_return(shared)
+
+      expect(renderer.send(:render_liquid_template, 'nonexistent')).to eq('<p>shared 2</p>')
+    end
+
     it 'raises RenderError when the template is missing' do
       expect { renderer.send(:render_liquid_template, 'nonexistent') }
         .to raise_error(TRMNLP::RenderError, /Missing template/)

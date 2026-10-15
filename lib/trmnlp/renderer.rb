@@ -63,7 +63,9 @@ module TRMNLP
     # of 500-ing. Anything that's not a RenderError bubbles up as a bug.
     def render_liquid_template(view, device: {})
       template_path = paths.template(view)
-      raise RenderError, "Missing template: #{template_path}" unless template_path.exist?
+      unless template_path.exist? || paths.shared_template.exist?
+        raise RenderError, "Missing template: #{template_path}"
+      end
 
       parse_and_render(template_path, device:)
     end
@@ -89,8 +91,7 @@ module TRMNLP
     end
 
     def full_markup(template_path)
-      shared = paths.shared_template
-      shared.exist? ? shared.read + template_path.read : template_path.read
+      [paths.shared_template, template_path].select(&:exist?).map(&:read).join
     end
 
     def liquid_environment

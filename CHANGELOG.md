@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- A view with no `.liquid` file draws the shared markup alone, as TRMNL does when a recipe keeps all of its markup in shared. Before, trmnlp drew "Missing template" there, so `trmnlp test` showed a blank screen for a recipe that draws on TRMNL. A view with no file and no shared markup still says "Missing template".
+
 ## 0.31.0
 
 - `trmnlp test`'s publishable recipe draws the full view with each boolean field on and off, as `"true"` and `"false"`, the strings TRMNL saves. Before, only select fields were drawn with each option, so a recipe that breaks or goes blank with a switch off passed.
