@@ -69,9 +69,13 @@ module TRMNLP
       })();
     JS
 
+    # The preview frame has the device's CSS size, so the screen stays unscaled there.
+    LIVE_PREVIEW_SIZE_STYLE = '<style>.trmnl .screen { --pixel-ratio: 1 !important; }</style>'
+
     def self.live_preview(html)
       timeout = html.match?(MAPS_DOCUMENT_PATTERN) ? READINESS_TIMEOUT_WITH_MAPS_SECONDS : READINESS_TIMEOUT_SECONDS
-      html.sub('</head>', "#{LAYOUT_PASS_STYLE}<script>#{format(SETTLE_LIVE_PREVIEW, timeout)}</script></head>")
+      script = "<script>#{format(SETTLE_LIVE_PREVIEW, timeout)}</script>"
+      html.sub('</head>', "#{LIVE_PREVIEW_SIZE_STYLE}#{LAYOUT_PASS_STYLE}#{script}</head>")
     end
 
     def initialize(pool:, viewport_timeout: 5, fonts_timeout: FONTS_TIMEOUT_SECONDS)
