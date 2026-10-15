@@ -214,9 +214,9 @@ RSpec.describe TRMNLP::App do
       expect(in_browser(page) { it.execute_script("return #{shown}") }).to eq(unscaled(page))
     end
 
-    it 'shows the screen at the size of the device' do
+    it 'shows the screen at its CSS size, the size of the preview frame' do
       width = 'return document.querySelector(".screen").getBoundingClientRect().width'
-      expect(in_browser(preview(table)) { it.execute_script(width) }).to eq(1872)
+      expect(in_browser(preview(table)) { it.execute_script(width) }).to eq(1040)
     end
   end
 
