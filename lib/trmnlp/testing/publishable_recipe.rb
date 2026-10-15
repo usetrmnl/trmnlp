@@ -25,21 +25,29 @@ module TRMNLP
     # Share of an image's ink its dark mode render must keep: lost icons kept 0%, the lowest one shown 17% (10-14).
     DARK_MODE_MIN_IMAGE_INK_KEPT = 0.05
 
-    # Each select field's keyname and the values its options save, from the plugin's settings.yml.
-    def self.select_field_values
+    # Each select and boolean field's keyname and the values it can save, from the plugin's settings.yml.
+    def self.option_field_values
       path = File.join(plugin_dir, 'src', 'settings.yml')
       fields = File.exist?(path) ? Array(YAML.safe_load_file(path, aliases: true)&.dig('custom_fields')) : []
-      fields.select { it['field_type'] == 'select' }.to_h do |field|
-        values = SelectFieldChoices.new(field).pairs.map { it.last.to_s }
+      fields.select { %w[select boolean].include?(it['field_type']) }.to_h do |field|
+        # TRMNL saves a boolean field as the string "true" or "false".
+        values = if field['field_type'] == 'boolean' then %w[true false]
+                 else SelectFieldChoices.new(field).pairs.map { it.last.to_s }
+                 end
         [field['keyname'], values.size > PUBLISHABLE_RECIPE_MAX_OPTIONS ? values.values_at(0, -1) : values]
       end
+    end
+
+    def self.screen_name(screen)
+      device = screen[:device].is_a?(Hash) ? screen[:device][:model] : screen[:device]
+      [device, screen[:orientation], screen[:palette], ('dark mode' if screen[:dark_mode])].compact.join(' ')
     end
   end
 end
 
 # rubocop:disable-next Metrics/BlockLength -- one shared group, one check per example
 RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLISHABLE_RECIPE_SCREENS,
-                                                 dark_mode_screen: { device: 'v2' }|
+                                                 dark_mode_screen: { device: 'v2' }, option_screens: screens.first(1)|
   let(:recipe_inputs) do
     { mocks: respond_to?(:mocks) ? mocks : {}, custom_fields: respond_to?(:custom_fields) ? custom_fields : {},
       variables: respond_to?(:variables) ? variables : {}, now: respond_to?(:now) ? now : nil,
@@ -52,11 +60,7 @@ RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLI
   end
 
   TRMNLP::Testing::PUBLISHABLE_RECIPE_VIEWS.product(screens).each do |view, screen|
-    device = screen[:device].is_a?(Hash) ? screen[:device][:model] : screen[:device]
-    dark_mode = 'dark mode' if screen[:dark_mode]
-    screen_name = [device, screen[:orientation], screen[:palette], dark_mode].compact.join(' ')
-
-    it "draws the #{view} view on #{screen_name} without page errors" do
+    it "draws the #{view} view on #{TRMNLP::Testing.screen_name(screen)} without page errors" do
       expect(trmnl.render(view:, **screen, **recipe_inputs)).to draw_cleanly
     end
   end
@@ -76,11 +80,11 @@ RSpec.shared_examples 'a publishable recipe' do |screens: TRMNLP::Testing::PUBLI
     end
   end
 
-  TRMNLP::Testing.select_field_values.each do |keyname, values|
-    values.each do |value|
-      it "draws the full view with #{keyname} set to #{value}" do
+  TRMNLP::Testing.option_field_values.each do |keyname, values|
+    option_screens.product(values).each do |screen, value|
+      it "draws the full view on #{TRMNLP::Testing.screen_name(screen)} with #{keyname} set to #{value}" do
         custom_fields = recipe_inputs[:custom_fields].merge(keyname => value)
-        expect(trmnl.render(**screens.first, **recipe_inputs, custom_fields:)).to draw_cleanly
+        expect(trmnl.render(**screen, **recipe_inputs, custom_fields:)).to draw_cleanly
       end
     end
   end
