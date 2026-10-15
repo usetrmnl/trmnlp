@@ -1,6 +1,12 @@
 
 # Changelog
 
+## 0.31.0
+
+- `trmnlp test`'s publishable recipe draws the full view with each boolean field on and off, as `"true"` and `"false"`, the strings TRMNL saves. Before, only select fields were drawn with each option, so a recipe that breaks or goes blank with a switch off passed.
+- `option_screens:` draws those options on the screens you name, such as `[{ device: 'og_png' }, { device: 'v2' }]` to try each one on the TRMNL X too. It defaults to the first screen, as before.
+- `trmnlp serve`'s HTML preview draws a device TRMNL scales at its CSS size again, so a TRMNL X fits its 1040 by 780 frame. Since 0.16.0 it drew 1872 by 1404 and ran past the frame. PNG renders and `trmnlp test` are unchanged.
+
 ## 0.30.4
 
 - `trmnlp lint` reports a margin, padding, gap or position class with a leading minus (`no_negative_spacing`), such as `-mt--2` or `lg:-top--1`. Tailwind writes negative values this way, but no Framework release defines a class that starts with a minus, so TRMNL ignores it and says nothing: an icon nudged up with `-mt--1` stays where it was.
