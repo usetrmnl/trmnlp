@@ -284,15 +284,17 @@ The full view must still draw in these cases:
 - The API answers 500.
 - The API cannot be reached.
 
-The full view is also drawn with each option of every select field.
+The full view is also drawn with each option of every select field, and with each boolean field on and off.
 
 - A field with more than 20 options is drawn with its first and last.
+- The options are drawn on the first screen.
 
 The group can set its own values:
 
 - It uses the group's `mocks`, `custom_fields`, `variables`, `now` and `data` when the group defines them.
 - `data` gives a webhook plugin the merge variables TRMNL stored for it.
 - `screens: [{ device: 'kobo_libra_2' }, ...]` draws on other devices.
+- `option_screens: [{ device: 'og_png' }, { device: 'v2' }]` draws the options on those screens instead.
 
 It does not check overflow.
 

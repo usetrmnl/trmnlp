@@ -295,7 +295,56 @@ RSpec.describe 'trmnlp test' do
 
       it 'draws the full view with each option, and names the one that breaks' do
         expect(run_tests.first)
-          .to include('draws the full view with mood set to loud').and include('16 examples, 1 failure')
+          .to include('draws the full view on og_test with mood set to loud').and include('16 examples, 1 failure')
+      end
+    end
+
+    context 'with a boolean field' do
+      before do
+        write_settings(<<~YAML)
+          name: Greeting
+          strategy: polling
+          polling_url: https://api.test/person
+          custom_fields:
+            - keyname: shout
+              field_type: boolean
+        YAML
+        shout_leaks = "{% if trmnl.plugin_settings.custom_fields_values.shout == 'false' %} NaN{% endif %}"
+        File.write(File.join(plugin_dir, 'src', 'full.liquid'), greeting_markup.sub('</span>', "#{shout_leaks}</span>"))
+      end
+
+      it 'draws the full view switched on and off, and names the one that breaks' do
+        expect(run_tests.first)
+          .to include('draws the full view on og_test with shout set to false').and include('16 examples, 1 failure')
+      end
+    end
+
+    context 'with option screens' do
+      let(:spec_body) do
+        <<~RUBY
+          RSpec.describe 'Greeting' do
+            let(:mocks) { { 'https://api.test/*' => { json: { name: 'Ada' } } } }
+
+            it_behaves_like 'a publishable recipe', screens: [{ device: { model: 'og_test', width: 800, height: 480 } }],
+                                                    option_screens: [{ device: { model: 'og_test', width: 800, height: 480 } },
+                                                                     { device: { model: 'x_test', width: 1872, height: 1404 } }]
+          end
+        RUBY
+      end
+
+      before do
+        write_settings(<<~YAML)
+          name: Greeting
+          strategy: polling
+          polling_url: https://api.test/person
+          custom_fields:
+            - keyname: shout
+              field_type: boolean
+        YAML
+      end
+
+      it 'draws each option on each of them' do
+        expect(run_tests.first).to include('18 examples, 0 failures')
       end
     end
 
