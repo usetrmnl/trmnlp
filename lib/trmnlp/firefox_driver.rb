@@ -29,6 +29,9 @@ module TRMNLP
         # A page trmnlp test serves from 127.0.0.1 gets no storage, cookies or Referer, as on TRMNL's about:blank.
         opts.add_preference('network.cookie.cookieBehavior', 2)
         opts.add_preference('network.http.sendRefererHeader', 0)
+        # Software WebGL for framework maps, as on TRMNL's render boxes. Linux also needs an X display (see Dockerfile).
+        opts.add_preference('webgl.force-enabled', true)
+        opts.add_preference('webgl.forbid-software', false)
       end
     end
   end
