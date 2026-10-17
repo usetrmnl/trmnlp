@@ -57,6 +57,8 @@ module TRMNLP
 
       def add_extensions(certificate, authority, host)
         factory = OpenSSL::X509::ExtensionFactory.new(authority ? certificate : @certificate, certificate)
+        certificate.add_extension(factory.create_extension('subjectKeyIdentifier', 'hash'))
+        certificate.add_extension(factory.create_extension('authorityKeyIdentifier', 'keyid:always'))
         if authority
           certificate.add_extension(factory.create_extension('basicConstraints', 'CA:TRUE', true))
           certificate.add_extension(factory.create_extension('keyUsage', 'keyCertSign,cRLSign', true))
