@@ -51,6 +51,13 @@ RSpec.describe TRMNLP::TransformBackend::Subprocess do
       expect(JSON.parse(result.output)).to eq('echoed' => 'hello')
     end
 
+    it 'runs a python transform that imports requests, which TRMNL installs' do
+      code = "import requests\nresult = { 'has_get': callable(requests.get) }"
+      result = backend.execute(code:, language: 'python', stdin: '{}')
+
+      expect(JSON.parse(result.output)).to eq('has_get' => true)
+    end
+
     it 'runs a real php transform and returns the harness output' do
       result = backend.execute(
         code: "<?php\nfunction run($input) { return ['echoed' => $input['greeting']]; }",

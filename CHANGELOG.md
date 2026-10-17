@@ -7,6 +7,8 @@
 
 - `trmnlp test` mocks the HTTPS requests of a Python transform on Python 3.13 and newer, which the Docker image ships. Before, Python 3.13 refused the test proxy's certificate ("Missing Authority Key Identifier"), so every request failed and the screens showed the transform's error path.
 
+- A Python transform can `import requests`, as on TRMNL, where it is installed. When the Python on your PATH does not have it, trmnlp makes a virtual environment with it in `~/.cache/trmnl/python` the first time and runs Python transforms there. Before, such a transform failed with `No module named 'requests'` and `trmnlp test` drew its error screen. The Docker image now has it installed.
+
 ## 0.31.0
 
 - `trmnlp test`'s publishable recipe draws the full view with each boolean field on and off, as `"true"` and `"false"`, the strings TRMNL saves. Before, only select fields were drawn with each option, so a recipe that breaks or goes blank with a switch off passed.

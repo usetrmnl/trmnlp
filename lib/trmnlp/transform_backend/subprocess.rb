@@ -4,6 +4,7 @@ require 'open3'
 require 'tmpdir'
 
 require_relative '../transform_client'
+require_relative 'python'
 require_relative 'which'
 require_relative 'wrapper'
 
@@ -52,7 +53,9 @@ module TRMNLP
           output_path = File.join(dir, 'output.json')
           src_path = File.join(dir, "transform.#{spec[:ext]}")
           File.write(src_path, Wrapper.for(language, code, sink_for(language, output_path)))
-          run_process(Which.resolve(spec[:cmds]), src_path, stdin, timeout_seconds, output_path)
+          command = Which.resolve(spec[:cmds])
+          command = Python.interpreter(command) if language == 'python'
+          run_process(command, src_path, stdin, timeout_seconds, output_path)
         end
       rescue Errno::ENOENT, Errno::EACCES => e
         failure("interpreter not available: #{e.message}")
