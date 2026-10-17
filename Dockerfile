@@ -54,6 +54,7 @@ RUN apt-get update && \
     imagemagick \
     firefox-esr \
     python3 \
+    python3-requests \
     php-cli \
     libfaketime \
     zbar-tools \
