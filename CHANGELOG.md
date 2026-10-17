@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.31.1
 
 - A view with no `.liquid` file draws the shared markup alone, as TRMNL does when a recipe keeps all of its markup in shared. Before, trmnlp drew "Missing template" there, so `trmnlp test` showed a blank screen for a recipe that draws on TRMNL. A view with no file and no shared markup still says "Missing template".
 
