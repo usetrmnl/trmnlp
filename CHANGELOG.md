@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.31.2
 
 - A transform whose `serverless_language` is not `node`, `python`, `ruby` or `php`, such as `javascript`, runs as node, as on TRMNL. Before, trmnlp looked for an interpreter by that name and failed with "No such file or directory @ rb_check_realpath_internal".
 
