@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- A transform whose `serverless_language` is not `node`, `python`, `ruby` or `php`, such as `javascript`, runs as node, as on TRMNL. Before, trmnlp looked for an interpreter by that name and failed with "No such file or directory @ rb_check_realpath_internal".
+
 ## 0.31.1
 
 - A view with no `.liquid` file draws the shared markup alone, as TRMNL does when a recipe keeps all of its markup in shared. Before, trmnlp drew "Missing template" there, so `trmnlp test` showed a blank screen for a recipe that draws on TRMNL. A view with no file and no shared markup still says "Missing template".
