@@ -11,6 +11,8 @@ require_relative '../select_field_choices'
 module TRMNLP
   class Config
     class Plugin
+      TRANSFORM_LANGUAGES = %w[node python ruby php].freeze
+
       def initialize(paths, project_config)
         @paths = paths
         @project_config = project_config
@@ -83,9 +85,12 @@ module TRMNLP
       # stores it on the plugin_setting record. The scaffold emits
       # `serverless_language: ''`, so empty strings collapse to nil here
       # to let the `||` in the pipeline fall through to the inferred value.
+      # TRMNL runs any other value (like `javascript`) as node.
       def serverless_language
         value = @config['serverless_language']
-        value unless value.to_s.empty?
+        return if value.to_s.empty?
+
+        TRANSFORM_LANGUAGES.include?(value) ? value : 'node'
       end
 
       # The TRMNL design-system version this plugin renders against.

@@ -274,6 +274,14 @@ RSpec.describe TRMNLP::Config::Plugin do
       end
     end
 
+    context 'when settings.yml sets a language TRMNL does not run' do
+      before { plugin.instance_variable_set(:@config, { 'serverless_language' => 'javascript' }) }
+
+      it 'returns node, as TRMNL runs it' do
+        expect(plugin.serverless_language).to eq('node')
+      end
+    end
+
     context "when settings.yml has serverless_language: ''" do
       before { plugin.instance_variable_set(:@config, { 'serverless_language' => '' }) }
 
