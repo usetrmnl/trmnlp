@@ -64,7 +64,7 @@ module TRMNLP
     def render_liquid_template(view, device: {})
       template_path = paths.template(view)
       unless template_path.exist? || paths.shared_template.exist?
-        raise RenderError, "Missing template: #{template_path}"
+        raise RenderError, "Missing template: #{template_path.relative_path_from(paths.root_dir)}"
       end
 
       parse_and_render(template_path, device:)

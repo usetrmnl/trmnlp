@@ -315,6 +315,14 @@ RSpec.describe 'trmnlp test' do
       end
     end
 
+    context 'when a view has no markup' do
+      before { FileUtils.rm(File.join(plugin_dir, 'src', 'quadrant.liquid')) }
+
+      it 'fails the view, which draws only the error' do
+        expect(run_tests.first).to include('draws the quadrant view on og_test without page errors')
+      end
+    end
+
     context 'when a view shows a leaked value' do
       let(:quadrant) { greeting_markup.sub('{{ greeting }}', '{{ greeting }} undefined') }
 
