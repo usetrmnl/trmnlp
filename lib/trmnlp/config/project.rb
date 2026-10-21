@@ -34,7 +34,7 @@ module TRMNLP
       def live_render? = !watch_paths.empty?
 
       def watch_paths
-        (@config['watch'] || []).map { |watch_path| paths.expand(watch_path) }.uniq
+        ((@config['watch'] || []) + local_asset_override_targets).map { |watch_path| paths.expand(watch_path) }.uniq
       end
 
       def custom_fields = @config.fetch('custom_fields', {}).transform_values { |v| stringify_field_value(v) }
@@ -96,6 +96,12 @@ module TRMNLP
       end
 
       private
+
+      # Read without asset_overrides' checks, so a deleted file does not stop the watcher.
+      def local_asset_override_targets
+        mapping = @config['asset_overrides']
+        mapping.is_a?(Hash) ? mapping.values.grep(String).grep_v(%r{\Ahttps?://}) : []
+      end
 
       def normalize_asset_overrides(mapping, allow_inline: false)
         raise InvalidConfig, 'asset_overrides must be a mapping' unless mapping.is_a?(Hash)
