@@ -34,7 +34,7 @@ RSpec.describe TRMNLP::App do
     described_class.instance_variable_set(:@prototype, nil)
     described_class.set(:context, context)
     described_class.set(:browser_pool, instance_double(TRMNLP::BrowserPool))
-    described_class.set(:asset_cache, nil)
+    described_class.set(:asset_cache, TRMNLP::Testing::AssetCache.new(dir: Dir.mktmpdir('trmnlp-assets-')))
     # Sinatra 4 ships host_authorization on by default; the test client
     # sends Host: example.org which isn't on the allow-list. Permit all
     # hosts in specs.
@@ -65,17 +65,32 @@ RSpec.describe TRMNLP::App do
       FileUtils.remove_entry(project_dir)
     end
 
-    it 'rewrites the live preview to the cache server' do
+    def overridden_path
       get '/render/full.html'
-      expect(last_response.body).to include(cache.url)
+      last_response.body[/<img src="([^"]+)/, 1]
+    end
+
+    it 'points the live preview at its own address, so a browser outside the machine or container reaches it' do
+      expect(overridden_path).to start_with('/overrides/')
+    end
+
+    it 'serves the override from its own address' do
+      get overridden_path
+      expect(last_response).to have_attributes(body: '<svg>first</svg>', content_type: 'image/svg+xml')
     end
 
     it 'serves a changed local file on the next request' do
-      get '/render/full.html'
-      uri = URI(last_response.body[/<img src="([^"]+)/, 1])
-      Net::HTTP.get(uri)
+      path = overridden_path
       File.write(File.join(project_dir, 'logo.svg'), '<svg>changed</svg>')
-      expect(Net::HTTP.get(uri)).to eq('<svg>changed</svg>')
+      get path
+      expect(last_response.body).to eq('<svg>changed</svg>')
+    end
+
+    it 'leaves the Framework links of the live preview alone' do
+      File.write(File.join(project_dir, 'src', 'full.liquid'),
+                 %(<img src="#{source}"><link href="https://trmnl.com/css/3.4.2/plugins.css">))
+      get '/render/full.html'
+      expect(last_response.body).to include('href="https://trmnl.com/css/3.4.2/plugins.css"')
     end
   end
 

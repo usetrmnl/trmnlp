@@ -56,7 +56,6 @@ module TRMNLP
       # per-request dup, like @live_reload_clients below.
       @oauth_state = {}
       @screenshot = Screenshot.new(pool: settings.browser_pool)
-      @asset_cache = settings.asset_cache
 
       @poller.poll_data
 
@@ -81,6 +80,8 @@ module TRMNLP
     get '/' do
       redirect '/full'
     end
+
+    get('/overrides/*') { settings.asset_cache.override_response(request.path_info, request.user_agent) || halt(502) }
 
     get '/data' do
       content_type :json
@@ -215,13 +216,13 @@ module TRMNLP
 
       get "/render/#{view}.html" do
         html = Screenshot.live_preview(@renderer.render_full_page(view, params))
-        @asset_cache&.rewrite_if_configured(html, overrides: @context.config.project.asset_overrides) || html
+        settings.asset_cache.point_overrides_at(html, overrides: @context.config.project.asset_overrides)
       end
 
       get "/render/#{view}.png" do
         @view = view
         html = @renderer.render_full_page(view, params)
-        html = @asset_cache&.rewrite_if_configured(html, overrides: @context.config.project.asset_overrides) || html
+        html = settings.asset_cache.rewrite_if_configured(html, overrides: @context.config.project.asset_overrides)
         temp_image = render_png(html, params)
 
         send_file temp_image.path, type: 'image/png', disposition: 'inline'

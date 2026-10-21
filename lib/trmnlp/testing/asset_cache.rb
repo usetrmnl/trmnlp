@@ -66,7 +66,8 @@ module TRMNLP
       end
 
       # A folder key keeps the rest of the URL, so files the asset links relative to itself resolve in the same folder.
-      def point_overrides_at(html, overrides:, base:, swaps: nil, bundle_dir: nil)
+      # The default base is the page's own server, so serve's preview reaches it from outside a container.
+      def point_overrides_at(html, overrides:, base: '/overrides', swaps: nil, bundle_dir: nil)
         html.gsub(URL_LINK) do |source|
           key = overrides.keys.select { folder?(it) ? source.start_with?(it) : source == it }.max_by(&:length)
           next source unless key
@@ -81,6 +82,14 @@ module TRMNLP
         end
       end
 
+      def override_response(path, user_agent)
+        asset = override_asset(path, user_agent) or return
+        [200, { 'content-type' => asset['content_type'], 'cache-control' => asset['cache_control'],
+                'access-control-allow-origin' => asset['allow_origin'] }.compact, [asset['body']]]
+      end
+
+      private
+
       def override_asset(path, user_agent)
         id, rest = path.match(OVERRIDE_PATH)&.captures
         key, target = @lock.synchronize { @overrides[id] }
@@ -91,8 +100,6 @@ module TRMNLP
 
         overridden(key, target, rest, user_agent)
       end
-
-      private
 
       def folder?(key) = key.end_with?('/')
 
@@ -121,15 +128,12 @@ module TRMNLP
         return if target.is_a?(Hash) || url?(target) || rest.empty?
 
         path = resolve(key, target, rest)
-        raise InvalidConfig, "asset_overrides #{source}: invalid path" unless path
-        raise InvalidConfig, "asset_overrides #{source}: local file does not exist: #{path}" unless File.exist?(path)
+        raise InvalidConfig, "asset_overrides #{source}: no local file at #{path}" unless File.exist?(path.to_s)
       end
 
       # Keyed by what is swapped, so a page rewritten again gets the same address and the table stays one row per key.
       def register_override(key, target)
-        id = Digest::SHA256.hexdigest("#{key} #{target.inspect}")[0, 16]
-        @lock.synchronize { @overrides[id] = [key, target] }
-        id
+        Digest::SHA256.hexdigest("#{key} #{target.inspect}")[0, 16].tap { |id| @lock.synchronize { @overrides[id] = [key, target] } }
       end
 
       # A file next to an overridden single file comes from where it was published, on the same host.
@@ -144,17 +148,13 @@ module TRMNLP
           FileUtils.mkdir_p(folder)
           FileUtils.cp_r("#{target}/.", folder)
         elsif !rest.empty? && !rest.end_with?('/')
-          write_bundled(File.join(folder, rest.split('?', 2).first), key, target, rest)
+          body = overridden(key, target, rest, nil)&.fetch('body')
+          raise InvalidConfig, "asset_overrides #{key}: could not fetch #{resolve(key, target, rest)}" unless body
+
+          FileUtils.mkdir_p(File.dirname(destination = File.join(folder, rest.split('?', 2).first)))
+          File.binwrite(destination, body)
         end
         "assets/#{id}/#{rest}"
-      end
-
-      def write_bundled(destination, key, target, rest)
-        body = overridden(key, target, rest, nil)&.fetch('body')
-        raise InvalidConfig, "asset_overrides #{key}: could not fetch #{resolve(key, target, rest)}" unless body
-
-        FileUtils.mkdir_p(File.dirname(destination))
-        File.binwrite(destination, body)
       end
 
       def remote_asset(target, user_agent)
