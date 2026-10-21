@@ -4,9 +4,12 @@ require 'digest'
 require 'fileutils'
 require 'json'
 require 'net/http'
+require 'rack/mime'
 require 'socket'
+require 'uri'
 
 require_relative '../framework_version'
+require_relative '../errors'
 
 module TRMNLP
   module Testing
@@ -18,10 +21,14 @@ module TRMNLP
       SAFE_PATH = %r{\A/(?:[\w.-]+/)*[\w.-]+\z}
       DOWNLOAD_TIMEOUT_SECONDS = 10
       BAD_GATEWAY = "HTTP/1.1 502 Bad Gateway\r\ncontent-length: 0\r\nconnection: close\r\n\r\n"
+      URL_LINK = %r{https?://[^\s"'<>),;]+}
 
       def initialize(dir:, clock: -> { Time.now })
         @dir = dir.to_s
         @clock = clock
+        @overrides = {}
+        @next_override = 0
+        @lock = Mutex.new
       end
 
       def start
@@ -37,9 +44,118 @@ module TRMNLP
 
       def url = "http://127.0.0.1:#{@server.addr[1]}"
 
-      def point_framework_links_at_cache(html) = point_google_fonts_at_cache(html.gsub(FRAMEWORK_LINK, url))
+      def rewrite_if_configured(html, overrides:) = overrides.empty? ? html : rewrite(html, overrides:)
+
+      # Rewrites text, including URL strings in scripts, before the normal Framework and font substitutions.
+      def rewrite(html, overrides: {}, swaps: nil, bundle_dir: nil)
+        rewritten = html.gsub(URL_LINK) do |source|
+          key = overrides.keys.select do |candidate|
+            candidate.end_with?('/') ? source.start_with?(candidate) : source == candidate
+          end
+                         .max_by(&:length)
+          next source unless key
+
+          target = overrides.fetch(key)
+          resolved = target_for(source, key, target)
+          swaps&.push(url: source, target: resolved.is_a?(Hash) ? '[inline body]' : resolved, kind: 'override')
+          bundle_dir ? bundle_asset(source, resolved, bundle_dir) : register_override(source, resolved)
+        end
+        return rewritten if bundle_dir
+
+        rewritten = rewritten.gsub(FRAMEWORK_LINK) do
+          original = ::Regexp.last_match(0) + ::Regexp.last_match.post_match[/\A[^\s"'<>),;]*/].to_s
+          swaps&.push(url: original, target: original.sub(HOST, url), kind: 'framework')
+          url
+        end
+        rewritten.gsub(GOOGLE_FONTS_LINK) do
+          host = ::Regexp.last_match(1)
+          original = ::Regexp.last_match(0) + ::Regexp.last_match.post_match[/\A[^\s"'<>),;]*/].to_s
+          swaps&.push(url: original, target: original.sub('https://', "#{url}/"), kind: 'fonts')
+          "#{url}/#{host}/"
+        end
+      end
 
       private
+
+      def target_for(source, key, target)
+        unless key.end_with?('/')
+          if target.is_a?(String) && !target.match?(%r{\Ahttps?://}) && !File.file?(target)
+            raise InvalidConfig, "asset_overrides #{source}: local file does not exist: #{target}"
+          end
+
+          return target
+        end
+
+        suffix = source.delete_prefix(key)
+        raise InvalidConfig, "asset_overrides #{source}: invalid path" if suffix.split('/').include?('..')
+
+        if target.is_a?(String) && target.match?(%r{\Ahttps?://})
+          "#{target}#{suffix}"
+        else
+          path = File.expand_path(suffix.split('?', 2).first, target.to_s)
+          unless File.file?(path) && path.start_with?("#{File.expand_path(target.to_s)}/")
+            raise InvalidConfig, "asset_overrides #{source}: local file does not exist: #{path}"
+          end
+
+          path
+        end
+      end
+
+      def register_override(source, target)
+        extension = File.extname(URI(source).path)
+        extension = '.bin' if extension.empty?
+        id = @lock.synchronize do
+          @next_override += 1
+          @overrides[@next_override.to_s] = [source, target]
+          @next_override
+        end
+        "#{url}/overrides/#{id}/asset#{extension}"
+      end
+
+      def bundle_asset(source, target, dir)
+        name = File.basename(URI(source).path)
+        name = 'asset.bin' if name.empty?
+        relative = "assets/#{Digest::SHA256.hexdigest(source)[0, 16]}/#{name}"
+        body = if target.is_a?(Hash)
+                 target.fetch(:body).to_s
+               elsif target.match?(%r{\Ahttps?://})
+                 remote_asset(target, nil)&.fetch('body')
+               else
+                 File.binread(target)
+               end
+        raise InvalidConfig, "asset_overrides #{source}: could not fetch #{target}" unless body
+
+        destination = File.join(dir, relative)
+        FileUtils.mkdir_p(File.dirname(destination))
+        File.binwrite(destination, body)
+        relative
+      end
+
+      def remote_asset(target, user_agent)
+        key = "/remote/#{Digest::SHA256.hexdigest(target)}"
+        cached = cached(key)
+        cached && cached['expires_at'] > @clock.call.to_i ? cached : download(key, URI(target), user_agent) || cached
+      end
+
+      def override_asset(path, user_agent)
+        id = path.split('/')[2]
+        source, target = @lock.synchronize { @overrides[id] }
+        return unless source
+
+        if target.is_a?(Hash)
+          { 'body' => target.fetch(:body).to_s, 'content_type' => target[:content_type] || mime(source),
+            'cache_control' => 'no-store', 'allow_origin' => '*' }
+        elsif target.match?(%r{\Ahttps?://})
+          remote_asset(target, user_agent)
+        else
+          return unless File.file?(target)
+
+          { 'body' => File.binread(target), 'content_type' => mime(source), 'cache_control' => 'no-store',
+            'allow_origin' => '*' }
+        end
+      end
+
+      def mime(source) = Rack::Mime.mime_type(File.extname(URI(source).path), 'application/octet-stream')
 
       def point_google_fonts_at_cache(text) = text.gsub(GOOGLE_FONTS_LINK) { "#{url}/#{::Regexp.last_match(1)}/" }
 
@@ -49,7 +165,8 @@ module TRMNLP
         while (line = socket.gets) && !line.strip.empty?
           user_agent = line.split(':', 2).last.strip if line.downcase.start_with?('user-agent:')
         end
-        asset = !path.to_s.include?('..') && path.to_s.match?(SAFE_PATH) && asset(path, query, user_agent)
+        asset = !path.to_s.include?('..') && path.to_s.match?(SAFE_PATH) &&
+                (path.start_with?('/overrides/') ? override_asset(path, user_agent) : asset(path, query, user_agent))
         socket.write(asset ? response(asset) : BAD_GATEWAY)
       rescue IOError, SystemCallError
         nil
@@ -82,7 +199,9 @@ module TRMNLP
       def download(key, uri, user_agent)
         headers = { 'Origin' => url, 'User-Agent' => user_agent }.compact
         timeouts = { open_timeout: DOWNLOAD_TIMEOUT_SECONDS, read_timeout: DOWNLOAD_TIMEOUT_SECONDS }
-        answer = Net::HTTP.start(uri.host, uri.port, use_ssl: true, **timeouts) { it.get(uri.request_uri, headers) }
+        answer = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https', **timeouts) do |http|
+          http.get(uri.request_uri, headers)
+        end
         answer.is_a?(Net::HTTPSuccess) ? cache_download(key, answer) : nil
       rescue StandardError
         nil

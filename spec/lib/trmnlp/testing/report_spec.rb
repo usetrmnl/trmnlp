@@ -14,7 +14,8 @@ RSpec.describe TRMNLP::Testing::Report do
   let(:device) { Struct.new(:name, :width, :height).new('og_png', 800, 480) }
   let(:screen) do
     double('screen', png_path: png, device:, view: 'full', problems: ['failed to load https://x.test/a.png'],
-                     evaluate: [{ 'tag' => 'span', 'x' => 1, 'y' => 2, 'w' => 30, 'h' => 10 }])
+                     evaluate: [{ 'tag' => 'span', 'x' => 1, 'y' => 2, 'w' => 30, 'h' => 10 }],
+                     asset_swaps: [{ url: 'https://x.test/a.png', target: 'local.png', kind: 'override' }])
   end
   let(:run) do
     request = { method: 'GET', url: 'https://api.test/a', status: 200, via: :transform, aborted: false }
@@ -90,6 +91,15 @@ RSpec.describe TRMNLP::Testing::Report do
     it 'writes a page that shows the screens' do
       expect(File.read(File.join(dir, 'index.html'))).to include('shows the weather', 'images/1.png', 'og_png · full')
     end
+
+    it 'records each asset substitution in JSON' do
+      expect(json['examples'].first['screens'].first['asset_swaps'])
+        .to include('url' => 'https://x.test/a.png', 'target' => 'local.png', 'kind' => 'override')
+    end
+
+    it 'shows each asset substitution on the report page' do
+      expect(File.read(File.join(dir, 'index.html'))).to include('override: https://x.test/a.png → local.png')
+    end
   end
 
   context 'with the full view drawn on TRMNL OG and TRMNL X in landscape' do
@@ -97,7 +107,7 @@ RSpec.describe TRMNLP::Testing::Report do
       path = File.join(Dir.mktmpdir, "#{name}.png")
       MiniMagick.convert { it << '-size' << "#{width}x#{height}" << 'xc:white' << path }
       double('screen', png_path: path, device: Struct.new(:name, :width, :height).new(name, width, height),
-                       view:, problems: [], evaluate: [])
+                       view:, problems: [], evaluate: [], asset_swaps: [])
     end
 
     before do

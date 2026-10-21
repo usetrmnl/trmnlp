@@ -2,6 +2,8 @@
 
 require 'spec_helper'
 require 'rack/test'
+require 'net/http'
+require 'trmnlp/testing/asset_cache'
 
 # `app.rb` is loaded lazily by commands/serve.rb. Load it here so we can
 # spec the routes without booting the full Sinatra reloader.
@@ -32,6 +34,7 @@ RSpec.describe TRMNLP::App do
     described_class.instance_variable_set(:@prototype, nil)
     described_class.set(:context, context)
     described_class.set(:browser_pool, instance_double(TRMNLP::BrowserPool))
+    described_class.set(:asset_cache, nil)
     # Sinatra 4 ships host_authorization on by default; the test client
     # sends Host: example.org which isn't on the allow-list. Permit all
     # hosts in specs.
@@ -39,6 +42,42 @@ RSpec.describe TRMNLP::App do
   end
 
   def app = described_class
+
+  describe 'GET /render/:view.html with asset overrides' do
+    let(:project_dir) { Dir.mktmpdir('trmnlp-preview-assets-') }
+    let(:context) { TRMNLP::Context.new(project_dir).tap { allow(it.poller).to receive(:poll_data) } }
+    let(:source) { 'https://assets.example.test/logo.svg' }
+    let(:cache) { TRMNLP::Testing::AssetCache.new(dir: File.join(project_dir, 'cache')).start }
+
+    before do
+      FileUtils.mkdir_p(File.join(project_dir, 'src'))
+      File.write(File.join(project_dir, '.trmnlp.yml'), { 'asset_overrides' => { source => 'logo.svg' } }.to_yaml)
+      File.write(File.join(project_dir, 'logo.svg'), '<svg>first</svg>')
+      File.write(File.join(project_dir, 'src', 'settings.yml'), "framework_version: '#{TRMNLP::FrameworkVersion.latest}'\n")
+      File.write(File.join(project_dir, 'src', 'full.liquid'), %(<img src="#{source}">))
+      context.config.project.reload!
+      WebMock.disable_net_connect!(allow_localhost: true)
+      described_class.set(:asset_cache, cache)
+    end
+
+    after do
+      cache.stop
+      FileUtils.remove_entry(project_dir)
+    end
+
+    it 'rewrites the live preview to the cache server' do
+      get '/render/full.html'
+      expect(last_response.body).to include(cache.url)
+    end
+
+    it 'serves a changed local file on the next request' do
+      get '/render/full.html'
+      uri = URI(last_response.body[/<img src="([^"]+)/, 1])
+      Net::HTTP.get(uri)
+      File.write(File.join(project_dir, 'logo.svg'), '<svg>changed</svg>')
+      expect(Net::HTTP.get(uri)).to eq('<svg>changed</svg>')
+    end
+  end
 
   describe 'GET /data' do
     it 'returns user_data as pretty JSON with default device dims' do

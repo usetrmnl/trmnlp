@@ -7,11 +7,14 @@ require_relative '../browser_pool'
 require_relative '../firefox_driver'
 require_relative '../screen_generator'
 require_relative '../screenshot'
+require_relative '../testing/asset_cache'
 
 module TRMNLP
   module Commands
     class Build < Base
-      Options = Data.define(:dir, :quiet, :png, :width, :height, :color_depth)
+      Options = Data.define(:dir, :quiet, :png, :width, :height, :color_depth, :bundle_assets) do
+        def initialize(bundle_assets: false, **) = super(**, bundle_assets:)
+      end
 
       def call
         context.validate!
@@ -25,14 +28,23 @@ module TRMNLP
         reporter.info 'Done!'
       ensure
         @browser_pool&.shutdown
+        @asset_cache&.stop
       end
 
       private
 
       def build_screen(screen)
         html = context.renderer.render_full_page(screen.name)
-        write_html(screen.name, html)
-        write_png(screen.name, html) if options.png
+        overrides = context.config.project.asset_overrides
+        built = if options.bundle_assets && overrides.any?
+                  asset_cache.rewrite(html, overrides:,
+                                            bundle_dir: context.paths.build_dir)
+                else
+                  html
+                end
+        write_html(screen.name, built)
+        preview = options.png && overrides.any? ? asset_cache.rewrite(html, overrides:) : html
+        write_png(screen.name, preview) if options.png
       end
 
       def write_html(view, html)
@@ -60,6 +72,10 @@ module TRMNLP
       end
 
       def screenshot = @screenshot ||= Screenshot.new(pool: browser_pool)
+
+      def asset_cache
+        @asset_cache ||= Testing::AssetCache.new(dir: context.paths.cache_dir.join('assets')).start
+      end
 
       def browser_pool
         @browser_pool ||= BrowserPool.new(driver_factory: FirefoxDriver.method(:build))

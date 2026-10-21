@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `asset_overrides` in `.trmnlp.yml` replaces a literal URL, or a URL prefix ending in `/`, with a local file, a local folder or another URL, so a plugin can be previewed and tested with a local build of its own script, images or fonts before they are published. `trmnlp serve`, `trmnlp test` and `trmnlp build --png` serve the overrides from the asset cache; `trmnlp build` keeps the published URLs, and `--bundle-assets` copies the files next to the HTML. A test can set its own overrides, also as inline content, and `--report` lists every swap.
+
 ## 0.31.3
 
 - The Docker image draws TRMNLMaps maps. Firefox on Linux gets a WebGL context only from an X display, so maps drew blank under `trmnlp test` and `trmnlp serve` in the image; it now starts Xvfb and allows software WebGL, as TRMNL's render boxes do.

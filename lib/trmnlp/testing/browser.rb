@@ -32,7 +32,8 @@ module TRMNLP
       # Loads the screen's page; its picture is only taken when a test asks for it.
       def load(screen)
         generator = generator(screen)
-        html = @asset_cache.point_framework_links_at_cache(generator.html)
+        screen.asset_swaps = []
+        html = @asset_cache.rewrite(generator.html, overrides: screen.asset_overrides, swaps: screen.asset_swaps)
         @pages[screen] = [html, generator.width, generator.height, @page_server.add(html)]
         show(screen)
       end

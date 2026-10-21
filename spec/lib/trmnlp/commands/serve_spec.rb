@@ -30,6 +30,12 @@ RSpec.describe TRMNLP::Commands::Serve do
       expect(TRMNLP::App).to have_received(:set).with(:context, context)
     end
 
+    it 'wires the shared asset cache onto the Sinatra app' do
+      command.call
+
+      expect(TRMNLP::App).to have_received(:set).with(:asset_cache, an_instance_of(TRMNLP::Testing::AssetCache))
+    end
+
     it 'wires the bind and port options onto the Sinatra app' do
       command.call
 

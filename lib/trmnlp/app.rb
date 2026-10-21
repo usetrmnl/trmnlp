@@ -56,6 +56,7 @@ module TRMNLP
       # per-request dup, like @live_reload_clients below.
       @oauth_state = {}
       @screenshot = Screenshot.new(pool: settings.browser_pool)
+      @asset_cache = settings.asset_cache
 
       @poller.poll_data
 
@@ -213,12 +214,14 @@ module TRMNLP
       end
 
       get "/render/#{view}.html" do
-        Screenshot.live_preview(@renderer.render_full_page(view, params))
+        html = Screenshot.live_preview(@renderer.render_full_page(view, params))
+        @asset_cache&.rewrite_if_configured(html, overrides: @context.config.project.asset_overrides) || html
       end
 
       get "/render/#{view}.png" do
         @view = view
         html = @renderer.render_full_page(view, params)
+        html = @asset_cache&.rewrite_if_configured(html, overrides: @context.config.project.asset_overrides) || html
         temp_image = render_png(html, params)
 
         send_file temp_image.path, type: 'image/png', disposition: 'inline'

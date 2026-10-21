@@ -385,7 +385,15 @@ ignored_lint_rules:
 # each mapped to the trmnlp project whose last fetched data stands in for it
 merged_plugins:
   private_plugin_42: ../weather
+
+# replace literal asset URLs during serve, test, and build --png
+asset_overrides:
+  https://example.com/logo.svg: assets/logo.svg
+  https://example.com/icons/: assets/icons
+  https://example.com/app.js: https://mirror.example.com/app.js
 ```
+
+`asset_overrides` keys are literal URLs. A key ending in `/` matches a URL prefix and maps to a local folder or a URL prefix ending in `/`; the longest matching key wins. Other keys map to a local file or another URL. Local paths are relative to the plugin directory. Wildcards, regular expressions and placeholders are not supported. A missing local file is an error. `build` keeps published URLs in HTML by default; `build --bundle-assets` copies overridden assets into `_build/assets/` and uses relative links. In a plugin test, `trmnl.render(asset_overrides: { 'https://example.com/app.js' => { body: 'window.ready = true', content_type: 'text/javascript' } })` adds an override for that test. The test mapping wins on the same key, and `content_type` defaults to the URL's file type. `trmnl.transform` accepts the same mapping.
 
 An `async_polling` plugin gets `{{ callback_url }}` in its polling url. It points at
 `trmnlp serve`'s `/callback` route, where the API posts `merge_variables` after answering 202.
