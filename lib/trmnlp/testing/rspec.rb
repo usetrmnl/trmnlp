@@ -21,8 +21,9 @@ require_relative 'snapshot'
 module TRMNLP
   module Testing
     PLUGIN_DIR_ENV_KEY = 'TRMNLP_PLUGIN_DIR'
-    # What a template or script draws when its data is missing.
-    LEAKED_TEXT_PATTERN = /Liquid (?:syntax )?error|\bundefined\b|\bNaN\b|\bnull\b|\[object Object\]|\{\{|\{%/
+    # What a page draws when its data or one of its templates is missing.
+    LEAKED_TEXT_PATTERN = Regexp.union(/Missing template|Liquid (?:syntax )?error/,
+                                       /\bundefined\b|\bNaN\b|\bnull\b|\[object Object\]|\{\{|\{%/)
 
     def self.plugin_dir = ENV.fetch(PLUGIN_DIR_ENV_KEY, Dir.pwd)
 

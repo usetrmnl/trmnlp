@@ -275,6 +275,7 @@ Every screen is checked for leaked values:
 - `null`
 - `[object Object]`
 - `Liquid error`
+- `Missing template`, drawn for a view with no markup file and no shared markup
 - Raw `{{`
 - Raw `{%`
 

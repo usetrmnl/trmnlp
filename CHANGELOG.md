@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp test`'s publishable recipe fails a view that has no markup file and no shared markup. It drew only "Missing template", and passed. The message now names the file from the plugin folder, such as `src/full.liquid`, not the folders on your computer.
+
 ## 0.32.0
 
 - `asset_overrides` in `.trmnlp.yml` replaces a literal URL, or a URL prefix ending in `/`, with a local file, a local folder or another URL, so a plugin can be previewed and tested with a local build of its own script, images or fonts before they are published. `trmnlp serve`, `trmnlp test` and `trmnlp build --png` serve the overrides from the asset cache; `trmnlp build` keeps the published URLs, and `--bundle-assets` copies the files next to the HTML. A test can set its own overrides, also as inline content, and `--report` lists every swap. `trmnlp serve` redraws when an overridden file changes, from a local folder or from another URL such as a bundler's dev server.

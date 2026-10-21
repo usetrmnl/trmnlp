@@ -65,6 +65,11 @@ RSpec.describe TRMNLP::Renderer do
       expect { renderer.send(:render_liquid_template, 'nonexistent') }
         .to raise_error(TRMNLP::RenderError, /Missing template/)
     end
+
+    it 'names the missing file from the plugin folder, not from the computer it runs on' do
+      expect { renderer.send(:render_liquid_template, 'nonexistent') }
+        .to raise_error(TRMNLP::RenderError, 'Missing template: src/nonexistent.liquid')
+    end
   end
 
   describe '#screen_classes' do
