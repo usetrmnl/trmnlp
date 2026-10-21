@@ -58,7 +58,11 @@ RUN apt-get update && \
     php-cli \
     libfaketime \
     zbar-tools \
+    xvfb \
     && rm -rf /var/lib/apt/lists/*
+
+# Firefox gets a WebGL context for maps only from a display, even headless.
+ENV DISPLAY=:99
 
 # Node from its own image: Debian's is 20, and only Node 24 sends fetch through HTTPS_PROXY, which
 # `trmnlp test` mocks a transform's requests with.
@@ -86,8 +90,13 @@ COPY bin/ /app/bin/
 COPY templates/ /app/templates/
 COPY db/ /app/db/
 
-# Start Firefox once on the geckodriver above. The build fails here when they do not work together.
-RUN ruby -r/app/lib/trmnlp/firefox_driver -e 'TRMNLP::FirefoxDriver.build.quit' && rm -rf /root/.cache /root/.mozilla /tmp/*
+# Start Firefox once on the geckodriver above. The build fails here when they do not work together,
+# or when Firefox gets no WebGL context, which framework maps draw with.
+RUN (Xvfb :99 -nolisten tcp >/dev/null 2>&1 &) && until [ -e /tmp/.X11-unix/X99 ]; do sleep 0.05; done && \
+    ruby -r/app/lib/trmnlp/firefox_driver -e 'driver = TRMNLP::FirefoxDriver.build; \
+      webgl = driver.execute_script(%q(return !!document.createElement("canvas").getContext("webgl2"))); \
+      driver.quit; abort "Firefox has no WebGL context" unless webgl' && \
+    rm -rf /root/.cache /root/.mozilla /tmp/*
 
 # Put trmnlp on PATH so it is callable as a bare command in an
 # interactive shell, not only via the ENTRYPOINT.
@@ -95,4 +104,4 @@ RUN ln -s /app/bin/trmnlp /usr/local/bin/trmnlp
 
 EXPOSE 4567
 WORKDIR /plugin
-ENTRYPOINT [ "/app/bin/trmnlp" ]
+ENTRYPOINT [ "/bin/sh", "-c", "Xvfb :99 -nolisten tcp >/dev/null 2>&1 & until [ -e /tmp/.X11-unix/X99 ]; do sleep 0.05; done; exec /app/bin/trmnlp \"$@\"", "trmnlp" ]
