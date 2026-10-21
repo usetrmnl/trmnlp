@@ -20,6 +20,26 @@ trmnlp.connectLiveRender = function () {
 };
 
 
+// The file watcher cannot see an override served by another URL, such as a bundler's dev server.
+trmnlp.watchOverrides = function () {
+  let bodies = new Map();
+  trmnlp.iframe.addEventListener("load", () => { bodies = new Map(); });
+
+  const poll = async () => {
+    const entries = trmnlp.iframe.contentWindow?.performance?.getEntriesByType("resource") || [];
+    for (const { name } of entries.filter((entry) => new URL(entry.name).pathname.startsWith("/overrides/"))) {
+      const body = await fetch(name, { cache: "no-store" }).then((response) => response.text()).catch(() => null);
+      if (bodies.has(name) && bodies.get(name) !== body) {
+        trmnlp.fetchPreview();
+        break;
+      }
+      bodies.set(name, body);
+    }
+    setTimeout(poll, 1000);
+  };
+  poll();
+};
+
 // trmnl.device values the picked model and palette decide.
 trmnlp.deviceParams = function (state) {
   const bitDepth = Math.ceil(Math.log2(state.palette?.grays || 2));
@@ -274,6 +294,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   if (trmnlp.isLiveReloadEnabled) {
     trmnlp.connectLiveRender();
+    trmnlp.watchOverrides();
   }
 
   const formatValue = localStorage.getItem("trmnlp-format") || "html";

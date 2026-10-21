@@ -395,7 +395,7 @@ asset_overrides:
 
 `asset_overrides` keys are literal URLs. A key ending in `/` matches a URL prefix and maps to a local folder or a URL prefix ending in `/`; the longest matching key wins. Other keys map to a local file or another URL. Local paths are relative to the plugin directory. Wildcards, regular expressions and placeholders are not supported. A missing local file is an error. `build` keeps published URLs in HTML by default; `build --bundle-assets` copies overridden assets into `_build/assets/` and uses relative links. In a plugin test, `trmnl.render(asset_overrides: { 'https://example.com/app.js' => { body: 'window.ready = true', content_type: 'text/javascript' } })` adds an override for that test. The test mapping wins on the same key, and `content_type` defaults to the URL's file type. `trmnl.transform` accepts the same mapping.
 
-To redraw `trmnlp serve` when an overridden local file changes, add its folder to `watch`. An override that points at another URL is kept as long as that server's cache-control allows, and nothing tells the preview to redraw.
+`trmnlp serve` redraws when an overridden local file or folder changes, without adding it to `watch`. For an override that points at another URL, such as a bundler's dev server, the open preview asks again every second for the files it loaded and redraws when one changes; trmnlp keeps each file as long as that server's cache-control allows.
 
 An `async_polling` plugin gets `{{ callback_url }}` in its polling url. It points at
 `trmnlp serve`'s `/callback` route, where the API posts `merge_variables` after answering 202.

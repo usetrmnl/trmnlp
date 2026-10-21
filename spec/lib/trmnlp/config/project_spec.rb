@@ -137,6 +137,28 @@ RSpec.describe TRMNLP::Config::Project do
     end
   end
 
+  describe '#watch_paths' do
+    let(:root_dir) { Dir.mktmpdir('trmnlp-watch-') }
+
+    after { FileUtils.remove_entry(root_dir) }
+
+    def configure(config)
+      File.write(File.join(root_dir, '.trmnlp.yml'), config.to_yaml)
+      project.reload!
+    end
+
+    it 'watches the local files and folders that asset overrides point at, so serve redraws when they change' do
+      configure('watch' => ['src'], 'asset_overrides' => { 'https://example.test/app.js' => 'dist/app.js',
+                                                           'https://example.test/icons/' => 'icons' })
+      expect(project.watch_paths.map(&:to_s)).to eq(%w[src dist/app.js icons].map { File.join(root_dir, it) })
+    end
+
+    it 'does not watch an override that points at another URL' do
+      configure('asset_overrides' => { 'https://example.test/app.js' => 'https://mirror.test/app.js' })
+      expect(project.watch_paths).to be_empty
+    end
+  end
+
   describe '#asset_overrides' do
     let(:root_dir) { Dir.mktmpdir('trmnlp-overrides-') }
 
