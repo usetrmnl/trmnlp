@@ -81,6 +81,8 @@ module TRMNLP
       redirect '/full'
     end
 
+    get('/overrides/*') { settings.asset_cache.override_response(request.path_info, request.user_agent) || halt(502) }
+
     get '/data' do
       content_type :json
       device = @user_data_assembler.device_from_params(params)
@@ -213,12 +215,14 @@ module TRMNLP
       end
 
       get "/render/#{view}.html" do
-        Screenshot.live_preview(@renderer.render_full_page(view, params))
+        html = Screenshot.live_preview(@renderer.render_full_page(view, params))
+        settings.asset_cache.point_overrides_at(html, overrides: @context.config.project.asset_overrides)
       end
 
       get "/render/#{view}.png" do
         @view = view
         html = @renderer.render_full_page(view, params)
+        html = settings.asset_cache.rewrite_if_configured(html, overrides: @context.config.project.asset_overrides)
         temp_image = render_png(html, params)
 
         send_file temp_image.path, type: 'image/png', disposition: 'inline'

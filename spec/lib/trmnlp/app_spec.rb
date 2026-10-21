@@ -2,6 +2,8 @@
 
 require 'spec_helper'
 require 'rack/test'
+require 'net/http'
+require 'trmnlp/testing/asset_cache'
 
 # `app.rb` is loaded lazily by commands/serve.rb. Load it here so we can
 # spec the routes without booting the full Sinatra reloader.
@@ -32,6 +34,7 @@ RSpec.describe TRMNLP::App do
     described_class.instance_variable_set(:@prototype, nil)
     described_class.set(:context, context)
     described_class.set(:browser_pool, instance_double(TRMNLP::BrowserPool))
+    described_class.set(:asset_cache, TRMNLP::Testing::AssetCache.new(dir: Dir.mktmpdir('trmnlp-assets-')))
     # Sinatra 4 ships host_authorization on by default; the test client
     # sends Host: example.org which isn't on the allow-list. Permit all
     # hosts in specs.
@@ -39,6 +42,57 @@ RSpec.describe TRMNLP::App do
   end
 
   def app = described_class
+
+  describe 'GET /render/:view.html with asset overrides' do
+    let(:project_dir) { Dir.mktmpdir('trmnlp-preview-assets-') }
+    let(:context) { TRMNLP::Context.new(project_dir).tap { allow(it.poller).to receive(:poll_data) } }
+    let(:source) { 'https://assets.example.test/logo.svg' }
+    let(:cache) { TRMNLP::Testing::AssetCache.new(dir: File.join(project_dir, 'cache')).start }
+
+    before do
+      FileUtils.mkdir_p(File.join(project_dir, 'src'))
+      File.write(File.join(project_dir, '.trmnlp.yml'), { 'asset_overrides' => { source => 'logo.svg' } }.to_yaml)
+      File.write(File.join(project_dir, 'logo.svg'), '<svg>first</svg>')
+      File.write(File.join(project_dir, 'src', 'settings.yml'), "framework_version: '#{TRMNLP::FrameworkVersion.latest}'\n")
+      File.write(File.join(project_dir, 'src', 'full.liquid'), %(<img src="#{source}">))
+      context.config.project.reload!
+      WebMock.disable_net_connect!(allow_localhost: true)
+      described_class.set(:asset_cache, cache)
+    end
+
+    after do
+      cache.stop
+      FileUtils.remove_entry(project_dir)
+    end
+
+    def overridden_path
+      get '/render/full.html'
+      last_response.body[/<img src="([^"]+)/, 1]
+    end
+
+    it 'points the live preview at its own address, so a browser outside the machine or container reaches it' do
+      expect(overridden_path).to start_with('/overrides/')
+    end
+
+    it 'serves the override from its own address' do
+      get overridden_path
+      expect(last_response).to have_attributes(body: '<svg>first</svg>', content_type: 'image/svg+xml')
+    end
+
+    it 'serves a changed local file on the next request' do
+      path = overridden_path
+      File.write(File.join(project_dir, 'logo.svg'), '<svg>changed</svg>')
+      get path
+      expect(last_response.body).to eq('<svg>changed</svg>')
+    end
+
+    it 'leaves the Framework links of the live preview alone' do
+      File.write(File.join(project_dir, 'src', 'full.liquid'),
+                 %(<img src="#{source}"><link href="https://trmnl.com/css/3.4.2/plugins.css">))
+      get '/render/full.html'
+      expect(last_response.body).to include('href="https://trmnl.com/css/3.4.2/plugins.css"')
+    end
+  end
 
   describe 'GET /data' do
     it 'returns user_data as pretty JSON with default device dims' do

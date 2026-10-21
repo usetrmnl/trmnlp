@@ -26,22 +26,132 @@ RSpec.describe TRMNLP::Testing::AssetCache do
 
   def get(path) = Net::HTTP.get_response(URI("#{cache.url}#{path}"))
 
-  describe '#point_framework_links_at_cache' do
+  describe '#rewrite without overrides' do
     it "points the page's Framework stylesheets and scripts at the cache" do
       html = %(<link href="#{css_url}"><script src="https://trmnl.com/js/3.4.2/plugins.js"></script>)
-      expect(cache.point_framework_links_at_cache(html)).to eq(%(<link href="#{cache.url}/css/3.4.2/plugins.css">) +
+      expect(cache.rewrite(html)).to eq(%(<link href="#{cache.url}/css/3.4.2/plugins.css">) +
                                       %(<script src="#{cache.url}/js/3.4.2/plugins.js"></script>))
     end
 
     it "points the Framework's Google Fonts stylesheet at the cache" do
       html = '<link href="https://fonts.googleapis.com/css2?family=Inter&amp;display=swap">'
-      expect(cache.point_framework_links_at_cache(html))
+      expect(cache.rewrite(html))
         .to eq(%(<link href="#{cache.url}/fonts.googleapis.com/css2?family=Inter&amp;display=swap">))
     end
 
     it 'leaves other trmnl.com addresses alone' do
       html = '<img src="https://trmnl.com/images/plugins/weather.svg"><a href="https://trmnl.com/css">x</a>'
-      expect(cache.point_framework_links_at_cache(html)).to eq(html)
+      expect(cache.rewrite(html)).to eq(html)
+    end
+  end
+
+  describe '#rewrite' do
+    let(:source) { 'https://example.test/assets/logo.svg' }
+    let(:overrides) { { 'https://example.test/assets/' => dir } }
+
+    before { File.write(File.join(dir, 'logo.svg'), '<svg/>') }
+
+    it 'rewrites a prefix in an attribute and an inline script string' do
+      html = %(<img src="#{source}"><script>const logo = "#{source}"</script>)
+      rewritten = cache.rewrite(html, overrides:)
+      expect(rewritten.scan(cache.url).length).to eq(2)
+    end
+
+    it 'serves a file from a folder' do
+      rewritten = cache.rewrite(%(<img src="#{source}">), overrides:)
+      uri = URI(rewritten[/src="([^"]+)/, 1])
+      expect(Net::HTTP.get_response(uri)).to have_attributes(code: '200', body: '<svg/>', content_type: 'image/svg+xml')
+    end
+
+    it 'uses the longest matching key' do
+      File.write(File.join(dir, 'other.svg'), 'specific')
+      mapping = overrides.merge(source => File.join(dir, 'other.svg'))
+      uri = URI(cache.rewrite(source, overrides: mapping))
+      expect(Net::HTTP.get(uri)).to eq('specific')
+    end
+
+    it 'serves a file a stylesheet links relative to itself from the same folder' do
+      File.write(File.join(dir, 'icons.css'), '.icon { background: url(icon.svg) }')
+      File.write(File.join(dir, 'icon.svg'), '<svg>icon</svg>')
+      stylesheet = URI(cache.rewrite('https://example.test/assets/icons.css', overrides:))
+      expect(Net::HTTP.get(URI.join(stylesheet, 'icon.svg'))).to eq('<svg>icon</svg>')
+    end
+
+    it 'points a bare folder URL in a script at the folder' do
+      folder = cache.rewrite(%(const base = "https://example.test/assets/"), overrides:)[/"([^"]+)"/, 1]
+      expect(Net::HTTP.get(URI("#{folder}logo.svg"))).to eq('<svg/>')
+    end
+
+    it 'gives an override the same address on every rewrite' do
+      expect(cache.rewrite(source, overrides:)).to eq(cache.rewrite(source, overrides:))
+    end
+
+    it 'serves a file next to an overridden file from where it was published' do
+      stub_request(:get, 'https://example.test/assets/chunk.js').to_return(body: 'chunk')
+      script = URI(cache.rewrite(source, overrides: { source => File.join(dir, 'logo.svg') }))
+      expect(Net::HTTP.get(URI.join(script, 'chunk.js'))).to eq('chunk')
+    end
+
+    it 'reads a changed file on the next request' do
+      uri = URI(cache.rewrite(source, overrides:))
+      Net::HTTP.get(uri)
+      File.write(File.join(dir, 'logo.svg'), 'updated')
+      expect(Net::HTTP.get(uri)).to eq('updated')
+    end
+
+    it 'fetches a URL target through the cache' do
+      target = 'https://mirror.test/logo.svg'
+      stub_request(:get, target).to_return(body: 'mirror', headers: { 'content-type' => 'image/svg+xml',
+                                                                      'cache-control' => 'max-age=300' })
+      uri = URI(cache.rewrite(source, overrides: { source => target }))
+      expect(Net::HTTP.get(uri)).to eq('mirror')
+    end
+
+    it 'serves inline content with its declared type' do
+      uri = URI(cache.rewrite(source, overrides: { source => { body: 'hello', content_type: 'text/plain' } }))
+      expect(Net::HTTP.get_response(uri)).to have_attributes(body: 'hello', content_type: 'text/plain')
+    end
+
+    it 'guesses the type of inline content from the URL' do
+      js = 'https://example.test/app.js'
+      uri = URI(cache.rewrite(js, overrides: { js => { body: 'window.ok = true' } }))
+      expect(Net::HTTP.get_response(uri).content_type).to eq('text/javascript')
+    end
+
+    it 'caches a URL target for the lifetime it declares' do
+      target = 'https://mirror.test/logo.svg'
+      stub_request(:get, target).to_return(body: 'mirror', headers: { 'cache-control' => 'max-age=300' })
+      uri = URI(cache.rewrite(source, overrides: { source => target }))
+      Net::HTTP.get(uri)
+      Net::HTTP.get(uri)
+      expect(a_request(:get, target)).to have_been_made.once
+    end
+
+    context 'with a bundle folder' do
+      let(:bundle_dir) { Dir.mktmpdir('trmnlp-bundle-') }
+
+      it 'copies the override into a relative bundle path' do
+        rewritten = cache.rewrite(source, overrides:, bundle_dir:)
+        expect(File.binread(File.join(bundle_dir, rewritten))).to eq('<svg/>')
+      end
+
+      it 'copies the files next to it in an overridden folder' do
+        File.write(File.join(dir, 'icon.svg'), '<svg>icon</svg>')
+        rewritten = cache.rewrite(source, overrides:, bundle_dir:)
+        expect(File.read(File.join(bundle_dir, File.dirname(rewritten), 'icon.svg'))).to eq('<svg>icon</svg>')
+      end
+    end
+
+    it 'leaves a page byte for byte unchanged without overrides or framework links' do
+      html = "<script>const url = '#{source}'</script>\n"
+      expect(cache.rewrite(html)).to eq(html)
+    end
+  end
+
+  describe '#rewrite_if_configured' do
+    it 'keeps a page byte for byte when no overrides are configured' do
+      html = %(<link href="#{css_url}">\n)
+      expect(cache.rewrite_if_configured(html, overrides: {})).to eq(html)
     end
   end
 

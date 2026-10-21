@@ -43,6 +43,8 @@ module TRMNLP
 
     desc 'build', 'Generate static HTML files'
     method_option :png, type: :boolean, default: false, desc: 'Also render a PNG per view'
+    method_option :bundle_assets, type: :boolean, default: false,
+                                  desc: 'Copy overridden assets into _build/assets and use relative links'
     method_option :width, type: :numeric, desc: 'PNG width in pixels (with --png)'
     method_option :height, type: :numeric, desc: 'PNG height in pixels (with --png)'
     method_option :color_depth, type: :numeric, desc: 'PNG bit depth: 1-8 (with --png)'

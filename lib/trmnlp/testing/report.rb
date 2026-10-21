@@ -40,7 +40,8 @@ module TRMNLP
         remember_full_landscape(screen, image)
         entry[:screens].push(
           label: "#{screen.device.name} · #{screen.view}", width: screen.device.width, height: screen.device.height,
-          image:, outlines: screen.evaluate(OUTLINES_SCRIPT), problems: screen.problems
+          image:, outlines: screen.evaluate(OUTLINES_SCRIPT), problems: screen.problems,
+          asset_swaps: screen.asset_swaps
         )
       end
 

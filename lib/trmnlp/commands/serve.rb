@@ -4,6 +4,7 @@ require_relative 'base'
 require_relative '../api_client'
 require_relative '../browser_pool'
 require_relative '../firefox_driver'
+require_relative '../testing/asset_cache'
 
 module TRMNLP
   module Commands
@@ -12,6 +13,7 @@ module TRMNLP
 
       def call
         context.validate!
+        context.config.project.asset_overrides
         report_form_field_warnings
         report_framework_version_warning
 
@@ -20,6 +22,8 @@ module TRMNLP
 
         # Now we can configure things
         App.set(:context, context)
+        @asset_cache = Testing::AssetCache.new(dir: context.paths.cache_dir.join('assets')).start
+        App.set(:asset_cache, @asset_cache)
         App.set(:browser_pool, BrowserPool.new(driver_factory: FirefoxDriver.method(:build)))
         App.set(:bind, options.bind)
         App.set(:port, options.port)
@@ -31,6 +35,8 @@ module TRMNLP
 
         # Finally, start the app!
         App.run!
+      ensure
+        @asset_cache&.stop
       end
 
       private

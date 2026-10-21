@@ -31,6 +31,47 @@ RSpec.describe TRMNLP::Commands::Build do
   end
 
   describe '#call' do
+    context 'with asset overrides' do
+      let(:asset_url) { 'https://assets.example.test/logo.svg' }
+
+      before do
+        File.write(File.join(tmp_root, 'logo.svg'), '<svg/>')
+        File.write(File.join(tmp_root, '.trmnlp.yml'), { 'asset_overrides' => { asset_url => 'logo.svg' } }.to_yaml)
+        context.config.project.reload!
+        allow(context.renderer).to receive(:render_full_page) { |_view| %(<img src="#{asset_url}">) }
+      end
+
+      it 'keeps published URLs in the default HTML build' do
+        command.call
+        expect(File.read(File.join(tmp_root, '_build', 'full.html'))).to eq(%(<img src="#{asset_url}">))
+      end
+
+      it 'copies overridden assets with --bundle-assets' do
+        bundled = described_class::Options.new(dir: tmp_root, quiet: true, png: false, bundle_assets: true,
+                                               width: nil, height: nil, color_depth: nil)
+        described_class.new(context:, options: bundled, reporter:).call
+        html = File.read(File.join(tmp_root, '_build', 'full.html'))
+        asset = html[/src="([^"]+)/, 1]
+        expect(File.read(File.join(tmp_root, '_build', asset))).to eq('<svg/>')
+      end
+
+      it 'passes local cache URLs to PNG capture' do
+        png = described_class::Options.new(dir: tmp_root, quiet: true, png: true,
+                                           width: nil, height: nil, color_depth: nil)
+        generator = instance_double(TRMNLP::ScreenGenerator)
+        allow(TRMNLP::ScreenGenerator).to receive(:new).and_return(generator)
+        allow(generator).to receive(:process) do
+          Tempfile.new(['screen', '.png']).tap do |file|
+            file.write('png')
+            file.close
+          end
+        end
+        described_class.new(context:, options: png, reporter:).call
+        expect(TRMNLP::ScreenGenerator).to have_received(:new)
+          .with(a_string_including('http://127.0.0.1:'), anything).at_least(:once)
+      end
+    end
+
     it 'creates the build dir' do
       command.call
 

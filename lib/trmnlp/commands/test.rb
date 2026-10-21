@@ -11,6 +11,7 @@ module TRMNLP
 
       def call(paths = [])
         context.validate!
+        context.config.project.asset_overrides
         require 'rspec/core'
 
         ENV['TRMNLP_PLUGIN_DIR'] = context.paths.root_dir.to_s

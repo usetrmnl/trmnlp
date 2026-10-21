@@ -6,6 +6,8 @@ require_relative 'device_models'
 require_relative 'report'
 require_relative 'run'
 require_relative 'screen'
+require_relative '../config/project'
+require_relative '../paths'
 
 module TRMNLP
   module Testing
@@ -58,7 +60,8 @@ module TRMNLP
       # The plugin in another folder, rendered in the same browser: a built copy, say.
       def plugin(dir) = self.class.new(File.expand_path(dir), browser: @browser, authority: @authority)
 
-      def transform(device: 'og_plus', orientation: :landscape, now: nil, **)
+      def transform(device: 'og_plus', orientation: :landscape, now: nil, asset_overrides: {}, **)
+        overrides(asset_overrides)
         device = DeviceModels.find(device, orientation:)
         run(now, **).transform(device: device.render_params).tap { Report.current&.record_run(it) }
       end
@@ -67,18 +70,24 @@ module TRMNLP
       # JavaScript expression the page must reach before it is captured) and wait_for_timeout: (seconds).
       # rubocop:disable-next Metrics/ParameterLists -- one keyword per choice a render offers
       def render(view: 'full', device: 'og_plus', orientation: :landscape, palette: nil, dark_mode: false, theme: nil,
-                 now: nil, head: nil, wait_for: nil, wait_for_timeout: 5, fresh_browser: false, **)
+                 now: nil, head: nil, wait_for: nil, wait_for_timeout: 5, fresh_browser: false,
+                 asset_overrides: {}, **)
         device = DeviceModels.find(device, orientation:, palette:)
         classes = [device.screen_classes, ('screen--dark-mode' if dark_mode)].compact.join(' ')
         result = run(now, **).render(view:, device: device.render_params, screen_classes: classes, theme:)
         html = with_problems_trap(with_head(with_page_clock(result.html, now), head))
         browser = fresh_browser ? @browser.fresh : @browser
         Report.current&.record_run(result)
-        Screen.new(html:, device:, view:, browser:, result:, wait_for:, wait_for_timeout:)
+        Screen.new(html:, device:, view:, browser:, result:, wait_for:, wait_for_timeout:,
+                   asset_overrides: overrides(asset_overrides))
               .tap { Report.current&.record_screen(it) }
       end
 
       private
+
+      def overrides(extra)
+        Config::Project.new(Paths.new(@dir)).asset_overrides(extra, allow_inline: true)
+      end
 
       def run(now, **) = Run.new(plugin: @dir, authority: @authority, now: time(now), **)
 

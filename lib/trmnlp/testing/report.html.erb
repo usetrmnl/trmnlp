@@ -67,6 +67,9 @@
         <% end %></table>
       <% end %>
     <% end %>
+    <% example[:screens].flat_map { it[:asset_swaps] || [] }.each do |swap| %>
+      <div class="run"><%= h(swap[:kind]) %>: <%= h(swap[:url]) %> → <%= h(swap[:target]) %></div>
+    <% end %>
     <div class="screens">
     <% example[:screens].each do |screen| %>
       <figure>

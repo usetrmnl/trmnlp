@@ -2,6 +2,7 @@
 
 require 'trmnl/liquid'
 require 'yaml'
+require 'uri'
 
 require_relative '../errors'
 require_relative '../framework_version'
@@ -61,6 +62,13 @@ module TRMNLP
       # .trmnlp.yml. Consumed by Config::Plugin#framework_version.
       def asset_host = @config['framework_asset_host'] || FrameworkVersion::DEFAULT_ASSET_HOST
 
+      def asset_overrides(extra = {}, allow_inline: false)
+        mapping = @config.fetch('asset_overrides', {}) || {}
+        raise InvalidConfig, 'asset_overrides must be a mapping' unless mapping.is_a?(Hash)
+
+        normalize_asset_overrides(mapping).merge(normalize_asset_overrides(extra, allow_inline:))
+      end
+
       # Toggles serverless transform support. Enabled by default; set to
       # 'disabled' in .trmnlp.yml to turn it off. A transform only runs
       # when a src/transform.* file is also present, so the default is
@@ -88,6 +96,62 @@ module TRMNLP
       end
 
       private
+
+      def normalize_asset_overrides(mapping, allow_inline: false)
+        raise InvalidConfig, 'asset_overrides must be a mapping' unless mapping.is_a?(Hash)
+
+        mapping.to_h do |source, target|
+          validate_asset_key!(source)
+          [source, normalize_asset_target(source, target, allow_inline:)]
+        rescue URI::InvalidURIError
+          raise InvalidConfig, "asset_overrides key must be a literal URL: #{source.inspect}"
+        end
+      end
+
+      def validate_asset_key!(source)
+        uri = URI.parse(source.to_s)
+        valid = source.is_a?(String) && %w[http https].include?(uri.scheme) && uri.host &&
+                !source.match?(/[*{}\[\]\\()|]/)
+        raise InvalidConfig, "asset_overrides key must be a literal URL: #{source.inspect}" unless valid
+      end
+
+      def normalize_asset_target(source, target, allow_inline:)
+        return inline_asset_target(source, target, allow_inline:) if target.is_a?(Hash)
+        return url_asset_target(source, target) if target.is_a?(String) && target.match?(%r{\Ahttps?://})
+
+        local_asset_target(source, target)
+      end
+
+      def inline_asset_target(source, target, allow_inline:)
+        raise InvalidConfig, "asset_overrides #{source}: inline body needs a literal file URL" if source.end_with?('/')
+        unless allow_inline && (target.key?(:body) || target.key?('body'))
+          raise InvalidConfig, "asset_overrides #{source}: inline body is only allowed in tests"
+        end
+
+        target.transform_keys(&:to_sym)
+      end
+
+      def url_asset_target(source, target)
+        uri = URI.parse(target)
+        unless uri.host && (!source.end_with?('/') || target.end_with?('/'))
+          raise InvalidConfig, "asset_overrides #{source}: a URL prefix target must end in /"
+        end
+
+        target
+      end
+
+      def local_asset_target(source, target)
+        path = paths.expand(target.to_s)
+        raise InvalidConfig, "asset_overrides #{source}: local path does not exist: #{path}" unless path.exist?
+        if source.end_with?('/') && !path.directory?
+          raise InvalidConfig, "asset_overrides #{source}: a URL prefix needs a local folder"
+        end
+        if !source.end_with?('/') && path.directory?
+          raise InvalidConfig, "asset_overrides #{source}: a folder needs a URL prefix ending in /"
+        end
+
+        path.to_s
+      end
 
       def read_config
         return {} unless paths.trmnlp_config.exist?

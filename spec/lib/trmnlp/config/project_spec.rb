@@ -136,4 +136,54 @@ RSpec.describe TRMNLP::Config::Project do
       end
     end
   end
+
+  describe '#asset_overrides' do
+    let(:root_dir) { Dir.mktmpdir('trmnlp-overrides-') }
+
+    after { FileUtils.remove_entry(root_dir) }
+
+    def configure(mapping)
+      File.write(File.join(root_dir, '.trmnlp.yml'), { 'asset_overrides' => mapping }.to_yaml)
+      project.reload!
+    end
+
+    it 'resolves a file relative to the project' do
+      File.write(File.join(root_dir, 'logo.svg'), '<svg/>')
+      configure('https://example.test/logo.svg' => 'logo.svg')
+      expect(project.asset_overrides).to eq('https://example.test/logo.svg' => File.join(root_dir, 'logo.svg'))
+    end
+
+    it 'resolves a folder for a prefix key' do
+      FileUtils.mkdir_p(File.join(root_dir, 'images'))
+      configure('https://example.test/images/' => 'images')
+      expect(project.asset_overrides).to eq('https://example.test/images/' => File.join(root_dir, 'images'))
+    end
+
+    it 'keeps a URL target' do
+      configure('https://example.test/logo.svg' => 'https://mirror.test/logo.svg')
+      expect(project.asset_overrides).to eq('https://example.test/logo.svg' => 'https://mirror.test/logo.svg')
+    end
+
+    it 'rejects a wildcard key' do
+      configure('https://example.test/*.svg' => 'https://mirror.test/logo.svg')
+      expect { project.asset_overrides }.to raise_error(TRMNLP::InvalidConfig, /literal URL/)
+    end
+
+    it 'rejects a missing local file with the URL and path' do
+      configure('https://example.test/logo.svg' => 'missing.svg')
+      expect { project.asset_overrides }.to raise_error(TRMNLP::InvalidConfig, %r{example.test/logo.svg.*missing.svg})
+    end
+
+    it 'requires a trailing slash for folder keys' do
+      FileUtils.mkdir_p(File.join(root_dir, 'images'))
+      configure('https://example.test/images' => 'images')
+      expect { project.asset_overrides }.to raise_error(TRMNLP::InvalidConfig, %r{trailing /|end in /|prefix})
+    end
+
+    it 'rejects a file as a prefix target' do
+      File.write(File.join(root_dir, 'logo.svg'), '<svg/>')
+      configure('https://example.test/images/' => 'logo.svg')
+      expect { project.asset_overrides }.to raise_error(TRMNLP::InvalidConfig, /URL prefix needs a local folder/)
+    end
+  end
 end

@@ -125,6 +125,52 @@ RSpec.describe 'trmnlp test' do
     end
   end
 
+  context 'with asset overrides' do
+    let(:asset_url) { 'https://assets.example.test/theme.js' }
+    let(:spec_body) do
+      <<~'RUBY'
+        RSpec.describe 'Overrides' do
+          let(:url) { 'https://assets.example.test/theme.js' }
+          let(:head) { %(<script src="#{url}"></script>) }
+
+          it 'lets a test override the project with inline JavaScript' do
+            screen = trmnl.render(data: {}, transform: false, head:,
+                                  asset_overrides: { url => { body: 'window.assetSource = "test"',
+                                                               content_type: 'text/javascript' } })
+            expect(screen.evaluate('window.assetSource')).to eq('test')
+          end
+
+          it 'uses the project override in the next example' do
+            screen = trmnl.render(data: {}, transform: false, head:)
+            expect(screen.evaluate('window.assetSource')).to eq('project')
+          end
+
+          it 'accepts overrides on a transform too' do
+            expect { trmnl.transform(data: {}, transform: false, asset_overrides: { url => { body: 'x' } }) }
+              .not_to raise_error
+          end
+        end
+      RUBY
+    end
+
+    before do
+      File.write(File.join(plugin_dir, 'theme.js'), 'window.assetSource = "project"')
+      File.write(File.join(plugin_dir, '.trmnlp.yml'), { 'asset_overrides' => { asset_url => 'theme.js' } }.to_yaml)
+    end
+
+    it 'serves test and project overrides without leaking across examples' do
+      expect(run_tests).to match([include('3 examples, 0 failures'), be_success])
+    end
+
+    it 'lists substitutions in the report' do
+      report_dir = File.join(plugin_dir, 'report')
+      run_tests('--report', report_dir)
+      report = JSON.parse(File.read(File.join(report_dir, 'report.json')))
+      swaps = report['examples'].flat_map { it['screens'] }.flat_map { it['asset_swaps'] }
+      expect(swaps).to include(hash_including('url' => asset_url, 'kind' => 'override'))
+    end
+  end
+
   context 'with pages opened from the page server' do
     let(:spec_body) do
       <<~'RUBY'
