@@ -22,12 +22,13 @@ module TRMNLP
       DOWNLOAD_TIMEOUT_SECONDS = 10
       BAD_GATEWAY = "HTTP/1.1 502 Bad Gateway\r\ncontent-length: 0\r\nconnection: close\r\n\r\n"
       URL_LINK = %r{https?://[^\s"'<>),;]+}
+      OVERRIDE_PATH = %r{\A/overrides/(\h{16})/(.*)\z}
+      LOCAL = { 'cache_control' => 'no-store', 'allow_origin' => '*' }.freeze
 
       def initialize(dir:, clock: -> { Time.now })
         @dir = dir.to_s
         @clock = clock
         @overrides = {}
-        @next_override = 0
         @lock = Mutex.new
       end
 
@@ -48,18 +49,7 @@ module TRMNLP
 
       # Rewrites text, including URL strings in scripts, before the normal Framework and font substitutions.
       def rewrite(html, overrides: {}, swaps: nil, bundle_dir: nil)
-        rewritten = html.gsub(URL_LINK) do |source|
-          key = overrides.keys.select do |candidate|
-            candidate.end_with?('/') ? source.start_with?(candidate) : source == candidate
-          end
-                         .max_by(&:length)
-          next source unless key
-
-          target = overrides.fetch(key)
-          resolved = target_for(source, key, target)
-          swaps&.push(url: source, target: resolved.is_a?(Hash) ? '[inline body]' : resolved, kind: 'override')
-          bundle_dir ? bundle_asset(source, resolved, bundle_dir) : register_override(source, resolved)
-        end
+        rewritten = point_overrides_at(html, overrides:, base: "#{url}/overrides", swaps:, bundle_dir:)
         return rewritten if bundle_dir
 
         rewritten = rewritten.gsub(FRAMEWORK_LINK) do
@@ -75,84 +65,102 @@ module TRMNLP
         end
       end
 
+      # A folder key keeps the rest of the URL, so files the asset links relative to itself resolve in the same folder.
+      def point_overrides_at(html, overrides:, base:, swaps: nil, bundle_dir: nil)
+        html.gsub(URL_LINK) do |source|
+          key = overrides.keys.select { folder?(it) ? source.start_with?(it) : source == it }.max_by(&:length)
+          next source unless key
+
+          target = overrides.fetch(key)
+          rest = folder?(key) ? source.delete_prefix(key) : File.basename(URI(source).path)
+          check_local_file!(source, key, target, rest)
+          swaps&.push(url: source, target: target.is_a?(Hash) ? '[inline body]' : resolve(key, target, rest),
+                      kind: 'override')
+          id = register_override(key, target)
+          bundle_dir ? bundle_asset(id, key, target, rest, bundle_dir) : "#{base}/#{id}/#{rest}"
+        end
+      end
+
+      def override_asset(path, user_agent)
+        id, rest = path.match(OVERRIDE_PATH)&.captures
+        key, target = @lock.synchronize { @overrides[id] }
+        return unless key
+
+        rest = URI.decode_uri_component(rest)
+        return published_neighbor(key, rest, user_agent) unless folder?(key) || rest == File.basename(URI(key).path)
+
+        overridden(key, target, rest, user_agent)
+      end
+
       private
 
-      def target_for(source, key, target)
-        unless key.end_with?('/')
-          if target.is_a?(String) && !target.match?(%r{\Ahttps?://}) && !File.file?(target)
-            raise InvalidConfig, "asset_overrides #{source}: local file does not exist: #{target}"
-          end
+      def folder?(key) = key.end_with?('/')
 
-          return target
-        end
+      def url?(target) = target.is_a?(String) && target.match?(%r{\Ahttps?://})
 
-        suffix = source.delete_prefix(key)
-        raise InvalidConfig, "asset_overrides #{source}: invalid path" if suffix.split('/').include?('..')
-
-        if target.is_a?(String) && target.match?(%r{\Ahttps?://})
-          "#{target}#{suffix}"
-        else
-          path = File.expand_path(suffix.split('?', 2).first, target.to_s)
-          unless File.file?(path) && path.start_with?("#{File.expand_path(target.to_s)}/")
-            raise InvalidConfig, "asset_overrides #{source}: local file does not exist: #{path}"
-          end
-
-          path
+      def overridden(key, target, rest, user_agent)
+        found = resolve(key, target, rest)
+        type = mime(folder?(key) ? "#{key}#{rest}" : key)
+        if found.is_a?(Hash)
+          { 'body' => found.fetch(:body).to_s, 'content_type' => found[:content_type] || type }.merge(LOCAL)
+        elsif url?(found) then remote_asset(found, user_agent)
+        elsif found && File.file?(found) then { 'body' => File.binread(found), 'content_type' => type }.merge(LOCAL)
         end
       end
 
-      def register_override(source, target)
-        extension = File.extname(URI(source).path)
-        extension = '.bin' if extension.empty?
-        id = @lock.synchronize do
-          @next_override += 1
-          @overrides[@next_override.to_s] = [source, target]
-          @next_override
-        end
-        "#{url}/overrides/#{id}/asset#{extension}"
+      # The file, URL or inline content an overridden URL stands for; nil for a path outside the folder.
+      def resolve(key, target, rest)
+        return target unless folder?(key)
+        return "#{target}#{rest}" if url?(target)
+
+        path = File.expand_path(rest.split('?', 2).first.to_s, target)
+        path if path == File.expand_path(target) || path.start_with?("#{File.expand_path(target)}/")
       end
 
-      def bundle_asset(source, target, dir)
-        name = File.basename(URI(source).path)
-        name = 'asset.bin' if name.empty?
-        relative = "assets/#{Digest::SHA256.hexdigest(source)[0, 16]}/#{name}"
-        body = if target.is_a?(Hash)
-                 target.fetch(:body).to_s
-               elsif target.match?(%r{\Ahttps?://})
-                 remote_asset(target, nil)&.fetch('body')
-               else
-                 File.binread(target)
-               end
-        raise InvalidConfig, "asset_overrides #{source}: could not fetch #{target}" unless body
+      def check_local_file!(source, key, target, rest)
+        return if target.is_a?(Hash) || url?(target) || rest.empty?
 
-        destination = File.join(dir, relative)
+        path = resolve(key, target, rest)
+        raise InvalidConfig, "asset_overrides #{source}: invalid path" unless path
+        raise InvalidConfig, "asset_overrides #{source}: local file does not exist: #{path}" unless File.exist?(path)
+      end
+
+      # Keyed by what is swapped, so a page rewritten again gets the same address and the table stays one row per key.
+      def register_override(key, target)
+        id = Digest::SHA256.hexdigest("#{key} #{target.inspect}")[0, 16]
+        @lock.synchronize { @overrides[id] = [key, target] }
+        id
+      end
+
+      # A file next to an overridden single file comes from where it was published, on the same host.
+      def published_neighbor(key, rest, user_agent)
+        neighbor = URI.join(key, rest)
+        remote_asset(neighbor.to_s, user_agent) if neighbor.host == URI(key).host
+      end
+
+      def bundle_asset(id, key, target, rest, dir)
+        folder = File.join(dir, 'assets', id)
+        if folder?(key) && !url?(target)
+          FileUtils.mkdir_p(folder)
+          FileUtils.cp_r("#{target}/.", folder)
+        elsif !rest.empty? && !rest.end_with?('/')
+          write_bundled(File.join(folder, rest.split('?', 2).first), key, target, rest)
+        end
+        "assets/#{id}/#{rest}"
+      end
+
+      def write_bundled(destination, key, target, rest)
+        body = overridden(key, target, rest, nil)&.fetch('body')
+        raise InvalidConfig, "asset_overrides #{key}: could not fetch #{resolve(key, target, rest)}" unless body
+
         FileUtils.mkdir_p(File.dirname(destination))
         File.binwrite(destination, body)
-        relative
       end
 
       def remote_asset(target, user_agent)
         key = "/remote/#{Digest::SHA256.hexdigest(target)}"
         cached = cached(key)
         cached && cached['expires_at'] > @clock.call.to_i ? cached : download(key, URI(target), user_agent) || cached
-      end
-
-      def override_asset(path, user_agent)
-        id = path.split('/')[2]
-        source, target = @lock.synchronize { @overrides[id] }
-        return unless source
-
-        if target.is_a?(Hash)
-          { 'body' => target.fetch(:body).to_s, 'content_type' => target[:content_type] || mime(source),
-            'cache_control' => 'no-store', 'allow_origin' => '*' }
-        elsif target.match?(%r{\Ahttps?://})
-          remote_asset(target, user_agent)
-        else
-          return unless File.file?(target)
-
-          { 'body' => File.binread(target), 'content_type' => mime(source), 'cache_control' => 'no-store',
-            'allow_origin' => '*' }
-        end
       end
 
       def mime(source) = Rack::Mime.mime_type(File.extname(URI(source).path), 'application/octet-stream')
@@ -165,10 +173,11 @@ module TRMNLP
         while (line = socket.gets) && !line.strip.empty?
           user_agent = line.split(':', 2).last.strip if line.downcase.start_with?('user-agent:')
         end
-        asset = !path.to_s.include?('..') && path.to_s.match?(SAFE_PATH) &&
-                (path.start_with?('/overrides/') ? override_asset(path, user_agent) : asset(path, query, user_agent))
+        asset = if path.to_s.start_with?('/overrides/') then override_asset(path, user_agent)
+                elsif !path.to_s.include?('..') && path.to_s.match?(SAFE_PATH) then asset(path, query, user_agent)
+                end
         socket.write(asset ? response(asset) : BAD_GATEWAY)
-      rescue IOError, SystemCallError
+      rescue IOError, SystemCallError, URI::Error
         nil
       ensure
         socket.close unless socket.closed?

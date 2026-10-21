@@ -70,6 +70,28 @@ RSpec.describe TRMNLP::Testing::AssetCache do
       expect(Net::HTTP.get(uri)).to eq('specific')
     end
 
+    it 'serves a file a stylesheet links relative to itself from the same folder' do
+      File.write(File.join(dir, 'icons.css'), '.icon { background: url(icon.svg) }')
+      File.write(File.join(dir, 'icon.svg'), '<svg>icon</svg>')
+      stylesheet = URI(cache.rewrite('https://example.test/assets/icons.css', overrides:))
+      expect(Net::HTTP.get(URI.join(stylesheet, 'icon.svg'))).to eq('<svg>icon</svg>')
+    end
+
+    it 'points a bare folder URL in a script at the folder' do
+      folder = cache.rewrite(%(const base = "https://example.test/assets/"), overrides:)[/"([^"]+)"/, 1]
+      expect(Net::HTTP.get(URI("#{folder}logo.svg"))).to eq('<svg/>')
+    end
+
+    it 'gives an override the same address on every rewrite' do
+      expect(cache.rewrite(source, overrides:)).to eq(cache.rewrite(source, overrides:))
+    end
+
+    it 'serves a file next to an overridden file from where it was published' do
+      stub_request(:get, 'https://example.test/assets/chunk.js').to_return(body: 'chunk')
+      script = URI(cache.rewrite(source, overrides: { source => File.join(dir, 'logo.svg') }))
+      expect(Net::HTTP.get(URI.join(script, 'chunk.js'))).to eq('chunk')
+    end
+
     it 'reads a changed file on the next request' do
       uri = URI(cache.rewrite(source, overrides:))
       Net::HTTP.get(uri)
@@ -105,9 +127,19 @@ RSpec.describe TRMNLP::Testing::AssetCache do
       expect(a_request(:get, target)).to have_been_made.once
     end
 
-    it 'copies the override into a relative bundle path' do
-      rewritten = cache.rewrite(source, overrides:, bundle_dir: dir)
-      expect(File.binread(File.join(dir, rewritten))).to eq('<svg/>')
+    context 'with a bundle folder' do
+      let(:bundle_dir) { Dir.mktmpdir('trmnlp-bundle-') }
+
+      it 'copies the override into a relative bundle path' do
+        rewritten = cache.rewrite(source, overrides:, bundle_dir:)
+        expect(File.binread(File.join(bundle_dir, rewritten))).to eq('<svg/>')
+      end
+
+      it 'copies the files next to it in an overridden folder' do
+        File.write(File.join(dir, 'icon.svg'), '<svg>icon</svg>')
+        rewritten = cache.rewrite(source, overrides:, bundle_dir:)
+        expect(File.read(File.join(bundle_dir, File.dirname(rewritten), 'icon.svg'))).to eq('<svg>icon</svg>')
+      end
     end
 
     it 'leaves a page byte for byte unchanged without overrides or framework links' do
