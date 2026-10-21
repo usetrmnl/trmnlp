@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.31.3
 
 - The Docker image draws TRMNLMaps maps. Firefox on Linux gets a WebGL context only from an X display, so maps drew blank under `trmnlp test` and `trmnlp serve` in the image; it now starts Xvfb and allows software WebGL, as TRMNL's render boxes do.
 
