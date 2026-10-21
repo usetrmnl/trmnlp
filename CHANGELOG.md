@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.32.1
 
 - `trmnlp test`'s publishable recipe fails a view that has no markup file and no shared markup. It drew only "Missing template", and passed. The message now names the file from the plugin folder, such as `src/full.liquid`, not the folders on your computer.
 
