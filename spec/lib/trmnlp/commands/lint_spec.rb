@@ -178,6 +178,23 @@ RSpec.describe TRMNLP::Commands::Lint do
                                             'snippet' => '    description: Find it at https://somewhere.com/feed' }])
       end
 
+      it 'locates a required list that needs the OAuth token at its entry in custom_fields' do
+        File.write(File.join(tmp_root, 'src', 'settings.yml'), <<~YAML)
+          custom_fields:
+            - keyname: account
+              field_type: xhrSelect
+              name: Account
+              remote:
+                url: https://api.example.com/accounts
+                headers:
+                  Authorization: Bearer {{ oauth_access_token }}
+        YAML
+        command.call
+        issue = JSON.parse(reporter.messages.first)['issues'].find { it['rule_id'] == 'oauth_lists_optional' }
+        expect(issue['locations']).to eq([{ 'path' => 'src/settings.yml', 'line' => 2, 'column' => 5,
+                                            'snippet' => '  - keyname: account' }])
+      end
+
       it 'locates a field that repeats the refresh rate at its entry in custom_fields' do
         File.write(File.join(tmp_root, 'src', 'settings.yml'), <<~YAML)
           custom_fields:

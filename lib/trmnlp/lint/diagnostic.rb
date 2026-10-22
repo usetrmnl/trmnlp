@@ -49,7 +49,7 @@ module TRMNLP
         when 'form_fields_valid' then form_field_locations
         when 'custom_field_links_embedded' then custom_field_description_locations
         when 'custom_fields_used' then project_field_locations
-        when 'no_refresh_rate_field' then settings_field_locations
+        when 'no_refresh_rate_field', 'oauth_lists_optional' then settings_field_locations
         when 'no_custom_filters', 'no_unknown_filters' then filter_locations
         when 'title_bar_outside_layout', 'no_nested_layouts'
           check.misplaced_elements.map { |path, element| source.element_location(path, element) }

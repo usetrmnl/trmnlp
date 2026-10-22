@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp lint` reports a required `xhrSelect` or `xhrSelectSearch` field that loads its options with `{{ oauth_access_token }}` (`oauth_lists_optional`). Its list stays empty until OAuth is connected, and TRMNL will not save the plugin, its OAuth client included, while a required field is empty, so the plugin cannot be saved at all.
+
 ## 0.32.1
 
 - `trmnlp test`'s publishable recipe fails a view that has no markup file and no shared markup. It drew only "Missing template", and passed. The message now names the file from the plugin folder, such as `src/full.liquid`, not the folders on your computer.
