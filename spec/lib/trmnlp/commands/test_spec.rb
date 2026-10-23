@@ -661,6 +661,18 @@ RSpec.describe 'trmnlp test' do
             expect(overflowing(box('clamp', clamp, 'a long paragraph clamped to two lines ' * 5))).to be_empty
           end
 
+          # The usual visually hidden pattern: a 1px box that clips its text, for screen readers only
+          def visually_hidden(id, clip) = %(<div id="#{id}" style="position: absolute; width: 1px; height: 1px; ) +
+                                          %(overflow: hidden; white-space: nowrap; #{clip}">Wednesday, October 7, 2026</div>)
+
+          it 'passes text hidden with clip-path, as Tailwind and FullCalendar hide it for screen readers' do
+            expect(overflowing(visually_hidden('label', 'clip-path: inset(50%)'))).to be_empty
+          end
+
+          it 'passes text hidden with clip, as Bootstrap hides it for screen readers' do
+            expect(overflowing(visually_hidden('label', 'clip: rect(0 0 0 0)'))).to be_empty
+          end
+
           context 'when a box hides a line on purpose' do
             let(:markup) { box('forecast', 'width: 60px; height: 20px; font-size: 16px; line-height: 20px', 'High 12° Low 4°') }
             let(:screen) { trmnl.render(device: { width: 800, height: 480 }, data: { markup: }, transform: false) }
@@ -685,8 +697,8 @@ RSpec.describe 'trmnlp test' do
       File.write(File.join(plugin_dir, 'src', 'full.liquid'), '<div>{{ markup }}</div>')
     end
 
-    it 'reports what is cut and passes what is cut on purpose or only cuts empty space' do
-      expect(run_tests.first).to include('9 examples, 0 failures')
+    it 'reports what is cut and passes what is cut on purpose, hidden for screen readers or only cuts empty space' do
+      expect(run_tests.first).to include('11 examples, 0 failures')
     end
   end
 
