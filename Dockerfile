@@ -96,7 +96,7 @@ RUN (Xvfb :99 -nolisten tcp >/dev/null 2>&1 &) && until [ -e /tmp/.X11-unix/X99 
     ruby -r/app/lib/trmnlp/firefox_driver -e 'driver = TRMNLP::FirefoxDriver.build; \
       webgl = driver.execute_script(%q(return !!document.createElement("canvas").getContext("webgl2"))); \
       driver.quit; abort "Firefox has no WebGL context" unless webgl' && \
-    rm -rf /root/.cache /root/.mozilla /tmp/*
+    rm -rf /root/.cache /root/.mozilla /tmp/* /tmp/.X99-lock /tmp/.X11-unix
 
 # Put trmnlp on PATH so it is callable as a bare command in an
 # interactive shell, not only via the ENTRYPOINT.
@@ -104,4 +104,5 @@ RUN ln -s /app/bin/trmnlp /usr/local/bin/trmnlp
 
 EXPOSE 4567
 WORKDIR /plugin
-ENTRYPOINT [ "/bin/sh", "-c", "Xvfb :99 -nolisten tcp >/dev/null 2>&1 & until [ -e /tmp/.X11-unix/X99 ]; do sleep 0.05; done; exec /app/bin/trmnlp \"$@\"", "trmnlp" ]
+COPY docker-entrypoint.sh /app/
+ENTRYPOINT [ "/app/docker-entrypoint.sh" ]
