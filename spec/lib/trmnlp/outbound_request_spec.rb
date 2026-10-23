@@ -104,6 +104,29 @@ RSpec.describe TRMNLP::OutboundRequest do
     expect(page).to have_been_requested
   end
 
+  {
+    'h' => 'the url is not a complete http(s) url',
+    'api.example.com/data' => 'the url is not a complete http(s) url',
+    '//a.test/data' => 'the url is not a complete http(s) url',
+    'ftp://a.test/data' => 'the url is not a complete http(s) url',
+    'https://' => 'the url has no host, so a field it needs is probably empty',
+    'https:///accounts' => 'the url has no host, so a field it needs is probably empty',
+    'https://a.test/{{ account }}' => 'the url still contains an unrendered template tag',
+    'https://a.test/{% if account %}' => 'the url still contains an unrendered template tag',
+    'https://a.test/a b' => 'the url has a character that must be percent-encoded, such as a space',
+    'https://exämple.test/data' => 'the url host has non-ASCII characters, use its punycode (xn--) form'
+  }.each do |url, reason|
+    it "refuses #{url} without a request, as TRMNL does" do
+      expect(get(url)).to eq([nil, reason])
+    end
+  end
+
+  it 'fetches a url whose scheme is in capitals' do
+    stub_request(:get, 'https://a.test/data').to_return(body: 'caps')
+
+    expect(get('HTTPS://a.test/data').first.body).to eq('caps')
+  end
+
   it 'reports a private address' do
     reported = []
     stub_request(:get, 'http://127.0.0.1/data')

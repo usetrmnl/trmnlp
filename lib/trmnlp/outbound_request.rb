@@ -37,6 +37,9 @@ module TRMNLP
     end
 
     def call(verb, url, headers:, body:)
+      refusal = refusal_reason(encoded(url))
+      return [nil, refusal] if refusal
+
       attempts = 0
       begin
         attempts += 1
@@ -80,6 +83,22 @@ module TRMNLP
       return connection.get if body.to_s.empty?
 
       connection.get("#{url}#{url.include?('?') ? '&' : '?'}#{body}")
+    end
+
+    # The same urls and words as TRMNL, which refuses these before it sends a request.
+    def refusal_reason(url)
+      return 'the url still contains an unrendered template tag' if url.match?(/\{\{|\{%/)
+
+      uri = URI.parse(url)
+      return 'the url is not a complete http(s) url' unless %w[http https].include?(uri.scheme&.downcase)
+
+      'the url has no host, so a field it needs is probably empty' if uri.hostname.to_s.empty?
+    rescue URI::InvalidURIError
+      if url.match?(/[^\x00-\x7F]/)
+        'the url host has non-ASCII characters, use its punycode (xn--) form'
+      else
+        'the url has a character that must be percent-encoded, such as a space'
+      end
     end
 
     def failure_reason(response)
