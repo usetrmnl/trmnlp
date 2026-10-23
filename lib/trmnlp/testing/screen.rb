@@ -23,6 +23,16 @@ module TRMNLP
         const clips = (el) => getComputedStyle(el).overflow !== 'visible';
         const truncatesOnPurpose = (style) => style.textOverflow === 'ellipsis' || style.webkitLineClamp !== 'none';
         const drawn = (rect) => rect.width > 0 || rect.height > 0;
+        // The usual visually hidden pattern (Tailwind's sr-only, Bootstrap's visually-hidden): a clip that leaves
+        // nothing of the box, so the text is there for screen readers and draws nothing.
+        const clipsEverything = (style) => style.clipPath === 'inset(50%)' ||
+          (['absolute', 'fixed'].includes(style.position) && style.clip === 'rect(0px, 0px, 0px, 0px)');
+        const visuallyHidden = (el) => {
+          for (let node = el; node; node = node.parentElement) {
+            if (clipsEverything(getComputedStyle(node))) return true;
+          }
+          return false;
+        };
         const insideTruncation = (el) => {
           for (let parent = el.parentElement; parent; parent = parent.parentElement) {
             if (truncatesOnPurpose(getComputedStyle(parent))) return true;
@@ -80,7 +90,7 @@ module TRMNLP
         };
         return [...document.querySelectorAll('.view *')].filter((el) => {
           const box = el.getBoundingClientRect();
-          if (!drawn(box) || insideTruncation(el) || (except && el.closest(except))) return false;
+          if (!drawn(box) || insideTruncation(el) || visuallyHidden(el) || (except && el.closest(except))) return false;
           const outside = box.right > screen.right + 1 || box.bottom > screen.bottom + 1 || box.left < -1 || box.top < -1;
           const style = getComputedStyle(el);
           const overflows = el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1;
