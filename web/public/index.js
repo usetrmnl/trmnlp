@@ -53,6 +53,8 @@ trmnlp.fetchPreview = function (pickerState) {
   const encodedScreenClasses = encodeURIComponent(screenClasses);
   let src = `/render/${trmnlp.view}.${trmnlp.formatSelect.value}?screen_classes=${encodedScreenClasses}`;
   if (trmnlp.themeSelect.value) src += `&theme=${encodeURIComponent(trmnlp.themeSelect.value)}`;
+  if (trmnlp.scaleSelect.value) src += `&scale=${encodeURIComponent(trmnlp.scaleSelect.value)}`;
+  if (trmnlp.textScaleSelect.value) src += `&text_scale=${encodeURIComponent(trmnlp.textScaleSelect.value)}`;
 
   // Pass the device for both HTML and PNG renders so trmnl.device.{width,height,model,bit_depth}
   // in the Liquid context tracks the picker model selection.
@@ -287,6 +289,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   trmnlp.iframe = document.querySelector("iframe");
   trmnlp.formatSelect = document.querySelector(".select-format");
   trmnlp.themeSelect = document.querySelector("[data-theme-select]");
+  trmnlp.scaleSelect = document.querySelector("[data-scale-select]");
+  trmnlp.textScaleSelect = document.querySelector("[data-text-scale-select]");
   trmnlp.userData = document.getElementById("user-data");
   trmnlp.spinner = document.querySelector(".spinner");
   trmnlp.isLiveReloadEnabled =
@@ -305,11 +309,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     trmnlp.fetchPreview();
   });
 
-  trmnlp.themeSelect.value = localStorage.getItem("trmnlp-theme") || "";
-  trmnlp.themeSelect.addEventListener("change", () => {
-    localStorage.setItem("trmnlp-theme", trmnlp.themeSelect.value);
-    trmnlp.fetchPreview();
-  });
+  for (const [select, key] of [[trmnlp.themeSelect, "trmnlp-theme"], [trmnlp.scaleSelect, "trmnlp-scale"],
+                                [trmnlp.textScaleSelect, "trmnlp-text-scale"]]) {
+    select.value = localStorage.getItem(key) || "";
+    select.addEventListener("change", () => {
+      localStorage.setItem(key, select.value);
+      trmnlp.fetchPreview();
+    });
+  }
 
   trmnlp.iframe.addEventListener("load", () => {
     trmnlp.spinner.style.display = "none";

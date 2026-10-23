@@ -618,6 +618,47 @@ RSpec.describe 'trmnlp test' do
     end
   end
 
+  context 'with a Scale and Text Scale picked for the device' do
+    let(:spec_body) do
+      <<~RUBY
+        RSpec.describe 'Scale' do
+          def title_size(**screen)
+            trmnl.render(device: 'og_png', **screen).evaluate('parseFloat(getComputedStyle(document.querySelector(".title")).fontSize)')
+          end
+
+          def gap(**screen)
+            trmnl.render(device: 'og_png', **screen).evaluate('document.querySelector(".gap").getBoundingClientRect().height')
+          end
+
+          it 'draws text larger at a larger Scale' do
+            expect(title_size(scale: 'xxlarge')).to be > title_size
+          end
+
+          it 'draws spacing larger at a larger Scale' do
+            expect(gap(scale: 'xxlarge')).to be > gap
+          end
+
+          it 'draws text larger at a larger Text Scale' do
+            expect(title_size(text_scale: 'xlarge')).to be > title_size
+          end
+
+          it 'keeps spacing at a larger Text Scale' do
+            expect(gap(text_scale: 'xlarge')).to eq(gap)
+          end
+        end
+      RUBY
+    end
+
+    before do
+      File.write(File.join(plugin_dir, 'src', 'full.liquid'),
+                 '<div class="title">Hello</div><div class="gap p--8"></div>')
+    end
+
+    it 'scales text and spacing with Scale, and only text with Text Scale, as the Framework does' do
+      expect(run_tests.first).to include('4 examples, 0 failures')
+    end
+  end
+
   context 'with boxes that cut what they hold' do
     let(:spec_body) do
       <<~'RUBY'

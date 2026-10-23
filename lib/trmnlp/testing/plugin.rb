@@ -70,11 +70,12 @@ module TRMNLP
       # JavaScript expression the page must reach before it is captured) and wait_for_timeout: (seconds).
       # rubocop:disable-next Metrics/ParameterLists -- one keyword per choice a render offers
       def render(view: 'full', device: 'og_plus', orientation: :landscape, palette: nil, dark_mode: false, theme: nil,
-                 now: nil, head: nil, wait_for: nil, wait_for_timeout: 5, fresh_browser: false,
-                 asset_overrides: {}, **)
+                 scale: nil, text_scale: nil, now: nil, head: nil, wait_for: nil, wait_for_timeout: 5,
+                 fresh_browser: false, asset_overrides: {}, **)
         device = DeviceModels.find(device, orientation:, palette:)
         classes = [device.screen_classes, ('screen--dark-mode' if dark_mode)].compact.join(' ')
-        result = run(now, **).render(view:, device: device.render_params, screen_classes: classes, theme:)
+        result = run(now, **).render(view:, device: device.render_params, screen_classes: classes, theme:, scale:,
+                                     text_scale:)
         html = with_problems_trap(with_head(with_page_clock(result.html, now), head))
         browser = fresh_browser ? @browser.fresh : @browser
         Report.current&.record_run(result)

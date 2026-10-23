@@ -32,7 +32,7 @@ module TRMNLP
     # The data the last page was rendered from, for a test to read back.
     attr_reader :last_data
 
-    def screen_classes(classes = 'screen', theme: nil)
+    def screen_classes(classes = 'screen', theme: nil, scale: nil, text_scale: nil)
       classes = (classes || 'screen').split # an explicit nil (omitted screen_classes param) still needs a base
       # The picker marks every render 1x, which sets the dither ratio; TRMNL's device render has no such class.
       classes.delete('screen--1x')
@@ -42,6 +42,8 @@ module TRMNLP
       classes << 'dark-mode' if classes.include?('screen--dark-mode')
       # A new device renders in the TRMNL font unless its owner picks another.
       classes << 'screen--fonts-trmnl' if classes.none? { it.start_with?('screen--fonts-') }
+      classes << "screen--scale-#{scale}" if FrameworkVersion::SCALES.include?(scale)
+      classes << "screen--text-scale-#{text_scale}" if FrameworkVersion::TEXT_SCALES.include?(text_scale)
       classes << "screen--theme-#{theme}" if FrameworkVersion::THEMES.key?(theme)
       classes.uniq.join(' ')
     end
@@ -104,7 +106,8 @@ module TRMNLP
     class TemplateBinding
       def initialize(renderer, view, params)
         @view = view
-        @screen_classes = renderer.screen_classes(params[:screen_classes], theme: params[:theme])
+        @screen_classes = renderer.screen_classes(params[:screen_classes], theme: params[:theme], scale: params[:scale],
+                                                                           text_scale: params[:text_scale])
         @framework = renderer.framework
         @theme_css_url = @framework.theme_css_url(params[:theme])
         @and_x_more = renderer.and_x_more

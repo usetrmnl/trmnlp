@@ -113,6 +113,8 @@ All inputs are optional.
 | `orientation: :portrait` | Renders in portrait. |
 | `dark_mode:` | Turns dark mode on or off. |
 | `theme:` | Sets the theme. |
+| `scale:` | Sets the device's Scale, such as `'xxlarge'`. It sizes text and layout. |
+| `text_scale:` | Sets the device's Text Scale, such as `'xlarge'`. It sizes text only. |
 | `now:` | Sets the time that every clock starts at. |
 | `custom_fields:` | Sets the plugin's custom fields. |
 | `variables:` | Sets the plugin's variables. |
