@@ -104,5 +104,5 @@ RUN ln -s /app/bin/trmnlp /usr/local/bin/trmnlp
 
 EXPOSE 4567
 WORKDIR /plugin
-# A restarted container keeps /tmp, and Xvfb will not start over the last run's lock if its pid is in use again.
-ENTRYPOINT [ "/bin/sh", "-c", "rm -f /tmp/.X99-lock /tmp/.X11-unix/X99; Xvfb :99 -nolisten tcp >/dev/null 2>&1 & until [ -e /tmp/.X11-unix/X99 ]; do sleep 0.05; done; exec /app/bin/trmnlp \"$@\"", "trmnlp" ]
+COPY docker-entrypoint.sh /app/
+ENTRYPOINT [ "/app/docker-entrypoint.sh" ]
