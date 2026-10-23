@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnl.render` takes `scale:` and `text_scale:`, and `trmnlp serve` has a Scale and a Text Scale picker, as TRMNL's device settings have. A device's owner picks them on TRMNL, such as an xxlarge Scale for reading from across the room, so a recipe can now be checked at the sizes its owners draw it. Scale sizes text and layout, Text Scale only text.
+
 ## 0.32.3
 
 - The poller refuses a polling URL line that TRMNL refuses, before it sends a request, and gives TRMNL's reason. A line that is not a complete http(s) URL, such as `h` or `//example.com`, has no host because a field it needs is empty, still has a `{{` or `{%`, or has a space or a non-ASCII host. Before, such a line could wait 10 seconds or fail with a connection error that did not say what was wrong.
