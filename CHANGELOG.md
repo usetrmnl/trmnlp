@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `have_no_overflow` passes text hidden for screen readers, in a box whose `clip-path: inset(50%)` or `clip: rect(0 0 0 0)` leaves nothing of it, as Tailwind's `sr-only`, Bootstrap's `visually-hidden` and FullCalendar's day labels hide it. Such text draws nothing, but its 1px box cuts it, so every screen of a recipe using one failed.
+
 ## 0.32.3
 
 - The poller refuses a polling URL line that TRMNL refuses, before it sends a request, and gives TRMNL's reason. A line that is not a complete http(s) URL, such as `h` or `//example.com`, has no host because a field it needs is empty, still has a `{{` or `{%`, or has a space or a non-ASCII host. Before, such a line could wait 10 seconds or fail with a connection error that did not say what was wrong.
