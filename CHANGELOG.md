@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- The poller refuses a polling URL line that TRMNL refuses, before it sends a request, and gives TRMNL's reason. A line that is not a complete http(s) URL, such as `h` or `//example.com`, has no host because a field it needs is empty, still has a `{{` or `{%`, or has a space or a non-ASCII host. Before, such a line could wait 10 seconds or fail with a connection error that did not say what was wrong.
+
 ## 0.32.2
 
 - The Docker image starts again. The 0.32.1 image kept the X display lock from its build in `/tmp`, so the display never started and every command, such as `trmnlp serve` or `trmnlp test`, waited forever. Running with `--tmpfs /tmp` worked around it. A stopped container started again had the same problem, and now clears the lock before the display starts. If the display still does not start, trmnlp stops within 10 seconds and prints why, where it used to wait forever.
