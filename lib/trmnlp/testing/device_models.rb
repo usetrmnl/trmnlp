@@ -11,7 +11,8 @@ module TRMNLP
     module DeviceModels
       API_URL = 'https://trmnl.com/api'
 
-      Device = Data.define(:name, :width, :height, :bit_depth, :screen_classes, :image_size_limit) do
+      Device = Data.define(:name, :width, :height, :bit_depth, :screen_classes, :image_size_limit,
+                           :palette_colors, :palette_id) do
         def render_params = { width:, height:, model: name, bit_depth: }
       end
 
@@ -29,7 +30,8 @@ module TRMNLP
         width, height = portrait ? model.values_at('height', 'width') : model.values_at('width', 'height')
         chosen = palette_for(model, palette)
         Device.new(name: model['name'], width:, height:, bit_depth: bit_depth(model, chosen),
-                   screen_classes: screen_classes(model, chosen, portrait), image_size_limit: model['image_size_limit'])
+                   screen_classes: screen_classes(model, chosen, portrait), image_size_limit: model['image_size_limit'],
+                   palette_colors: chosen&.dig('colors'), palette_id: chosen&.fetch('id'))
       end
 
       # The picker's classes: palette, device, size, then portrait.
@@ -37,6 +39,19 @@ module TRMNLP
         css = model.dig('css', 'classes') || {}
         ['screen', palette&.fetch('framework_class'), css['device'], css['size'],
          ('screen--portrait' if portrait)].compact.join(' ')
+      end
+
+      # Colors of the palette with this framework class, or nil for gray palettes and when TRMNL cannot be reached.
+      def colors_for_class(framework_class)
+        palettes.find { it['framework_class'] == framework_class }&.dig('colors')
+      rescue TestingError
+        nil
+      end
+
+      def colors_for_id(id)
+        palettes.find { it['id'] == id.to_s }&.dig('colors')
+      rescue TestingError
+        nil
       end
 
       def palette_for(model, id)
@@ -48,6 +63,8 @@ module TRMNLP
 
       # A palette of fewer grays draws the PNG at that depth, as the device then does.
       def bit_depth(model, palette)
+        return 8 if palette&.fetch('id') == 'gray-256' # a smooth 8-bit PNG, quantized by the device
+
         grays = palette && palette['grays']
         grays ? [Math.log2(grays).ceil, model['bit_depth']].min : model['bit_depth']
       end
@@ -60,7 +77,8 @@ module TRMNLP
         device = device.transform_keys(&:to_sym)
         Device.new(name: device.fetch(:model, 'custom'), width: device.fetch(:width), height: device.fetch(:height),
                    bit_depth: device.fetch(:bit_depth, 1), screen_classes: device[:screen_classes],
-                   image_size_limit: device[:image_size_limit])
+                   image_size_limit: device[:image_size_limit], palette_colors: device[:palette_colors],
+                   palette_id: device[:palette_id])
       end
 
       def models = @models ||= fetch('models')

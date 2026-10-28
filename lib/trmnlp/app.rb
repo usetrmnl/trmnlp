@@ -288,7 +288,7 @@ module TRMNLP
       ScreenGenerator.new(html, screenshot: @screenshot,
                                 width: params[:width]&.to_i,
                                 height: params[:height]&.to_i,
-                                color_depth: params[:color_depth]&.to_i).process
+                                color_depth: params[:color_depth]&.to_i, palette_id: params[:palette]).process
     end
   end
 end

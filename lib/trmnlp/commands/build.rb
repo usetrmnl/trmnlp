@@ -12,8 +12,8 @@ require_relative '../testing/asset_cache'
 module TRMNLP
   module Commands
     class Build < Base
-      Options = Data.define(:dir, :quiet, :png, :width, :height, :color_depth, :bundle_assets) do
-        def initialize(bundle_assets: false, **) = super(**, bundle_assets:)
+      Options = Data.define(:dir, :quiet, :png, :width, :height, :color_depth, :bundle_assets, :palette) do
+        def initialize(bundle_assets: false, palette: nil, **) = super(**, bundle_assets:, palette:)
       end
 
       def call
@@ -68,7 +68,7 @@ module TRMNLP
       # fall back to 800x480 and the screen--Nbit depth sniffed from the markup.
       def screen_generator(html)
         ScreenGenerator.new(html, screenshot:, width: options.width,
-                                  height: options.height, color_depth: options.color_depth)
+                                  height: options.height, color_depth: options.color_depth, palette_id: options.palette)
       end
 
       def screenshot = @screenshot ||= Screenshot.new(pool: browser_pool)
