@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 require 'trmnlp/screen_generator'
-require 'open3'
+require 'mini_magick'
 require 'tmpdir'
 
 # rubocop:disable Lint/ConstantDefinitionInBlock
@@ -34,21 +34,19 @@ RSpec.describe TRMNLP::ScreenGenerator, 'for every TRMNL palette' do
   before do
     allow(TRMNLP::Testing::DeviceModels).to receive(:palettes).and_return(PALETTES)
     # 256 grays, a red-to-blue ramp and a green block: a color pixel the palette may or may not hold.
-    run('magick', '(', '-size', '64x256', 'gradient:black-white', ')', '(', '-size', '64x256', 'gradient:red-blue', ')',
-        '(', '-size', '64x256', 'xc:#33AA55', ')', '+append', source)
+    MiniMagick.convert do |m|
+      %w[gradient:black-white gradient:red-blue xc:#33AA55].each { |src| m << '(' << '-size' << '64x256' << src << ')' }
+      m << '+append' << source
+    end
     FileUtils.cp(source, shot)
   end
 
   after { FileUtils.remove_entry(dir) }
 
-  def run(*cmd)
-    out, err, status = Open3.capture3(*cmd)
-    raise err unless status.success?
-
-    out
+  def colors(file)
+    out = MiniMagick.convert { |m| m << file << '-unique-colors' << '-depth' << '8' << 'txt:-' }
+    out.scan(/#[0-9A-F]{6}/).uniq.sort
   end
-
-  def colors(file) = run('magick', file, '-unique-colors', '-depth', '8', 'txt:-').scan(/#[0-9A-F]{6}/).uniq.sort
 
   def render(entry, html_extra = '')
     html = %(<div class="screen #{entry['framework_class']}#{html_extra}">x</div>)
@@ -62,8 +60,11 @@ RSpec.describe TRMNLP::ScreenGenerator, 'for every TRMNL palette' do
   def self.channels(out) = out.flat_map { [it[1, 2], it[3, 2], it[5, 2]] }.uniq
 
   def identical?
-    _out, _err, status = Open3.capture3('magick', 'compare', '-metric', 'AE', source, shot, 'null:')
-    status.success?
+    tool = MiniMagick::Tool.new('compare', errors: false)
+    tool << '-metric' << 'AE' << source << shot << 'null:'
+    count = nil
+    tool.call { |_stdout, stderr, _status| count = stderr.to_f.round }
+    count.zero?
   end
 
   # id => [what the output must hold, whether a color (non-gray) pixel must survive]

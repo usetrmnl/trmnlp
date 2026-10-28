@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 require 'trmnlp/image_quantizer'
-require 'open3'
+require 'mini_magick'
 
 # Runs the real ImageMagick: a fake would not show which colors reach the file.
 RSpec.describe TRMNLP::ImageQuantizer, 'with a color palette' do
@@ -12,19 +12,19 @@ RSpec.describe TRMNLP::ImageQuantizer, 'with a color palette' do
 
   before do
     # Red-to-blue gradient plus a green block: many colors, none of them all in the palette.
-    _out, err, status = Open3.capture3('magick', '-size', '64x32', 'gradient:red-blue', '-fill', '#33aa55',
-                                       '-draw', 'rectangle 0,0 20,10', path)
-    raise err unless status.success?
+    MiniMagick.convert do |m|
+      m << '-size' << '64x32' << 'gradient:red-blue' << '-fill' << '#33aa55' << '-draw' << 'rectangle 0,0 20,10' << path
+    end
   end
 
   after { FileUtils.remove_entry(dir) }
 
   def colors(file)
-    out, = Open3.capture2('magick', file, '-unique-colors', '-depth', '8', 'txt:-')
+    out = MiniMagick.convert { |m| m << file << '-unique-colors' << '-depth' << '8' << 'txt:-' }
     out.scan(/#[0-9A-F]{6}/).uniq.sort
   end
 
-  def png_type(file) = Open3.capture2('magick', 'identify', '-format', '%[type]', file).first
+  def png_type(file) = MiniMagick::Tool.new('identify') { |m| m << '-format' << '%[type]' << file }
 
   [false, true].each do |dither|
     it "keeps only the palette colors, #{dither ? 'dithered' : 'flat'}" do
