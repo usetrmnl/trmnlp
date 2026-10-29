@@ -48,11 +48,13 @@ FROM ruby:${RUBY_VERSION}-slim-trixie AS runner
 # author's chosen runtime without a sidecar container. imagemagick on
 # trixie ships IM7 (the `magick` binary trmnlp's PNG quantizer needs).
 # zbar-tools reads QR codes for `trmnlp test`'s have_qr_code.
+# fonts-noto-cjk is the CJK font TRMNL renders with; without it CJK text draws as empty boxes.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     git \
     imagemagick \
     firefox-esr \
+    fonts-noto-cjk \
     python3 \
     python3-requests \
     php-cli \
