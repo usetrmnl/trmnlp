@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- The Docker image draws Japanese, Chinese and Korean text. It had no CJK font, so that text showed as empty boxes. It now has `fonts-noto-cjk`, the same font TRMNL renders with.
+
 ## 0.32.3
 
 - The poller refuses a polling URL line that TRMNL refuses, before it sends a request, and gives TRMNL's reason. A line that is not a complete http(s) URL, such as `h` or `//example.com`, has no host because a field it needs is empty, still has a `{{` or `{%`, or has a space or a non-ASCII host. Before, such a line could wait 10 seconds or fail with a connection error that did not say what was wrong.
