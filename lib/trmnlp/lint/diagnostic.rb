@@ -17,6 +17,7 @@ module TRMNLP
         'no_external_qr_codes' => Checks::NoExternalQrCodes::PATTERN,
         'waits_for_dom_load' => Regexp.new(Regexp.union(Checks::WaitsForDomLoad::FORBIDDEN).source, Regexp::IGNORECASE),
         'limited_inline_styles' => /\sstyle\s*=/i,
+        'framework_elements_used' => Checks::FrameworkElementsUsed::STYLE_BLOCK,
         'highcharts_animations_disabled' => /highcharts/i,
         'highcharts_elements_unique' => /highcharts/i
       }.freeze
