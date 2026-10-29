@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.33.0
 
 - The Docker image draws Japanese, Chinese and Korean text. It had no CJK font, so that text showed as empty boxes. It now has `fonts-noto-cjk`, the same font TRMNL renders with.
 - `trmnlp lint` reports markup whose `<style>` block draws all the text with no framework element (title, value, label or description), so the text keeps one size on every screen. The rule ID is `framework_elements_used`.
