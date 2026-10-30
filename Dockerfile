@@ -48,13 +48,20 @@ FROM ruby:${RUBY_VERSION}-slim-trixie AS runner
 # author's chosen runtime without a sidecar container. imagemagick on
 # trixie ships IM7 (the `magick` binary trmnlp's PNG quantizer needs).
 # zbar-tools reads QR codes for `trmnlp test`'s have_qr_code.
-# fonts-noto-cjk is the CJK font TRMNL renders with; without it CJK text draws as empty boxes.
+# The fonts are the ones TRMNL renders with (core scripts/devops/01_prepare_server.sh); without them
+# CJK, Indic, Thai and Tibetan text draws as empty boxes.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     git \
     imagemagick \
     firefox-esr \
+    fonts-dejavu-core \
+    fonts-indic \
+    fonts-inter \
     fonts-noto-cjk \
+    fonts-noto-core \
+    fonts-thai-tlwg \
+    fonts-tibetan-machine \
     python3 \
     python3-requests \
     php-cli \
@@ -62,6 +69,22 @@ RUN apt-get update && \
     zbar-tools \
     xvfb \
     && rm -rf /var/lib/apt/lists/*
+
+# Without this, fonts-noto-core replaces DejaVu as the default sans-serif and serif font.
+COPY <<'EOF' /etc/fonts/conf.d/52-trmnl-default-fonts.conf
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <alias>
+    <family>sans-serif</family>
+    <prefer><family>DejaVu Sans</family></prefer>
+  </alias>
+  <alias>
+    <family>serif</family>
+    <prefer><family>DejaVu Serif</family></prefer>
+  </alias>
+</fontconfig>
+EOF
 
 # Firefox gets a WebGL context for maps only from a display, even headless.
 ENV DISPLAY=:99
