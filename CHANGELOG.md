@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- The Docker image draws Hindi, Bengali, Tamil, Thai, Tibetan and other Indic text, which showed as empty boxes. It now has the same fonts TRMNL renders with, and keeps DejaVu as the default font.
+
 ## 0.33.0
 
 - The Docker image draws Japanese, Chinese and Korean text. It had no CJK font, so that text showed as empty boxes. It now has `fonts-noto-cjk`, the same font TRMNL renders with.
