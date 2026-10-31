@@ -53,6 +53,20 @@
                     <% end %>
                 </select>
 
+                <select data-scale-select>
+                    <option value="">Regular scale</option>
+                    <% (TRMNLP::FrameworkVersion::SCALES).each do |scale| %>
+                    <option value="<%= scale %>"><%= scale.capitalize %> scale</option>
+                    <% end %>
+                </select>
+
+                <select data-text-scale-select>
+                    <option value="">Regular text</option>
+                    <% (TRMNLP::FrameworkVersion::TEXT_SCALES).each do |text_scale| %>
+                    <option value="<%= text_scale %>"><%= text_scale.capitalize %> text</option>
+                    <% end %>
+                </select>
+
                 <!-- Optional: Reset button -->
                 <button class="btn" type="button" data-reset-button>Reset</button>
             </form>

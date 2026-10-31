@@ -103,6 +103,26 @@ RSpec.describe TRMNLP::Renderer do
       expect(renderer.screen_classes('screen', theme: '"><script>')).to eq('screen screen--fonts-trmnl')
     end
 
+    it 'adds a picked Scale' do
+      expect(renderer.screen_classes('screen', scale: 'xxlarge'))
+        .to eq('screen screen--fonts-trmnl screen--scale-xxlarge')
+    end
+
+    it 'adds a picked Text Scale' do
+      expect(renderer.screen_classes('screen', text_scale: 'large'))
+        .to eq('screen screen--fonts-trmnl screen--text-scale-large')
+    end
+
+    it 'adds no class for the regular Scale and Text Scale, as TRMNL does' do
+      expect(renderer.screen_classes('screen', scale: 'regular', text_scale: 'regular'))
+        .to eq(renderer.screen_classes('screen'))
+    end
+
+    it 'ignores an unknown Scale or Text Scale' do
+      expect(renderer.screen_classes('screen', scale: 'huge', text_scale: '"><script>'))
+        .to eq('screen screen--fonts-trmnl')
+    end
+
     it 'adds the bare dark-mode class Framework 1.x inverts on to a picked dark mode' do
       expect(renderer.screen_classes('screen screen--dark-mode'))
         .to eq('screen screen--dark-mode dark-mode screen--fonts-trmnl')

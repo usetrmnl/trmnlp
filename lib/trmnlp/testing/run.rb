@@ -47,9 +47,10 @@ module TRMNLP
         call { |context| { data: context.user_data_assembler.call(device:) } }
       end
 
-      def render(view:, device: {}, screen_classes: nil, theme: nil)
+      # screen: what the page's screen looks like: screen_classes:, theme:, scale: and text_scale:.
+      def render(view:, device: {}, **screen)
         call do |context|
-          html = context.renderer.render_full_page(view, device.merge(screen_classes:, theme:))
+          html = context.renderer.render_full_page(view, device.merge(screen))
           { html:, data: context.renderer.last_data }
         end
       end
