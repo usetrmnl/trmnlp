@@ -63,8 +63,6 @@ module TRMNLP
 
       # A palette of fewer grays draws the PNG at that depth, as the device then does.
       def bit_depth(model, palette)
-        return 8 if palette&.fetch('id') == 'gray-256' # a smooth 8-bit PNG, quantized by the device
-
         grays = palette && palette['grays']
         grays ? [Math.log2(grays).ceil, model['bit_depth']].min : model['bit_depth']
       end
