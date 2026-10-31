@@ -229,6 +229,8 @@ module TRMNLP
 
         temp_image.close
         temp_image.unlink
+      rescue TestingError => e
+        halt 400, e.message
       end
     end
 
@@ -280,15 +282,10 @@ module TRMNLP
       end
     end
 
-    # ScreenGenerator is request-scoped — it carries the per-request width,
-    # height, and color_depth — so it is built here rather than on the shared
-    # Context graph. Screenshots are a serve-only concern and would not belong
-    # on a Context shared by every command (build, lint, push, ...).
+    # Request-scoped (width, height, depth, palette), so built here and not on the Context every command shares.
     def render_png(html, params)
-      ScreenGenerator.new(html, screenshot: @screenshot,
-                                width: params[:width]&.to_i,
-                                height: params[:height]&.to_i,
-                                color_depth: params[:color_depth]&.to_i).process
+      ScreenGenerator.new(html, screenshot: @screenshot, width: params[:width]&.to_i, height: params[:height]&.to_i,
+                                color_depth: params[:color_depth]&.to_i, palette_id: params[:palette]).process
     end
   end
 end

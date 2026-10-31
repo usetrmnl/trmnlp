@@ -72,7 +72,8 @@ module TRMNLP
       def generator(screen)
         device = screen.device
         ScreenGenerator.new(screen.html, screenshot: self, width: device.width, height: device.height,
-                                         color_depth: device.bit_depth)
+                                         color_depth: device.bit_depth, palette: device.palette_colors,
+                                         palette_id: device.palette_id)
       end
 
       def driver = @driver ||= @pool.checkout

@@ -10,9 +10,14 @@ module TRMNLP
     MIN_DEPTH = 1
     MAX_DEPTH = 8
 
-    def initialize(depth:, dither:)
+    # palette: hex colors of a color panel (TRMNL's /api/palettes `colors`); nil or empty keeps the gray steps.
+    # channel_bits: for the `screen--color-full` palettes only; 8 keeps the render lossless (color-24bit),
+    # 4 posterizes each channel to 16 levels, 4096 colors (color-12bit).
+    def initialize(depth:, dither:, palette: nil, channel_bits: nil)
       @depth = clamp(depth)
       @dither = dither
+      @palette = Array(palette)
+      @channel_bits = channel_bits
     end
 
     def call(path)
@@ -25,6 +30,9 @@ module TRMNLP
     private
 
     def quantize(src, dst)
+      return quantize_full_color(src, dst) if @channel_bits
+      return quantize_to_palette(src, dst) unless @palette.empty?
+
       MiniMagick.convert do |m|
         m << src
         @dither ? quantize_with_dither(m) : quantize_without_dither(m)
@@ -35,6 +43,48 @@ module TRMNLP
         m.strip
         m << dst
       end
+    end
+
+    def quantize_full_color(src, dst)
+      MiniMagick.convert do |m|
+        m << src
+        m.posterize 2**@channel_bits if @channel_bits < 8
+        m.alpha 'off'
+        m.define 'png:compression-level=9'
+        m.strip
+        m << dst
+      end
+    end
+
+    # TRMNL's color steps: a brightness boost when dithering, then every pixel mapped to the panel's colors.
+    def quantize_to_palette(src, dst)
+      MiniMagick.convert do |m|
+        m << src
+        add_brightness_contrast(m) if @dither
+        add_palette_image(m)
+        m.dither(@dither ? 'FloydSteinberg' : 'None')
+        m.remap 'mpr:palette'
+        m.colorspace 'sRGB' if @dither
+        m.alpha 'off'
+        m.type 'Palette'
+        m.define 'png:compression-level=9'
+        m.strip
+        m << dst
+      end
+    end
+
+    def add_brightness_contrast(m)
+      m.colorspace 'HSV'
+      m.channel 'B'
+      m.sigmoidal_contrast '5,50%'
+      m << '+channel'
+      m.colorspace 'sRGB'
+    end
+
+    def add_palette_image(m)
+      m << '(' << '-size' << '1x1'
+      @palette.each { m << "xc:#{it}" }
+      m << '+append' << '+write' << 'mpr:palette' << '+delete' << ')'
     end
 
     def quantize_without_dither(m)

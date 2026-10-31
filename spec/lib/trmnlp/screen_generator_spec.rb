@@ -100,3 +100,58 @@ RSpec.describe TRMNLP::ScreenGenerator do
     end
   end
 end
+
+RSpec.describe TRMNLP::ScreenGenerator, 'palette' do
+  let(:tempfile) { instance_double(Tempfile, path: '/tmp/shot.png') }
+  let(:screenshot) { instance_double(TRMNLP::Screenshot, call: tempfile) }
+  let(:quantizer) { instance_double(TRMNLP::ImageQuantizer, call: nil) }
+  let(:colors) { %w[#000000 #FF0000 #FFFFFF #FFFF00] }
+
+  before { allow(TRMNLP::ImageQuantizer).to receive(:new).and_return(quantizer) }
+
+  it 'passes a given palette to the quantizer' do
+    described_class.new('<div class="screen">x</div>', screenshot:, palette: colors).process
+    expect(TRMNLP::ImageQuantizer).to have_received(:new).with(hash_including(palette: colors))
+  end
+
+  it 'looks up the colors of a screen--color-* class in the markup' do
+    allow(TRMNLP::Testing::DeviceModels).to receive(:colors_for_class).with('screen--color-4bwry').and_return(colors)
+    described_class.new('<div class="screen screen--color-4bwry">x</div>', screenshot:).process
+    expect(TRMNLP::ImageQuantizer).to have_received(:new).with(hash_including(palette: colors))
+  end
+
+  it 'keeps gray steps for a gray screen without asking TRMNL' do
+    described_class.new('<div class="screen screen--2bit">x</div>', screenshot:).process
+    expect(TRMNLP::ImageQuantizer).to have_received(:new).with(depth: 2, dither: false)
+  end
+
+  context 'with a palette id' do
+    let(:palettes) do
+      [{ 'id' => 'gray-4', 'grays' => 4 }, { 'id' => 'gray-256', 'grays' => 256 },
+       { 'id' => 'color-4bwry', 'grays' => 2, 'colors' => colors }]
+    end
+
+    before { allow(TRMNLP::Testing::DeviceModels).to receive(:palettes).and_return(palettes) }
+
+    it 'draws a gray palette at the depth of its gray count' do
+      described_class.new('<div class="screen">x</div>', screenshot:, palette_id: 'gray-4').process
+      expect(TRMNLP::ImageQuantizer).to have_received(:new).with(depth: 2, dither: false)
+    end
+
+    it 'draws gray-256 as the smooth 8-bit PNG TRMNL sends, whatever the markup says' do
+      described_class.new('<div class="screen screen--2bit">x</div>', screenshot:, palette_id: 'gray-256').process
+      expect(TRMNLP::ImageQuantizer).to have_received(:new).with(depth: 8, dither: false)
+    end
+
+    it 'uses the colors of a color palette' do
+      described_class.new('<div class="screen">x</div>', screenshot:, palette_id: 'color-4bwry').process
+      expect(TRMNLP::ImageQuantizer).to have_received(:new).with(hash_including(palette: colors))
+    end
+
+    it 'refuses an id TRMNL does not have before the capture, naming the ids it has' do
+      generator = described_class.new('<div class="screen">x</div>', screenshot:, palette_id: 'nope')
+      expect { generator.process }.to raise_error(TRMNLP::TestingError, /"nope".*gray-4, gray-256, color-4bwry/)
+      expect(screenshot).not_to have_received(:call)
+    end
+  end
+end

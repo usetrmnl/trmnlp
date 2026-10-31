@@ -43,6 +43,21 @@ RSpec.describe TRMNLP::App do
 
   def app = described_class
 
+  describe 'GET /render/:view.png with a palette TRMNL does not have' do
+    before do
+      allow(TRMNLP::Testing::DeviceModels).to receive(:palettes).and_return([{ 'id' => 'bw', 'grays' => 2 }])
+      get '/render/full.png?palette=nope'
+    end
+
+    it 'refuses the render' do
+      expect(last_response.status).to eq(400)
+    end
+
+    it 'names the palettes TRMNL has' do
+      expect(last_response.body).to eq('Unknown palette "nope"; known: bw')
+    end
+  end
+
   describe 'GET /render/:view.html with asset overrides' do
     let(:project_dir) { Dir.mktmpdir('trmnlp-preview-assets-') }
     let(:context) { TRMNLP::Context.new(project_dir).tap { allow(it.poller).to receive(:poll_data) } }

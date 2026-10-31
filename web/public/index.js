@@ -65,6 +65,7 @@ trmnlp.fetchPreview = function (pickerState) {
     const grays = state.palette.grays || 2;
     const colorDepth = Math.ceil(Math.log2(grays));
     src += `&color_depth=${colorDepth}`;
+    if (state.palette.id) src += `&palette=${encodeURIComponent(state.palette.id)}`;
   }
 
   trmnlp.spinner.style.display = "inline-block";
