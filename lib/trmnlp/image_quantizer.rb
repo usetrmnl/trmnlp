@@ -48,10 +48,7 @@ module TRMNLP
     def quantize_full_color(src, dst)
       MiniMagick.convert do |m|
         m << src
-        if @channel_bits < 8
-          m.dither(@dither ? 'FloydSteinberg' : 'None')
-          m.posterize 2**@channel_bits
-        end
+        m.posterize 2**@channel_bits if @channel_bits < 8
         m.alpha 'off'
         m.define 'png:compression-level=9'
         m.strip
@@ -59,15 +56,11 @@ module TRMNLP
       end
     end
 
-    # TRMNL's color steps (DIY ImageMagick guide): every pixel mapped to the panel's colors, indexed PNG out.
+    # TRMNL's color steps: a brightness boost when dithering, then every pixel mapped to the panel's colors.
     def quantize_to_palette(src, dst)
       MiniMagick.convert do |m|
         m << src
-        if @dither
-          m.normalize
-          m.modulate '110,150'
-          m.colorspace 'RGB'
-        end
+        add_brightness_contrast(m) if @dither
         add_palette_image(m)
         m.dither(@dither ? 'FloydSteinberg' : 'None')
         m.remap 'mpr:palette'
@@ -78,6 +71,14 @@ module TRMNLP
         m.strip
         m << dst
       end
+    end
+
+    def add_brightness_contrast(m)
+      m.colorspace 'HSV'
+      m.channel 'B'
+      m.sigmoidal_contrast '5,50%'
+      m << '+channel'
+      m.colorspace 'sRGB'
     end
 
     def add_palette_image(m)
