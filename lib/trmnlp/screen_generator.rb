@@ -35,12 +35,10 @@ module TRMNLP
                      .sub('</head>', "#{Screenshot::LAYOUT_PASS_STYLE}</head>")
     end
 
+    # The palette is resolved before the capture, so an unknown id fails without a render.
     def process
+      options = quantizer_options
       output = @screenshot.call(html:, width:, height:)
-      options = { depth: color_depth, dither: @input.include?('image-dither') }
-      colors = palette
-      options[:palette] = colors if colors
-      options[:channel_bits] = channel_bits if channel_bits
       ImageQuantizer.new(**options).call(output.path)
       output
     end
@@ -50,16 +48,29 @@ module TRMNLP
 
     private
 
+    def quantizer_options
+      options = { depth: color_depth, dither: @input.include?('image-dither') }
+      colors = palette
+      options[:palette] = colors if colors
+      options[:channel_bits] = channel_bits if channel_bits
+      options
+    end
+
     # Given, or the colors of the `screen--color-*` class in the markup (nil when offline: gray steps then).
     def palette
       return @requested_palette if @requested_palette
       return if channel_bits
+      return trmnl_palette['colors'] if trmnl_palette
 
-      if @palette_id
-        Testing::DeviceModels.colors_for_id(@palette_id)
-      elsif (framework_class = @input&.[](/screen--color-[\w-]+/))
-        Testing::DeviceModels.colors_for_class(framework_class)
-      end
+      framework_class = @input&.[](/screen--color-[\w-]+/)
+      Testing::DeviceModels.colors_for_class(framework_class) if framework_class
+    end
+
+    # TRMNL's palette the id names; an id TRMNL does not have stops the render with the ids it has.
+    def trmnl_palette
+      return unless @palette_id
+
+      @trmnl_palette ||= Testing::DeviceModels.palette_with_id(@palette_id)
     end
 
     # color-24bit (and the class alone) is lossless; color-12bit posterizes to 4 bits a channel.
@@ -69,8 +80,10 @@ module TRMNLP
       8 if @palette_id == 'color-24bit' || (@palette_id.nil? && @input&.include?(FULL_COLOR_CLASS))
     end
 
+    # A palette's gray count sets the depth, as the picker does; the color paths do not read it.
     def color_depth
-      return 8 if @palette_id == 'gray-256' # TRMNL sends a smooth 8-bit PNG; the device quantizes it
+      return 1 if channel_bits
+      return Math.log2(trmnl_palette['grays']).ceil if trmnl_palette
       return @requested_color_depth if @requested_color_depth
       return ::Regexp.last_match(1).to_i if @input&.match(/screen--(\d+)bit/)
 

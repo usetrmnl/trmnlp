@@ -44,6 +44,16 @@ RSpec.describe TRMNLP::Testing::DeviceModels do
     end
   end
 
+  describe '.palette_with_id' do
+    it 'finds a palette by id' do
+      expect(described_class.palette_with_id(:bw)).to include('grays' => 2)
+    end
+
+    it 'names the known palettes for an unknown one' do
+      expect { described_class.palette_with_id('nope') }.to raise_error(TRMNLP::TestingError, /known: bw, gray-4/)
+    end
+  end
+
   describe '.fetch' do
     it 'answers the data of a TRMNL API listing' do
       stub_request(:get, 'https://trmnl.com/api/palettes').to_return(body: '{"data":[{"id":"bw"}]}')

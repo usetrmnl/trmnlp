@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp build --png --palette <id>` and the `trmnlp serve` picker draw the PNG in the device's palette, as TRMNL does: a color palette such as `color-4bwry` or `color-6a` holds only that panel's inks, `color-12bit` keeps 16 levels a channel and `color-24bit` keeps the capture, and a gray palette such as `gray-4` sets the gray count. A page that asks for `image-dither` gets TRMNL's brightness boost and Floyd-Steinberg dither. Before, every PNG held gray steps whatever the palette. A palette id TRMNL does not have stops `build` and the preview with the ids it has.
+
 ## 0.33.1
 
 - The Docker image draws Hindi, Bengali, Tamil, Thai, Tibetan and other Indic text, which showed as empty boxes. It now has the same fonts TRMNL renders with, and keeps DejaVu as the default font.

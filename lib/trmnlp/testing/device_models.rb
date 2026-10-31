@@ -48,10 +48,10 @@ module TRMNLP
         nil
       end
 
-      def colors_for_id(id)
-        palettes.find { it['id'] == id.to_s }&.dig('colors')
-      rescue TestingError
-        nil
+      # TRMNL's palette with this id; the error names every id when there is none.
+      def palette_with_id(id)
+        palettes.find { it['id'] == id.to_s } ||
+          raise(TestingError, "Unknown palette #{id.inspect}; known: #{palettes.map { it['id'] }.join(', ')}")
       end
 
       def palette_for(model, id)
