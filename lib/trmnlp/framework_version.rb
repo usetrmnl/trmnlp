@@ -14,9 +14,10 @@ module TRMNLP
     DEFAULT_ASSET_HOST = 'https://trmnl.com'
     # Framework::Themes::NAMES_BY_ID in trmnl-framework.
     THEMES = { 'black-and-yellow' => 'Black and Yellow', 'dark' => 'Dark', 'white-and-red' => 'White and Red' }.freeze
-    # A device's Scale (layout and text) and Text Scale (text only), which its owner picks on TRMNL.
-    SCALES = %w[xxsmall xsmall small regular large xlarge xxlarge].freeze
-    TEXT_SCALES = %w[small regular large xlarge].freeze
+    # Text Scale is the setting a device owner or a playlist item picks; Scale is a modifier TRMNL applies itself,
+    # today only xxsmall for a 3x3 mashup cell. Regular is the default and adds no class, as on TRMNL.
+    SCALES = %w[xxsmall xsmall small large xlarge xxlarge].freeze
+    TEXT_SCALES = %w[small large xlarge].freeze
     DATA_PATH = File.expand_path('../../db/data/framework_versions.yml', __dir__)
     # DATA_PATH holds a copy of this file, refreshed by `rake framework:sync`.
     MANIFEST_URL = 'https://raw.githubusercontent.com/usetrmnl/trmnl-framework/main/db/data/framework_versions.yml'

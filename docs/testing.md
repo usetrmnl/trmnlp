@@ -113,8 +113,8 @@ All inputs are optional.
 | `orientation: :portrait` | Renders in portrait. |
 | `dark_mode:` | Turns dark mode on or off. |
 | `theme:` | Sets the theme. |
-| `scale:` | Sets the device's Scale, such as `'xxlarge'`. It sizes text and layout. |
-| `text_scale:` | Sets the device's Text Scale, such as `'xlarge'`. It sizes text only. |
+| `text_scale:` | Sets the Text Scale a device owner or a playlist item picks on TRMNL: `'small'`, `'large'` or `'xlarge'`. It sizes text only. |
+| `scale:` | Sets the framework's Scale modifier, which sizes text and layout. TRMNL applies it itself, today only `'xxsmall'` for a 3x3 mashup cell; an owner cannot pick it. |
 | `now:` | Sets the time that every clock starts at. |
 | `custom_fields:` | Sets the plugin's custom fields. |
 | `variables:` | Sets the plugin's variables. |

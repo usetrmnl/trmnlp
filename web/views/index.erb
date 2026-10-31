@@ -55,14 +55,14 @@
 
                 <select data-scale-select>
                     <option value="">Regular scale</option>
-                    <% (TRMNLP::FrameworkVersion::SCALES - ['regular']).each do |scale| %>
+                    <% (TRMNLP::FrameworkVersion::SCALES).each do |scale| %>
                     <option value="<%= scale %>"><%= scale.capitalize %> scale</option>
                     <% end %>
                 </select>
 
                 <select data-text-scale-select>
                     <option value="">Regular text</option>
-                    <% (TRMNLP::FrameworkVersion::TEXT_SCALES - ['regular']).each do |text_scale| %>
+                    <% (TRMNLP::FrameworkVersion::TEXT_SCALES).each do |text_scale| %>
                     <option value="<%= text_scale %>"><%= text_scale.capitalize %> text</option>
                     <% end %>
                 </select>

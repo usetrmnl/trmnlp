@@ -113,6 +113,11 @@ RSpec.describe TRMNLP::Renderer do
         .to eq('screen screen--fonts-trmnl screen--text-scale-large')
     end
 
+    it 'adds no class for the regular Scale and Text Scale, as TRMNL does' do
+      expect(renderer.screen_classes('screen', scale: 'regular', text_scale: 'regular'))
+        .to eq(renderer.screen_classes('screen'))
+    end
+
     it 'ignores an unknown Scale or Text Scale' do
       expect(renderer.screen_classes('screen', scale: 'huge', text_scale: '"><script>'))
         .to eq('screen screen--fonts-trmnl')

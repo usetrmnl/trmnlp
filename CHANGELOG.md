@@ -5,7 +5,7 @@
 
 - `trmnlp build --png --palette <id>` and the `trmnlp serve` picker draw the PNG in the device's palette, as TRMNL does: a color palette such as `color-4bwry` or `color-6a` holds only that panel's inks, `color-12bit` keeps 16 levels a channel and `color-24bit` keeps the capture, and a gray palette such as `gray-4` sets the gray count. A page that asks for `image-dither` gets TRMNL's brightness boost and Floyd-Steinberg dither. Before, every PNG held gray steps whatever the palette. A palette id TRMNL does not have stops `build` and the preview with the ids it has.
 - `have_no_overflow` passes text hidden for screen readers, in a box whose `clip-path: inset(50%)` or `clip: rect(0 0 0 0)` leaves nothing of it, as Tailwind's `sr-only`, Bootstrap's `visually-hidden` and FullCalendar's day labels hide it. Such text draws nothing, but its 1px box cuts it, so every screen of a recipe using one failed.
-- `trmnl.render` takes `scale:` and `text_scale:`, and `trmnlp serve` has a Scale and a Text Scale picker, as TRMNL's device settings have. A device's owner picks them on TRMNL, such as an xxlarge Scale for reading from across the room, so a recipe can now be checked at the sizes its owners draw it. Scale sizes text and layout, Text Scale only text.
+- `trmnl.render` takes `text_scale:` and `scale:`, and `trmnlp serve` has a Text Scale and a Scale picker. Text Scale is the setting a device owner or a playlist item picks on TRMNL, so a recipe can now be checked at `text_scale: 'large'` and `'xlarge'`, the sizes its owners draw it at. Scale sizes text and layout; TRMNL applies it itself, today only `xxsmall` for a 3x3 mashup cell, and an owner cannot pick it. `regular` adds no class, as on TRMNL.
 
 ## 0.33.1
 
