@@ -239,6 +239,7 @@ expect(screen).to have_no_overflow(except: '.forecast')
 - `report/index.html`
 - `report/report.json`
 - `report/og-vs-x.png`, when the tests drew the full view on `og_plus` and `v2` in landscape.
+- `report/og-vs-x-<view>.png` for each other view the tests drew on both, such as `og-vs-x-quadrant.png`.
 
 `og-vs-x.png` shows the two side by side at the same height, first on the page.
 It shows a recipe that fills the OG but is small on the X, with a lot of empty space.

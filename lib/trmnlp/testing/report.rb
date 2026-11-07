@@ -30,14 +30,14 @@ module TRMNLP
         @dir = "#{dir}#{ENV.fetch('TEST_ENV_NUMBER', '')}" # parallel_tests: report, report2, report3...
         @examples = {}
         @images = 0
-        @full_landscape_images = {}
+        @landscape_images = {}
       end
 
       def record_screen(screen)
         return unless entry
 
         image = copy_image(screen.png_path)
-        remember_full_landscape(screen, image)
+        remember_landscape(screen, image)
         entry[:screens].push(
           label: "#{screen.device.name} · #{screen.view}", width: screen.device.width, height: screen.device.height,
           image:, outlines: screen.evaluate(OUTLINES_SCRIPT), problems: screen.problems,
@@ -84,21 +84,30 @@ module TRMNLP
         name
       end
 
-      def remember_full_landscape(screen, image)
-        return unless screen.view == 'full' && screen.device.width > screen.device.height
+      def remember_landscape(screen, image)
+        return unless screen.device.width > screen.device.height
 
-        @full_landscape_images[screen.device.name] ||= image
+        @landscape_images[[screen.view, screen.device.name]] ||= image
       end
 
-      def og_vs_x = (OG_VS_X if @full_landscape_images.values_at('og_plus', 'v2').all?)
+      def og_vs_x = (OG_VS_X if og_and_x_images('full').all?)
+
+      def og_and_x_images(view) = @landscape_images.values_at([view, 'og_plus'], [view, 'v2'])
+
+      def og_vs_x_name(view) = view == 'full' ? OG_VS_X : "og-vs-x-#{view}.png"
+
+      def write_og_vs_x
+        @landscape_images.keys.map(&:first).uniq.each do |view|
+          images = og_and_x_images(view)
+          write_side_by_side(images, og_vs_x_name(view)) if images.all?
+        end
+      end
 
       # Both at the OG's height, so content that fills the OG but is small on the X shows at a glance.
-      def write_og_vs_x
-        return unless og_vs_x
-
+      def write_side_by_side(images, name)
         MiniMagick.convert do |convert|
-          @full_landscape_images.values_at('og_plus', 'v2').each { convert << File.join(@dir, it) }
-          convert << '-resize' << 'x480' << '+append' << '+repage' << File.join(@dir, OG_VS_X)
+          images.each { convert << File.join(@dir, it) }
+          convert << '-resize' << 'x480' << '+append' << '+repage' << File.join(@dir, name)
         end
       end
 

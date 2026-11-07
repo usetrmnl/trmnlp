@@ -113,7 +113,8 @@ RSpec.describe TRMNLP::Testing::Report do
     before do
       example_running(passed) do
         [screen_on('og_plus', 400, 300, view: 'quadrant'), screen_on('og_plus', 480, 800),
-         screen_on('og_plus', 800, 480), screen_on('v2', 1872, 1404)].each { report.record_screen(it) }
+         screen_on('og_plus', 800, 480), screen_on('v2', 1872, 1404),
+         screen_on('v2', 936, 702, view: 'quadrant')].each { report.record_screen(it) }
       end
       report.example_passed(passed)
       report.close(nil)
@@ -123,6 +124,10 @@ RSpec.describe TRMNLP::Testing::Report do
 
     it 'puts the two side by side at the same height, so a reviewer sees how much of the X the content fills' do
       expect(MiniMagick::Image.open(File.join(dir, json['og_vs_x'])).dimensions).to eq([800 + 640, 480])
+    end
+
+    it 'puts each other view drawn on both side by side too, at the same height' do
+      expect(MiniMagick::Image.open(File.join(dir, 'og-vs-x-quadrant.png')).dimensions).to eq([640 + 640, 480])
     end
 
     it 'shows the side by side image first on the page' do
