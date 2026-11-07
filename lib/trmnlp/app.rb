@@ -204,7 +204,7 @@ module TRMNLP
       get "/#{view}" do
         @view = view
         device = @user_data_assembler.device_from_params(params)
-        user_data = @user_data_assembler.call(device:)
+        user_data = @context.third_party_markup&.preview_merge_variables(device:) || @user_data_assembler.call(device:)
         @user_data = JSON.pretty_generate(user_data)
         # Measured on compact JSON, the way the hosted service sizes merge variables.
         @payload_size = JSON.generate(user_data).bytesize

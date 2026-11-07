@@ -70,6 +70,31 @@ RSpec.describe TRMNLP::Renderer do
       expect { renderer.send(:render_liquid_template, 'nonexistent') }
         .to raise_error(TRMNLP::RenderError, 'Missing template: src/nonexistent.liquid')
     end
+
+    context 'with a third-party plugin' do
+      subject(:renderer) { described_class.new(config:, paths:, user_data_assembler:, third_party_markup:) }
+
+      let(:third_party_markup) do
+        instance_double(TRMNLP::ThirdPartyMarkup,
+                        call: { 'full' => '<p>{{ temp }} {{ trmnl.user.name }}</p>', 'quadrant' => nil,
+                                'merge_variables' => { 'temp' => 12 } })
+      end
+
+      it "draws the plugin's markup for the device with its merge variables only, as TRMNL does" do
+        expect(renderer.send(:render_liquid_template, 'full', device: { 'width' => 800 })).to eq('<p>12 </p>')
+      end
+
+      it 'draws the shared markup before the view, as TRMNL does' do
+        allow(third_party_markup).to receive(:call)
+          .and_return('full' => '<p>{{ t }}</p>', 'shared' => '{% assign t = "S" %}', 'merge_variables' => {})
+
+        expect(renderer.send(:render_liquid_template, 'full')).to eq('<p>S</p>')
+      end
+
+      it 'says a view the plugin left out is not available, as TRMNL does' do
+        expect(renderer.send(:render_liquid_template, 'quadrant')).to include('Quadrant view not available.')
+      end
+    end
   end
 
   describe '#screen_classes' do

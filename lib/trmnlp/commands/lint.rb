@@ -15,8 +15,16 @@ module TRMNLP
         end
       end
 
+      THIRD_PARTY_NOTICE = 'trmnlp lint checks the markup in src/. ' \
+                           "A third-party plugin's markup comes from its plugin_markup_url."
+
       def call
         context.validate!
+        if config.project.third_party
+          reporter.info(THIRD_PARTY_NOTICE)
+          return true
+        end
+
         report
         issues.empty?
       end

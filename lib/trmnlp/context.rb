@@ -5,6 +5,7 @@ require_relative 'config'
 require_relative 'paths'
 require_relative 'poller'
 require_relative 'renderer'
+require_relative 'third_party_markup'
 require_relative 'reporter'
 require_relative 'transform_pipeline'
 require_relative 'user_data_assembler'
@@ -33,7 +34,7 @@ module TRMNLP
     def poller
       @poller ||= Poller.new(config:, paths:, oauth_session:, reporter:, async_callback:,
                              outbound_request: @outbound_request,
-                             trmnl_variables: -> { user_data_assembler.polling_variables })
+                             trmnl_variables: -> { user_data_assembler.trmnl_variables })
     end
 
     def async_callback = @async_callback ||= AsyncCallback.new(config:, paths:, reporter:)
@@ -56,7 +57,18 @@ module TRMNLP
                                                      source_data: @source_data)
     end
 
-    def renderer = @renderer ||= Renderer.new(config:, paths:, user_data_assembler:)
+    def renderer = @renderer ||= Renderer.new(config:, paths:, user_data_assembler:, third_party_markup:)
+
+    def third_party_markup
+      settings = config.project.third_party
+      return unless settings
+
+      @third_party_markup ||= ThirdPartyMarkup.new(
+        settings:, trmnl_variables: ->(device) { user_data_assembler.trmnl_variables(device:) },
+        **{ outbound_request: @outbound_request }.compact
+      )
+    end
+
     def watcher = @watcher ||= Watcher.new(config:, user_data_assembler:, transform_pipeline:, reporter:)
 
     def webhook_receiver
@@ -65,6 +77,8 @@ module TRMNLP
 
     def validate!
       raise NotAPlugin, "not a plugin directory (did not find #{paths.trmnlp_config})" unless paths.valid?
+
+      config.project.third_party
     end
   end
 end

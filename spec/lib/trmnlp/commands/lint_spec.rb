@@ -29,6 +29,15 @@ RSpec.describe TRMNLP::Commands::Lint do
   after { FileUtils.rm_rf(tmp_root) }
 
   describe '#call' do
+    context 'with a third-party plugin, whose markup is not in src/' do
+      before { File.write(File.join(tmp_root, '.trmnlp.yml'), "third_party:\n  plugin_markup_url: https://plugin.test/m\n") }
+
+      it 'passes and says lint does not apply' do
+        expect(command.call).to be(true)
+        expect(reporter.messages.last).to include('plugin_markup_url')
+      end
+    end
+
     context 'with JSON output' do
       subject(:command) do
         json_options = described_class::Options.new(dir: tmp_root, quiet: true, format: 'json')

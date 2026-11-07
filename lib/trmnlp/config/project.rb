@@ -53,6 +53,19 @@ module TRMNLP
         parse_liquid(value).render(values.merge(extra_variables))
       end
 
+      # A third-party plugin's plugin_markup_url, access_token and user_uuid, with {{ env.X }} filled in.
+      def third_party
+        return unless @config.key?('third_party')
+
+        settings = @config['third_party']
+        unless settings.is_a?(Hash) && settings['plugin_markup_url']
+          raise InvalidConfig, ".trmnlp.yml third_party needs a plugin_markup_url, such as:\n" \
+                               "third_party:\n  plugin_markup_url: http://localhost:3000/markup"
+        end
+
+        with_env(settings)
+      end
+
       def time_zone = @config['time_zone'] || 'UTC'
 
       def ignored_lint_rules = Array(@config['ignored_lint_rules'])
