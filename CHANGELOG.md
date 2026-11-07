@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.34.0
 
 - `trmnlp test --report` writes `og-vs-x-<view>.png` for the quadrant and half views too, not only `og-vs-x.png` for the full view, when the tests drew that view on TRMNL OG and TRMNL X in landscape.
 - Third-party plugins: a `third_party:` block in `.trmnlp.yml` with the plugin's `plugin_markup_url` makes `serve`, `build` and `test` post the same form TRMNL posts (`user_uuid` and the `trmnl` variables for the device being drawn, with an optional Bearer token) and draw each view from the markup, `shared` and `merge_variables` the plugin answers with. One answer draws every view, as one TRMNL refresh does.
