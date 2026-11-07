@@ -169,6 +169,20 @@ RSpec.describe TRMNLP::App do
     end
   end
 
+  describe 'GET /:view for a third-party plugin' do
+    let(:third_party_markup) do
+      instance_double(TRMNLP::ThirdPartyMarkup, preview_merge_variables: { 'team' => 'Porto' })
+    end
+
+    before { allow(context).to receive(:third_party_markup).and_return(third_party_markup) }
+
+    it 'shows the merge variables the plugin answered with on this page load' do
+      get '/full'
+
+      expect(last_response.body).to include('&quot;team&quot;: &quot;Porto&quot;')
+    end
+  end
+
   describe 'GET /:view oauth banner' do
     it 'invites connection when configured but not connected' do
       allow(context.oauth_session).to receive_messages(configured?: true, connected?: false)

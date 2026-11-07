@@ -386,6 +386,10 @@ ignored_lint_rules:
 merged_plugins:
   private_plugin_42: ../weather
 
+# a third-party plugin's markup endpoint; see Third-party plugins
+third_party:
+  plugin_markup_url: http://localhost:3000/markup
+
 # replace literal asset URLs during serve, test, and build --png
 asset_overrides:
   https://example.com/logo.svg: assets/logo.svg
@@ -457,6 +461,33 @@ For example, as a polling header:
 ```
 Authorization=Bearer {{ oauth_access_token }}
 ```
+
+## Third-party plugins
+
+A [third-party plugin](https://docs.trmnl.com/go/plugin-marketplace/introduction) serves its own markup ([how TRMNL asks for it](https://docs.trmnl.com/go/plugin-marketplace/plugin-screen-generation-flow)). Point trmnlp at the plugin's markup endpoint in `.trmnlp.yml`, and `serve`, `build` and `test` draw each view from it:
+
+```yaml
+third_party:
+  plugin_markup_url: http://localhost:3000/markup
+  access_token: "{{ env.PLUGIN_ACCESS_TOKEN }}" # optional, sent as Authorization: Bearer
+  user_uuid: 1b2c3d4e-0000-4000-8000-000000000001 # optional, the uuid your plugin stored at install
+```
+
+For each view, trmnlp sends the request TRMNL sends: a form-encoded POST of `user_uuid` and the `trmnl` variables (`trmnl[user][...]`, `trmnl[device][width]` and so on) for the device being drawn. The plugin answers with JSON:
+
+```json
+{ "markup": "...", "markup_half_horizontal": "...", "markup_half_vertical": "...", "markup_quadrant": "...",
+  "shared": "...", "merge_variables": { "team": "Porto" } }
+```
+
+Each view's markup renders after `shared` with `merge_variables` only, as on TRMNL, and a view the answer leaves out shows "… view not available.". Like one TRMNL refresh, one answer draws every view: `build` asks once per device, and `serve` asks once per page load and shows the `merge_variables` in its data panel. An answer that is not 2xx, not a JSON object, or has a markup that is not a string shows why on the screen. In a test, mock the url to change the merge variables:
+
+```ruby
+mocks = { 'http://localhost:3000/markup' => { json: { markup: '<span class="title">{{ team }}</span>', merge_variables: { team: 'Porto' } } } }
+expect(trmnl.render(mocks:)).to have_text('Porto')
+```
+
+trmnlp posts to a localhost url, which TRMNL refuses, so a plugin running on your machine works without a tunnel. `trmnlp lint` checks the markup in `src/`, so it does not apply to a third-party plugin.
 
 ## Serverless Transforms
 

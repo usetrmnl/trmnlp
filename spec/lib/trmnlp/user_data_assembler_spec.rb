@@ -99,7 +99,7 @@ RSpec.describe TRMNLP::UserDataAssembler do
     end
 
     it 'gives polling the trmnl namespace' do
-      expect(assembler.polling_variables.dig('trmnl', 'device', 'width')).to eq(800)
+      expect(assembler.trmnl_variables.dig('trmnl', 'device', 'width')).to eq(800)
     end
 
     it 'answers an empty trmnl.state before a transform kept one' do

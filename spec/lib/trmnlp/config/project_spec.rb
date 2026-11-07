@@ -98,6 +98,28 @@ RSpec.describe TRMNLP::Config::Project do
     end
   end
 
+  describe '#third_party' do
+    subject(:project) { described_class.new(paths, overrides: { 'third_party' => third_party }) }
+
+    context 'with a plugin_markup_url' do
+      let(:third_party) { { 'plugin_markup_url' => 'https://plugin.test/{{ env.HOME }}' } }
+
+      it 'fills in environment variables' do
+        expect(project.third_party).to eq('plugin_markup_url' => "https://plugin.test/#{Dir.home}")
+      end
+    end
+
+    [nil, 'https://plugin.test/markup', { 'access_token' => 'x' }].each do |value|
+      context "set to #{value.inspect}" do
+        let(:third_party) { value }
+
+        it 'says what it needs' do
+          expect { project.third_party }.to raise_error(TRMNLP::InvalidConfig, /third_party needs a plugin_markup_url/)
+        end
+      end
+    end
+  end
+
   describe '#serverless_daemon_api_key' do
     let(:root_dir) { 'not-a-valid-path' }
 

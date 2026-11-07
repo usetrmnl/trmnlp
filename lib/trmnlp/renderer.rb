@@ -13,10 +13,11 @@ module TRMNLP
     MAX_MERGE_VARIABLES_KB = 100
     AND_X_MORE = YAML.load_file(File.expand_path('../../db/data/and_x_more.yml', __dir__)).freeze
 
-    def initialize(config:, paths:, user_data_assembler:)
+    def initialize(config:, paths:, user_data_assembler:, third_party_markup: nil)
       @config = config
       @paths = paths
       @user_data_assembler = user_data_assembler
+      @third_party_markup = third_party_markup
     end
 
     def render_full_page(view, params = {})
@@ -56,7 +57,7 @@ module TRMNLP
 
     private
 
-    attr_reader :config, :paths, :user_data_assembler
+    attr_reader :config, :paths, :user_data_assembler, :third_party_markup
 
     # NOTE: a missing template or Liquid syntax error is a user-facing
     # signal — the plugin author needs to *see* what broke. We surface
@@ -64,6 +65,8 @@ module TRMNLP
     # inside the preview frame so the dev server keeps serving instead
     # of 500-ing. Anything that's not a RenderError bubbles up as a bug.
     def render_liquid_template(view, device: {})
+      return render_third_party(view, device:) if third_party_markup
+
       template_path = paths.template(view)
       unless template_path.exist? || paths.shared_template.exist?
         raise RenderError, "Missing template: #{template_path.relative_path_from(paths.root_dir)}"
@@ -84,6 +87,22 @@ module TRMNLP
       raise
     rescue StandardError => e
       raise RenderError, e.message
+    end
+
+    # As on TRMNL: the plugin's markup renders with its merge variables only, and a view it left out says so.
+    def render_third_party(view, device:)
+      answer = third_party_markup.call(device:)
+      return view_not_available(view) if answer[view].to_s.empty?
+
+      @last_data = answer['merge_variables']
+      Liquid::Template.parse([answer['shared'], answer[view]].join, environment: liquid_environment).render(@last_data)
+    rescue Liquid::Error => e
+      raise RenderError, e.message
+    end
+
+    def view_not_available(view)
+      '<div class="layout"><div class="richtext richtext--center"><span class="content" data-content-limiter="true">' \
+        "#{view.tr('_', ' ').capitalize} view not available.</span></div></div>"
     end
 
     def render_or_error(view, device:)

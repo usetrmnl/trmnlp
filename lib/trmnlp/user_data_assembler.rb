@@ -40,8 +40,8 @@ module TRMNLP
       transform_pipeline.call(transform_input(assemble(base_trmnl_data(device: {}), merge_variables)))
     end
 
-    # What a polling url, its headers and its body render with on TRMNL.
-    def polling_variables = assemble(base_trmnl_data(device: {}), {}).slice('trmnl')
+    # What a polling url, its headers and its body render with on TRMNL, and what a third-party plugin is posted.
+    def trmnl_variables(device: {}) = assemble(base_trmnl_data(device:), {}).slice('trmnl')
 
     def device_from_params(params)
       { 'width' => params[:width]&.to_i, 'height' => params[:height]&.to_i, 'model' => params[:model],
