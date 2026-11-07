@@ -20,6 +20,7 @@ RSpec.describe TRMNLP::Commands::Build do
     File.write(File.join(tmp_root, '.trmnlp.yml'), '---')
     allow(context.poller).to receive(:poll_data)
     allow(context.renderer).to receive(:render_full_page) { |view| "<html>#{view}</html>" }
+    allow(TRMNLP::Testing::DeviceModels).to receive(:models).and_return([])
   end
 
   after { FileUtils.rm_rf(tmp_root) }
@@ -124,6 +125,47 @@ RSpec.describe TRMNLP::Commands::Build do
       expect { cmd.call }.to raise_error(TRMNLP::NotAPlugin)
     ensure
       FileUtils.rm_rf(bad_root)
+    end
+
+    context 'with a --width and --height of a TRMNL model' do
+      let(:options) do
+        described_class::Options.new(dir: tmp_root, quiet: true, png: false, width: 1404, height: 1872,
+                                     color_depth: nil)
+      end
+      let(:x) do
+        TRMNLP::Testing::DeviceModels::Device.new(name: 'v2', width: 1404, height: 1872, bit_depth: 4,
+                                                  screen_classes: 'screen screen--v2 screen--lg screen--portrait',
+                                                  image_size_limit: nil, palette_colors: nil, palette_id: nil)
+      end
+
+      before do
+        allow(TRMNLP::Testing::DeviceModels).to receive(:models).and_return([{ 'name' => 'v2', 'width' => 1872,
+                                                                               'height' => 1404 }])
+        allow(TRMNLP::Testing::DeviceModels).to receive(:find).with('v2', orientation: :portrait).and_return(x)
+      end
+
+      it 'draws the page as that model, as trmnl.render(device:) does' do
+        command.call
+
+        expect(context.renderer).to have_received(:render_full_page).with(
+          'full', { width: 1404, height: 1872, model: 'v2', bit_depth: 4, orientation: 'portrait',
+                    screen_classes: 'screen screen--v2 screen--lg screen--portrait' }
+        )
+      end
+    end
+
+    context 'with a --width and --height of no TRMNL model, or offline' do
+      let(:options) do
+        described_class::Options.new(dir: tmp_root, quiet: true, png: false, width: 1000, height: 600, color_depth: nil)
+      end
+
+      before { allow(TRMNLP::Testing::DeviceModels).to receive(:models).and_raise(TRMNLP::TestingError, 'offline') }
+
+      it 'still tells the page its size' do
+        command.call
+
+        expect(context.renderer).to have_received(:render_full_page).with('full', { width: 1000, height: 600 })
+      end
     end
 
     context 'with --png (#92)' do

@@ -8,6 +8,7 @@ require_relative '../firefox_driver'
 require_relative '../screen_generator'
 require_relative '../screenshot'
 require_relative '../testing/asset_cache'
+require_relative '../testing/device_models'
 
 module TRMNLP
   module Commands
@@ -34,7 +35,7 @@ module TRMNLP
       private
 
       def build_screen(screen)
-        html = context.renderer.render_full_page(screen.name)
+        html = context.renderer.render_full_page(screen.name, device_params)
         overrides = context.config.project.asset_overrides
         built = if options.bundle_assets && overrides.any?
                   asset_cache.rewrite(html, overrides:,
@@ -69,6 +70,26 @@ module TRMNLP
       def screen_generator(html)
         ScreenGenerator.new(html, screenshot:, width: options.width,
                                   height: options.height, color_depth: options.color_depth, palette_id: options.palette)
+      end
+
+      # --width and --height draw the page as the TRMNL model of that size, as trmnl.render(device:) does.
+      def device_params
+        return {} unless options.width && options.height
+
+        @device_params ||= model_params || { width: options.width, height: options.height }
+      end
+
+      def model_params
+        size = [options.width, options.height]
+        model = Testing::DeviceModels.models.find { [it.values_at('width', 'height'), it.values_at('height', 'width')].include?(size) }
+        return unless model
+
+        orientation = model.values_at('width', 'height') == size ? 'landscape' : 'portrait'
+        device = Testing::DeviceModels.find(model['name'], orientation: orientation.to_sym)
+        device.render_params.merge(orientation:, screen_classes: device.screen_classes)
+      rescue TestingError => e
+        reporter.info(reporter.yellow("Drawing #{size.join('x')} without a TRMNL model's layout: #{e.message}"))
+        nil
       end
 
       def screenshot = @screenshot ||= Screenshot.new(pool: browser_pool)
