@@ -104,6 +104,44 @@ RSpec.describe TRMNLP::Lint::Source do
     end
   end
 
+  describe '#view_markup' do
+    subject(:source) { described_class.new(config: nil, paths:) }
+
+    let(:paths) { instance_double(TRMNLP::Paths) }
+    let(:root) { Pathname.new(Dir.mktmpdir('trmnlp-source-')) }
+    let(:template) { root.join('full.liquid') }
+
+    before do
+      template.write("<div class=\"title\">Pêche à la Méandre — über ły</div>\n", encoding: 'UTF-8')
+      allow(paths).to receive(:template).and_return(instance_double(Pathname, exist?: false))
+      allow(paths).to receive(:template).with('full').and_return(template)
+    end
+
+    after { root.rmtree }
+
+    context 'when the process locale is not UTF-8' do
+      around do |example|
+        previous = Encoding.default_external
+        Encoding.default_external = Encoding::US_ASCII
+        example.run
+      ensure
+        Encoding.default_external = previous
+      end
+
+      it 'reads a template with non-ASCII text as UTF-8' do
+        markup = source.view_markup.fetch('full')
+
+        expect(markup.encoding).to eq(Encoding::UTF_8)
+        expect(markup).to eq('<div class="title">Pêche à la Méandre — über ły</div>')
+      end
+
+      it 'locates a pattern in the template without an encoding error' do
+        expect(source.locations(/über/)).to eq([{ path: 'src/full.liquid', line: 1, column: 41,
+                                                  snippet: '<div class="title">Pêche à la Méandre — über ły</div>' }])
+      end
+    end
+  end
+
   describe '#html_fragments' do
     subject(:source) { described_class.new(config: nil, paths:) }
 
