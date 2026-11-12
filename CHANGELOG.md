@@ -1,7 +1,7 @@
 
 # Changelog
 
-## Unreleased
+## 0.34.1
 
 - The `random_number` filter works in `serve`, `build`, `test` and `lint`, as on TRMNL. Before, `{{ 0 | random_number: 1, 20 }}` drew 0 on every screen, so a recipe that picks a random item drew only its first one, and lint called the filter unknown.
 
