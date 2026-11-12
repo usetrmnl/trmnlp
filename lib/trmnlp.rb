@@ -4,6 +4,7 @@ module TRMNLP; end
 require 'oj'
 require 'trmnl/liquid'
 require_relative 'trmnlp/qr_code'
+require_relative 'trmnlp/random_number'
 Oj.mimic_JSON
 require_relative 'trmnlp/rails_helpers'
 require_relative 'trmnlp/errors'

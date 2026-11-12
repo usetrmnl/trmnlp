@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- The `random_number` filter works in `serve`, `build`, `test` and `lint`, as on TRMNL. Before, `{{ 0 | random_number: 1, 20 }}` drew 0 on every screen, so a recipe that picks a random item drew only its first one, and lint called the filter unknown.
+
 ## 0.34.0
 
 - `trmnlp test --report` writes `og-vs-x-<view>.png` for the quadrant and half views too, not only `og-vs-x.png` for the full view, when the tests drew that view on TRMNL OG and TRMNL X in landscape.
