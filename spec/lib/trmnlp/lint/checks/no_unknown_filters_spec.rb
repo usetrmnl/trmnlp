@@ -37,6 +37,14 @@ RSpec.describe TRMNLP::Lint::Checks::NoUnknownFilters do
       end
     end
 
+    context 'when markup uses random_number, which TRMNL has' do
+      let(:markup) { '{% assign pick = 0 | random_number: 1, 20 %}{{ pick }}' }
+
+      it 'reports nothing' do
+        expect(check.issues).to be_empty
+      end
+    end
+
     context 'when markup uses Liquid and TRMNL filters' do
       let(:markup) { '{{ total | number_with_delimiter | append: " steps" }}{{ url | qr_code }}' }
 

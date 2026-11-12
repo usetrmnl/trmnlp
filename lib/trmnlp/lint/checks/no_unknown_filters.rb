@@ -2,6 +2,7 @@
 
 require 'trmnl/liquid'
 
+require_relative '../../random_number'
 require_relative '../check'
 
 module TRMNLP
