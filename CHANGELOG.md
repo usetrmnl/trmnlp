@@ -1,6 +1,10 @@
 
 # Changelog
 
+## Unreleased
+
+- `trmnlp test --report` lays out examples and their screens side by side across the window, instead of one per row in a 1400px column. Each example lists its asset swaps once, collapsed, instead of once per screen.
+
 ## 0.34.1
 
 - The `random_number` filter works in `serve`, `build`, `test` and `lint`, as on TRMNL. Before, `{{ 0 | random_number: 1, 20 }}` drew 0 on every screen, so a recipe that picks a random item drew only its first one, and lint called the filter unknown.

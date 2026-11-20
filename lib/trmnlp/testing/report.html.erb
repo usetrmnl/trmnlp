@@ -6,7 +6,7 @@
 <title>trmnlp test report</title>
 <style>
   :root { --ink: #1d1d1f; --muted: #6e6e73; --line: #d2d2d7; --pass: #1a7f37; --fail: #cf222e; --pending: #9a6700; --box: #0969da; }
-  body { font: 14px/1.5 system-ui, sans-serif; color: var(--ink); margin: 0 auto; padding: 24px 16px; max-width: 1400px; }
+  body { font: 14px/1.5 system-ui, sans-serif; color: var(--ink); margin: 0; padding: 24px 16px; }
   header { display: flex; flex-wrap: wrap; gap: 16px; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
   h1 { font-size: 20px; margin: 0; }
   .counts span { margin-right: 12px; }
@@ -14,16 +14,18 @@
   label { color: var(--muted); cursor: pointer; }
   label::before { content: '☐ '; }
   #outlines:checked ~ header label[for=outlines]::before, #failures:checked ~ header label[for=failures]::before { content: '☑ '; }
-  section { border-bottom: 1px solid var(--line); padding: 16px 0; }
+  main { display: flex; flex-wrap: wrap; gap: 0 32px; align-items: flex-start; }
+  section { border-bottom: 1px solid var(--line); padding: 16px 0; max-width: 100%; min-width: min(100%, 320px); }
+  section h2, .location { contain: inline-size; }
   section h2 { font-size: 15px; margin: 0 0 4px; }
   .location, .run { color: var(--muted); font-size: 12px; }
   pre { background: #f6f8fa; padding: 8px; overflow-x: auto; white-space: pre-wrap; }
   .screens { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; }
   figure { margin: 0; max-width: 100%; }
   .og-vs-x { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); }
-  .frame { position: relative; border: 1px solid var(--line); max-width: min(100%, 640px); }
-  .frame img, .frame svg { display: block; width: 100%; height: auto; }
-  .frame svg { position: absolute; inset: 0; display: none; }
+  .frame { position: relative; border: 1px solid var(--line); }
+  .frame img { display: block; width: auto; height: auto; max-width: min(640px, calc(100vw - 34px)); }
+  .frame svg { position: absolute; inset: 0; display: none; width: 100%; height: auto; }
   #outlines:checked ~ main .frame svg { display: block; }
   #failures:checked ~ main section:not(.failed-example) { display: none; }
   rect { fill: none; stroke: var(--box); stroke-width: 1; vector-effect: non-scaling-stroke; }
@@ -67,8 +69,13 @@
         <% end %></table>
       <% end %>
     <% end %>
-    <% example[:screens].flat_map { it[:asset_swaps] || [] }.each do |swap| %>
-      <div class="run"><%= h(swap[:kind]) %>: <%= h(swap[:url]) %> → <%= h(swap[:target]) %></div>
+    <% swaps = example[:screens].flat_map { it[:asset_swaps] || [] }.uniq %>
+    <% if swaps.any? %>
+      <details class="run"><summary><%= swaps.size %> asset swaps</summary>
+      <% swaps.each do |swap| %>
+        <div><%= h(swap[:kind]) %>: <%= h(swap[:url]) %> → <%= h(swap[:target]) %></div>
+      <% end %>
+      </details>
     <% end %>
     <div class="screens">
     <% example[:screens].each do |screen| %>

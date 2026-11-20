@@ -4,6 +4,7 @@ require 'json'
 require 'mini_magick'
 require 'spec_helper'
 require 'tmpdir'
+require 'trmnlp/firefox_driver'
 require 'trmnlp/testing/report'
 
 RSpec.describe TRMNLP::Testing::Report do
@@ -102,14 +103,57 @@ RSpec.describe TRMNLP::Testing::Report do
     end
   end
 
-  context 'with the full view drawn on TRMNL OG and TRMNL X in landscape' do
-    def screen_on(name, width, height, view: 'full')
-      path = File.join(Dir.mktmpdir, "#{name}.png")
-      MiniMagick.convert { it << '-size' << "#{width}x#{height}" << 'xc:white' << path }
-      double('screen', png_path: path, device: Struct.new(:name, :width, :height).new(name, width, height),
-                       view:, problems: [], evaluate: [], asset_swaps: [])
+  def screen_on(name, width, height, view: 'full')
+    path = File.join(Dir.mktmpdir, "#{name}.png")
+    MiniMagick.convert { it << '-size' << "#{width}x#{height}" << 'xc:white' << path }
+    double('screen', png_path: path, device: Struct.new(:name, :width, :height).new(name, width, height),
+                     view:, problems: [], evaluate: [], asset_swaps: [])
+  end
+
+  context 'with two examples, opened in a 1920px wide window' do
+    let(:driver) { TRMNLP::FirefoxDriver.build.tap { it.manage.window.resize_to(1920, 1200) } }
+
+    before do
+      example_running(passed) do
+        report.record_screen(screen_on('og_png', 800, 480))
+        report.record_screen(screen_on('og_png', 800, 480))
+      end
+      example_running(failed) { report.record_screen(screen_on('og_png', 400, 240)) }
+      report.example_passed(passed)
+      report.example_failed(failed)
+      report.close(nil)
+      driver.navigate.to("file://#{File.join(dir, 'index.html')}")
     end
 
+    after { TRMNLP::FirefoxDriver.quit(driver) }
+
+    def rows(selector)
+      driver.execute_script("return document.querySelectorAll('#{selector}')").map { it.rect.y }.uniq.size
+    end
+
+    it "puts an example's screens side by side" do
+      expect(rows('section:first-child figure')).to eq(1)
+    end
+
+    it 'puts the examples side by side' do
+      expect(rows('section')).to eq(1)
+    end
+
+    it 'draws each screen at its own size, up to 640px wide' do
+      expect(driver.execute_script("return [...document.querySelectorAll('.frame img')].map((i) => i.offsetWidth)"))
+        .to eq([640, 640, 400])
+    end
+  end
+
+  it 'lists an asset swap once though every screen of the example made it' do
+    example_running(passed) { 2.times { report.record_screen(screen) } }
+    report.example_passed(passed)
+    report.close(nil)
+
+    expect(File.read(File.join(dir, 'index.html')).scan('override: https://x.test/a.png → local.png').size).to eq(1)
+  end
+
+  context 'with the full view drawn on TRMNL OG and TRMNL X in landscape' do
     before do
       example_running(passed) do
         [screen_on('og_plus', 400, 300, view: 'quadrant'), screen_on('og_plus', 480, 800),

@@ -249,6 +249,9 @@ The report lists these items:
 - Every example.
 - Each screen that an example rendered.
 - Each transform that an example ran, with its time, memory and requests.
+- Each asset that an example's screens swapped for a local copy, listed once and collapsed.
+
+The examples and their screens sit side by side across the window, each screen at its own size up to 640px wide.
 
 For each screen, the report shows:
 
