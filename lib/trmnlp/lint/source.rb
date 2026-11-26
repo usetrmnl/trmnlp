@@ -119,7 +119,7 @@ module TRMNLP
 
       attr_reader :config, :paths
 
-      def raw_read(path) = path.exist? ? path.read : ''
+      def raw_read(path) = path.exist? ? path.read(encoding: 'UTF-8') : ''
 
       def mapping_value(node, key)
         return unless node.is_a?(Psych::Nodes::Mapping)
@@ -127,7 +127,7 @@ module TRMNLP
         node.children.each_slice(2).to_a.rfind { |name, _| name.value == key.to_s }&.last
       end
 
-      def read(path) = path.exist? ? path.read.strip : ''
+      def read(path) = raw_read(path).strip
     end
   end
 end
